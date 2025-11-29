@@ -421,10 +421,10 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
 
             break;
         }
-		default:
-		{
-			LOG_WARNING("Unsupported DSProtect version\n");
-			break;
-		}
+        default:
+        {
+            LOG_WARNING("Unsupported DSProtect version\n");
+            break;
+        }
     }
 }
