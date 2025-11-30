@@ -10,38 +10,34 @@ dsprotectpatch_entry:
 
     ldmia r5!, {r6,r7} // ovy_id, ram_start
 
+    // Bail if this is the wrong overlay
     ldr r4, dsprotectpatch_overlay_id
     cmp r4, r6
     bne continue_to_next
 
-    // 0xFFFFFFFF for invalid comparing
-    movs r4, #0
-    subs r4, r4, #1
-
     // Try to patch A1
     ldr r0, dsprotectpatch_offsetA1
-    cmp r0, r4
-    beq invalid_a1
     adds r0, r7
-    bl applypatch
+    bl tryapplypatch
 
-invalid_a1:
     // Try to patch NotA1
     ldr r0, dsprotectpatch_offsetNotA1
-    cmp r0, r4
-    beq invalid_not_a1
     adds r0, r7
-    bl applypatch
+    bl tryapplypatch
 
-invalid_not_a1:
 continue_to_next:
     ldr r0, dsprotectpatch_nextAddress
     pop {r4-r7,pc}
 
 
-.local applypatch
-.type applypatch, %function
-applypatch:
+.local tryapplypatch
+.type tryapplypatch, %function
+tryapplypatch:
+    // Check if this is -1 for invalid
+    adds r1, r0, #1
+    cmp r1, #0
+    beq patch_invalid
+
     ldr r1, dsprotectpatch_patchType
     cmp r1, 0
     beq load_literal
@@ -53,6 +49,8 @@ load_literal:
 
 load_done:
     str r2, [r0]
+
+patch_invalid:
     bx lr
 
 
