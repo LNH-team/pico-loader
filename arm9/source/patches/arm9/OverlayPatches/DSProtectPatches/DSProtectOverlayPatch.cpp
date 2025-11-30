@@ -5,19 +5,6 @@
 #include "DSProtectOverlayPatchAsm.h"
 #include "DSProtectOverlayPatch.h"
 
-const void* DSProtectOverlayPatch::InsertPatch(PatchContext& patchContext)
-{
-    ConfigurePatch(patchContext);
-
-    u32 patchSize = SECTION_SIZE(dsprotectpatch);
-    void* patchAddress = patchContext.GetPatchHeap().Alloc(patchSize);
-    u32 entryAddress = (u32)&dsprotectpatch_entry - (u32)SECTION_START(dsprotectpatch) + (u32)patchAddress;
-    memcpy(patchAddress, SECTION_START(dsprotectpatch), patchSize);
-
-    return (const void*)entryAddress;
-}
-
-
 #define FUNCMASK_A1     (0b000001)
 #define FUNCMASK_NOTA1  (0b000010)
 #define FUNCMASK_A2     (0b000100)
@@ -34,6 +21,18 @@ const void* DSProtectOverlayPatch::InsertPatch(PatchContext& patchContext)
 
 #define OFFSET_INVALID  (0xFFFFFFFF)
 
+const void* DSProtectOverlayPatch::InsertPatch(PatchContext& patchContext)
+{
+    ConfigurePatch(patchContext);
+
+    u32 patchSize = SECTION_SIZE(dsprotectpatch);
+    void* patchAddress = patchContext.GetPatchHeap().Alloc(patchSize);
+    u32 entryAddress = (u32)&dsprotectpatch_entry - (u32)SECTION_START(dsprotectpatch) + (u32)patchAddress;
+    memcpy(patchAddress, SECTION_START(dsprotectpatch), patchSize);
+
+    return (const void*)entryAddress;
+}
+
 void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
 {
     // Next patch and target overlay ID
@@ -48,25 +47,26 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
 
     switch (_version)
     {
-        // TODO v1.00/1.02
+        // TODO: v1.00/1.02
         //case DSProtectVersion::v1_00_2:
         //{
         //    dsprotectpatch_patchType = DSP_PATCH_REPLACE_IMM;
         //    dsprotectpatch_writeWord = MAGIC_100_102;
         //
-        //    if (_functionMask & FUNCMASK_A1) {
+        //    if (_functionMask & FUNCMASK_A1)
+        //    {
         //        dsprotectpatch_offsetA1 = regionOffset + 0xD8;
         //        regionOffset += 0xDC; // __DSprot_DetectFlashcart
         //    }
         //
-        //    if (_functionMask & FUNCMASK_NOTA1) {
+        //    if (_functionMask & FUNCMASK_NOTA1)
+        //    {
         //        dsprotectpatch_offsetNotA1 = regionOffset + 0xD8;
         //        regionOffset += 0xDC; // __DSprot_DetectNotFlashcart
         //    }
         //
         //    break;
         //}
-
         case DSProtectVersion::v1_05:
         {
             dsprotectpatch_patchType = PATCH_WRITE_WORD;
@@ -83,22 +83,26 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
             regionOffset += 0x58; // RC4_InitAndEncryptInstructions
             regionOffset += 0x58; // RC4_InitAndDecryptInstructions
 
-            if (_functionMask & (FUNCMASK_A2 | FUNCMASK_NOTA2)) {
+            if (_functionMask & (FUNCMASK_A2 | FUNCMASK_NOTA2))
+            {
                 regionOffset += 0x120; // MACOwner_IsBad
             }
 
-            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1)) {
+            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1))
+            {
                 regionOffset += 0x19C; // ROMUtil_Read
                 regionOffset += 0xA4;  // ROMUtil_CRC32
                 regionOffset += 0x110; // ROMTest_IsBad
             }
 
-            if (_functionMask & FUNCMASK_A1) {
+            if (_functionMask & FUNCMASK_A1)
+            {
                 dsprotectpatch_offsetA1 = regionOffset + 0xD8;
                 regionOffset += 0xDC; // __DSProt_DetectFlashcart
             }
 
-            if (_functionMask & FUNCMASK_NOTA1) {
+            if (_functionMask & FUNCMASK_NOTA1)
+            {
                 dsprotectpatch_offsetNotA1 = regionOffset + 0xD8;
                 regionOffset += 0xDC; // __DSprot_DetectNotFlashcart
             }
@@ -121,22 +125,26 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
             regionOffset += 0x58; // RC4_InitAndEncryptInstructions
             regionOffset += 0x58; // RC4_InitAndDecryptInstructions
 
-            if (_functionMask & (FUNCMASK_A2 | FUNCMASK_NOTA2)) {
+            if (_functionMask & (FUNCMASK_A2 | FUNCMASK_NOTA2))
+            {
                 regionOffset += 0x120; // MACOwner_IsBad
             }
 
-            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1)) {
+            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1))
+            {
                 regionOffset += 0x1A4; // ROMUtil_Read
                 regionOffset += 0xA4;  // ROMUtil_CRC32
                 regionOffset += 0x110; // ROMTest_IsBad
             }
 
-            if (_functionMask & FUNCMASK_A1) {
+            if (_functionMask & FUNCMASK_A1)
+            {
                 dsprotectpatch_offsetA1 = regionOffset + 0xD4;
                 regionOffset += 0xD8; // DSProt_DetectFlashcart
             }
 
-            if (_functionMask & FUNCMASK_NOTA1) {
+            if (_functionMask & FUNCMASK_NOTA1)
+            {
                 dsprotectpatch_offsetNotA1 = regionOffset + 0xD4;
                 regionOffset += 0xD8; // DSProt_DetectNotFlashcart
             }
@@ -159,22 +167,26 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
             regionOffset += 0x58; // RC4_InitAndEncryptInstructions
             regionOffset += 0x58; // RC4_InitAndDecryptInstructions
 
-            if (_functionMask & (FUNCMASK_A2 | FUNCMASK_NOTA2)) {
+            if (_functionMask & (FUNCMASK_A2 | FUNCMASK_NOTA2))
+            {
                 regionOffset += 0x120; // MACOwner_IsBad
             }
 
-            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1)) {
+            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1))
+            {
                 regionOffset += 0x19C; // ROMUtil_Read
                 regionOffset += 0xA4;  // ROMUtil_CRC32
                 regionOffset += 0x110; // ROMTest_IsBad
             }
 
-            if (_functionMask & FUNCMASK_A1) {
+            if (_functionMask & FUNCMASK_A1)
+            {
                 dsprotectpatch_offsetA1 = regionOffset + 0xD4;
                 regionOffset += 0xD8; // DSProt_DetectFlashcart
             }
 
-            if (_functionMask & FUNCMASK_NOTA1) {
+            if (_functionMask & FUNCMASK_NOTA1)
+            {
                 dsprotectpatch_offsetNotA1 = regionOffset + 0xD4;
                 regionOffset += 0xD8; // DSProt_DetectNotFlashcart
             }
@@ -196,22 +208,26 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
             regionOffset += 0x58; // RC4_InitAndEncryptInstructions
             regionOffset += 0x58; // RC4_InitAndDecryptInstructions
 
-            if (_functionMask & (FUNCMASK_A2 | FUNCMASK_NOTA2)) {
+            if (_functionMask & (FUNCMASK_A2 | FUNCMASK_NOTA2))
+            {
                 regionOffset += 0x120; // MACOwner_IsBad
             }
 
-            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1)) {
+            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1))
+            {
                 regionOffset += 0x19C; // ROMUtil_Read
                 regionOffset += 0xA4;  // ROMUtil_CRC32
                 regionOffset += 0x110; // ROMTest_IsBad
             }
 
-            if (_functionMask & FUNCMASK_A1) {
+            if (_functionMask & FUNCMASK_A1)
+            {
                 dsprotectpatch_offsetA1 = regionOffset + 0xD8;
                 regionOffset += 0xE0; // DSProt_DetectFlashcart
             }
 
-            if (_functionMask & FUNCMASK_NOTA1) {
+            if (_functionMask & FUNCMASK_NOTA1)
+            {
                 dsprotectpatch_offsetNotA1 = regionOffset + 0xD8;
                 regionOffset += 0xE0; // DSProt_DetectNotFlashcart
             }
@@ -226,33 +242,40 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
             regionOffset += 0xC8; // Encryptor_StartRange
             regionOffset += 0xE4; // Encryptor_EndRange
 
-            if (_functionMask & FUNCMASK_A2) {
+            if (_functionMask & FUNCMASK_A2)
+            {
                 regionOffset += 0x118; // MACOwner_IsBad
             }
 
-            if (_functionMask & FUNCMASK_NOTA2) {
+            if (_functionMask & FUNCMASK_NOTA2)
+            {
                 regionOffset += 0x118; // MACOwner_IsGood
             }
 
-            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1)) {
+            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1))
+            {
                 regionOffset += 0x1D4; // ROMUtil_Read
                 regionOffset += 0xA4;  // ROMUtil_CRC32
             }
 
-            if (_functionMask & FUNCMASK_A1) {
+            if (_functionMask & FUNCMASK_A1)
+            {
                 regionOffset += 0x108; // ROMTest_IsBad
             }
 
-            if (_functionMask & FUNCMASK_NOTA1) {
+            if (_functionMask & FUNCMASK_NOTA1)
+            {
                 regionOffset += 0x108; // ROMTest_IsGood
             }
 
-            if (_functionMask & FUNCMASK_A1) {
+            if (_functionMask & FUNCMASK_A1)
+            {
                 dsprotectpatch_offsetA1 = regionOffset + 0xE0;
                 regionOffset += 0xE8; // DSProt_DetectFlashcart
             }
 
-            if (_functionMask & FUNCMASK_NOTA1) {
+            if (_functionMask & FUNCMASK_NOTA1)
+            {
                 dsprotectpatch_offsetNotA1 = regionOffset + 0xE0;
                 regionOffset += 0xE8; // DSProt_DetectNotFlashcart
             }
@@ -267,33 +290,40 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
             regionOffset += 0xC8; // Encryptor_StartRange
             regionOffset += 0xE4; // Encryptor_EndRange
 
-            if (_functionMask & FUNCMASK_A2) {
+            if (_functionMask & FUNCMASK_A2)
+            {
                 regionOffset += 0x120; // MACOwner_IsBad
             }
 
-            if (_functionMask & FUNCMASK_NOTA2) {
+            if (_functionMask & FUNCMASK_NOTA2)
+            {
                 regionOffset += 0x120; // MACOwner_IsGood
             }
 
-            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1)) {
+            if (_functionMask & (FUNCMASK_A1 | FUNCMASK_NOTA1))
+            {
                 regionOffset += 0x1D4; // ROMUtil_Read
                 regionOffset += 0xA4;  // ROMUtil_CRC32
             }
 
-            if (_functionMask & FUNCMASK_A1) {
+            if (_functionMask & FUNCMASK_A1)
+            {
                 regionOffset += 0x108; // ROMTest_IsBad
             }
 
-            if (_functionMask & FUNCMASK_NOTA1) {
+            if (_functionMask & FUNCMASK_NOTA1)
+            {
                 regionOffset += 0x108; // ROMTest_IsGood
             }
 
-            if (_functionMask & FUNCMASK_A1) {
+            if (_functionMask & FUNCMASK_A1)
+            {
                 dsprotectpatch_offsetA1 = regionOffset + 0xE0;
                 regionOffset += 0xE8; // DSProt_DetectFlashcart
             }
 
-            if (_functionMask & FUNCMASK_NOTA1) {
+            if (_functionMask & FUNCMASK_NOTA1)
+            {
                 dsprotectpatch_offsetNotA1 = regionOffset + 0xE0;
                 regionOffset += 0xE8; // DSProt_DetectNotFlashcart
             }
@@ -329,7 +359,6 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
 
             break;
         }
-
         case DSProtectVersion::v1_27:
         {
             dsprotectpatch_patchType = PATCH_COPY_NEXT;
