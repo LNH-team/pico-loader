@@ -35,7 +35,6 @@ continue_to_next:
 tryapplypatch:
     // Check if this is -1 for invalid
     adds r1, r0, #1
-    cmp r1, #0
     beq patch_invalid
 
     ldr r1, dsprotectpatch_patchType
