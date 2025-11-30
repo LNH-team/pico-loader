@@ -133,12 +133,12 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
 
             if (_functionMask & FUNCMASK_A1) {
                 dsprotectpatch_offsetA1 = regionOffset + 0xD4;
-                regionOffset += 0xD8; // __DSProt_DetectFlashcart
+                regionOffset += 0xD8; // DSProt_DetectFlashcart
             }
 
             if (_functionMask & FUNCMASK_NOTA1) {
                 dsprotectpatch_offsetNotA1 = regionOffset + 0xD4;
-                regionOffset += 0xD8; // __DSProt_DetectNotFlashcart
+                regionOffset += 0xD8; // DSProt_DetectNotFlashcart
             }
 
             break;
@@ -171,12 +171,12 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
 
             if (_functionMask & FUNCMASK_A1) {
                 dsprotectpatch_offsetA1 = regionOffset + 0xD4;
-                regionOffset += 0xD8; // __DSProt_DetectFlashcart
+                regionOffset += 0xD8; // DSProt_DetectFlashcart
             }
 
             if (_functionMask & FUNCMASK_NOTA1) {
                 dsprotectpatch_offsetNotA1 = regionOffset + 0xD4;
-                regionOffset += 0xD8; // __DSProt_DetectNotFlashcart
+                regionOffset += 0xD8; // DSProt_DetectNotFlashcart
             }
 
             break;
@@ -208,12 +208,12 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
 
             if (_functionMask & FUNCMASK_A1) {
                 dsprotectpatch_offsetA1 = regionOffset + 0xD8;
-                regionOffset += 0xE0; // __DSProt_DetectFlashcart
+                regionOffset += 0xE0; // DSProt_DetectFlashcart
             }
 
             if (_functionMask & FUNCMASK_NOTA1) {
                 dsprotectpatch_offsetNotA1 = regionOffset + 0xD8;
-                regionOffset += 0xE0; // __DSProt_DetectNotFlashcart
+                regionOffset += 0xE0; // DSProt_DetectNotFlashcart
             }
 
             break;
