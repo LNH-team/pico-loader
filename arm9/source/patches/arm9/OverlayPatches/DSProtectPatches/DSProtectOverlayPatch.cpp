@@ -37,7 +37,7 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
 {
     // Next patch and target overlay ID
     dsprotectpatch_nextAddress = next ? (const void*)next->InsertPatch(patchContext) : nullptr;
-    dsprotectpatch_overlay_id = _overlayId;
+    dsprotectpatch_overlayId = _overlayId;
 
     u32 regionOffset = _overlayOffset;
 

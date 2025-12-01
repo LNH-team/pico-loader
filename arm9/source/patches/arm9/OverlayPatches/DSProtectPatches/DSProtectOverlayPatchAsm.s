@@ -12,7 +12,7 @@ dsprotectpatch_entry:
     ldmia r5!, {r6, r7}
 
     // Bail if this is the wrong overlay
-    ldr r4, dsprotectpatch_overlay_id
+    ldr r4, dsprotectpatch_overlayId
     cmp r4, r6
     bne continue_to_next
 
@@ -78,8 +78,8 @@ dsprotectpatch_offsetA1:
 dsprotectpatch_offsetNotA1:
     .word 0
 
-.global dsprotectpatch_overlay_id
-dsprotectpatch_overlay_id:
+.global dsprotectpatch_overlayId
+dsprotectpatch_overlayId:
     .word 0
 
 .global dsprotectpatch_nextAddress
