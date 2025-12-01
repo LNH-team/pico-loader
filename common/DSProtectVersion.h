@@ -22,5 +22,6 @@ enum class DSProtectVersion : u32
     v2_00s,
     v2_01s,
     v2_03s,
-    v2_05s
+    v2_05s,
+    v1_00_2
 };

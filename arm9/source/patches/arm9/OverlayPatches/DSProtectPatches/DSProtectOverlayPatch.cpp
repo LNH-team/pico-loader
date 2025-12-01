@@ -47,26 +47,25 @@ void DSProtectOverlayPatch::ConfigurePatch(PatchContext& patchContext) const
 
     switch (_version)
     {
-        // TODO: v1.00/1.02
-        //case DSProtectVersion::v1_00_2:
-        //{
-        //    dsprotectpatch_patchType = DSP_PATCH_REPLACE_IMM;
-        //    dsprotectpatch_writeWord = MAGIC_100_102;
-        //
-        //    if (_functionMask & FUNCMASK_A1)
-        //    {
-        //        dsprotectpatch_offsetA1 = regionOffset + 0xD8;
-        //        regionOffset += 0xDC; // __DSprot_DetectFlashcart
-        //    }
-        //
-        //    if (_functionMask & FUNCMASK_NOTA1)
-        //    {
-        //        dsprotectpatch_offsetNotA1 = regionOffset + 0xD8;
-        //        regionOffset += 0xDC; // __DSprot_DetectNotFlashcart
-        //    }
-        //
-        //    break;
-        //}
+        case DSProtectVersion::v1_00_2:
+        {
+            dsprotectpatch_patchType = PATCH_WRITE_WORD;
+            dsprotectpatch_writeWord = MAGIC_100_102;
+
+            if (_functionMask & FUNCMASK_A1)
+            {
+                dsprotectpatch_offsetA1 = regionOffset + 0xD8;
+                regionOffset += 0xDC; // __DSprot_DetectFlashcart
+            }
+
+            if (_functionMask & FUNCMASK_NOTA1)
+            {
+                dsprotectpatch_offsetNotA1 = regionOffset + 0xD8;
+                regionOffset += 0xDC; // __DSprot_DetectNotFlashcart
+            }
+
+            break;
+        }
         case DSProtectVersion::v1_05:
         {
             dsprotectpatch_patchType = PATCH_WRITE_WORD;

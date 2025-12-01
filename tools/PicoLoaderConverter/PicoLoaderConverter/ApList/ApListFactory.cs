@@ -172,6 +172,7 @@ sealed class ApListFactory
             "2.01s" => DSProtectVersion.V2_01s,
             "2.03s" => DSProtectVersion.V2_03s,
             "2.05s" => DSProtectVersion.V2_05s,
+            "1.00_2" => DSProtectVersion.V1_00_2,
             _ => throw new ArgumentException(
                 $"DS Protect Version '{dsProtectVersion}' could not be parsed.", nameof(dsProtectVersion))
         };
