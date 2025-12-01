@@ -21,7 +21,6 @@ dsprotectpatch_entry:
     adds r0, r7
     bl tryapplypatch
 
-a1_done:
     // Try to patch NotA1
     ldr r0, dsprotectpatch_offsetNotA1
     adds r0, r7
