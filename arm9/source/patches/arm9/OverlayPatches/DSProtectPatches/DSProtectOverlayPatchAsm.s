@@ -6,9 +6,10 @@
 .global dsprotectpatch_entry
 .type dsprotectpatch_entry, %function
 dsprotectpatch_entry:
-    push {r4-r7,lr}
+    push {r4-r7, lr}
 
-    ldmia r5!, {r6,r7} // ovy_id, ram_start
+    // r5 is overlay table entry-- load { ovy_id, ram_start }
+    ldmia r5!, {r6, r7}
 
     // Bail if this is the wrong overlay
     ldr r4, dsprotectpatch_overlay_id
@@ -20,36 +21,43 @@ dsprotectpatch_entry:
     adds r0, r7
     bl tryapplypatch
 
+a1_done:
     // Try to patch NotA1
     ldr r0, dsprotectpatch_offsetNotA1
     adds r0, r7
     bl tryapplypatch
 
 continue_to_next:
+    // Return next patch address
     ldr r0, dsprotectpatch_nextAddress
-    pop {r4-r7,pc}
+    pop {r4-r7, pc}
 
 
 .local tryapplypatch
 .type tryapplypatch, %function
 tryapplypatch:
-    // Check if this is -1 for invalid
-    adds r1, r0, #1
-    beq patch_invalid
+    // If the high bit is set, this is invalid and we skip it
+    cmp r0, #0x0
+    blt offset_invalid
 
+    // Check what patch type to use
     ldr r1, dsprotectpatch_patchType
     cmp r1, 0
     beq load_literal
+
+    // Load next word (+4)
     ldr r2, [r0, #0x4]
     b load_done
 
 load_literal:
+    // Load literal value
     ldr r2, dsprotectpatch_writeWord
 
 load_done:
+    // Write to patch location
     str r2, [r0]
 
-patch_invalid:
+offset_invalid:
     bx lr
 
 

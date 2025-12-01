@@ -19,7 +19,7 @@
 #define MAGIC_105_123    (0xFFFFFCE0)
 #define MAGIC_200s_205s  (0x00000000)
 
-#define OFFSET_INVALID  (0xFFFFFFFF)
+#define OFFSET_INVALID  (0x80000000)
 
 const void* DSProtectOverlayPatch::InsertPatch(PatchContext& patchContext)
 {
