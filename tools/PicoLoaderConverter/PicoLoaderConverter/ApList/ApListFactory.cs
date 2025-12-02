@@ -152,6 +152,7 @@ sealed class ApListFactory
     {
         return dsProtectVersion switch
         {
+            "1.00_2" => DSProtectVersion.V1_00_2,
             "1.05" => DSProtectVersion.V1_05,
             "1.06" => DSProtectVersion.V1_06,
             "1.08" => DSProtectVersion.V1_08,
@@ -172,7 +173,6 @@ sealed class ApListFactory
             "2.01s" => DSProtectVersion.V2_01s,
             "2.03s" => DSProtectVersion.V2_03s,
             "2.05s" => DSProtectVersion.V2_05s,
-            "1.00_2" => DSProtectVersion.V1_00_2,
             _ => throw new ArgumentException(
                 $"DS Protect Version '{dsProtectVersion}' could not be parsed.", nameof(dsProtectVersion))
         };
@@ -182,6 +182,7 @@ sealed class ApListFactory
     {
         return dsProtectVersion switch
         {
+            DSProtectVersion.V1_00_2 => "1.00_2",
             DSProtectVersion.V1_05 => "1.05",
             DSProtectVersion.V1_06 => "1.06",
             DSProtectVersion.V1_08 => "1.08",
