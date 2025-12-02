@@ -1,6 +1,6 @@
 .cpu arm946e-s
-.section "dsprotectpatch", "ax"
 .syntax unified
+.section "dsprotectpatch", "ax"
 .thumb
 
 .global dsprotectpatch_entry
@@ -19,29 +19,28 @@ dsprotectpatch_entry:
     // Try to patch A1
     ldr r0, dsprotectpatch_offsetA1
     adds r0, r7
-    bl tryapplypatch
+    bl try_apply_patch
 
     // Try to patch NotA1
     ldr r0, dsprotectpatch_offsetNotA1
     adds r0, r7
-    bl tryapplypatch
+    bl try_apply_patch
 
 continue_to_next:
     // Return next patch address
     ldr r0, dsprotectpatch_nextAddress
     pop {r4-r7, pc}
 
-
-.local tryapplypatch
-.type tryapplypatch, %function
-tryapplypatch:
+.local try_apply_patch
+.type try_apply_patch, %function
+try_apply_patch:
     // If the high bit is set, this is invalid and we skip it
     cmp r0, #0x0
     blt offset_invalid
 
     // Check what patch type to use
     ldr r1, dsprotectpatch_patchType
-    cmp r1, 0
+    cmp r1, #0x0
     beq load_literal
 
     // Load next word (+4)
@@ -58,7 +57,6 @@ load_done:
 
 offset_invalid:
     bx lr
-
 
 .balign 4
 
@@ -86,5 +84,6 @@ dsprotectpatch_overlayId:
 dsprotectpatch_nextAddress:
     .word 0
 
+.pool
 
 .end
