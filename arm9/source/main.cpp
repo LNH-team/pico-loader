@@ -26,8 +26,7 @@
 #include "arm9Clock.h"
 #include "errorDisplay/ErrorDisplay.h"
 #include "LoaderInfo.h"
-
-typedef void (*entrypoint_t)(void);
+#include "jumpToArm9EntryPoint.h"
 
 #define HANDSHAKE_PART0     0xA
 #define HANDSHAKE_PART1     0xB
@@ -109,7 +108,7 @@ static void bootArm9()
     while (gfx_getVCount() == 191);
     REG_IF = ~0u; // final clear of REG_IF bits
     auto romHeader = (const nds_header_ntr_t*)TWL_SHARED_MEMORY->ntrSharedMem.romHeader;
-    ((entrypoint_t)romHeader->arm9EntryAddress)();
+    jumpToArm9EntryPoint((void*)romHeader->arm9EntryAddress);
 }
 
 static void handleInitializeSdCardCommand()

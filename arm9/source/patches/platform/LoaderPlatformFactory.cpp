@@ -12,6 +12,7 @@
 #include "patches/platform/akrpg/AKRPGLoaderPlatform.h"
 #include "patches/platform/r4idsn/R4iDSNLoaderPlatform.h"
 #include "patches/platform/supercard/SuperCardLoaderPlatform.h"
+#include "patches/platform/ezp/EZPLoaderPlatform.h"
 #include "LoaderPlatformFactory.h"
 
 LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
@@ -40,6 +41,8 @@ LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
     return new R4iDSNLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_SUPERCARD)
     return new SuperCardLoaderPlatform();
+#elif defined(PICO_LOADER_TARGET_EZP)
+    return new EZPLoaderPlatform();
 #else
 #error "No loader platform defined"
     return nullptr;

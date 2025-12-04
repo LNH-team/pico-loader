@@ -152,6 +152,7 @@ sealed class ApListFactory
     {
         return dsProtectVersion switch
         {
+            "1.00_2" => DSProtectVersion.V1_00_2,
             "1.05" => DSProtectVersion.V1_05,
             "1.06" => DSProtectVersion.V1_06,
             "1.08" => DSProtectVersion.V1_08,
@@ -181,6 +182,7 @@ sealed class ApListFactory
     {
         return dsProtectVersion switch
         {
+            DSProtectVersion.V1_00_2 => "1.00_2",
             DSProtectVersion.V1_05 => "1.05",
             DSProtectVersion.V1_06 => "1.06",
             DSProtectVersion.V1_08 => "1.08",

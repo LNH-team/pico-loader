@@ -30,6 +30,7 @@ void ApListEntry::Dump() const
     const char* dsProtectVersionString;
     switch (GetDSProtectVersion())
     {
+        case DSProtectVersion::v1_00_2: dsProtectVersionString = "v1.00_2"; break;
         case DSProtectVersion::v1_05: dsProtectVersionString = "v1.05"; break;
         case DSProtectVersion::v1_06: dsProtectVersionString = "v1.06"; break;
         case DSProtectVersion::v1_08: dsProtectVersionString = "v1.08"; break;

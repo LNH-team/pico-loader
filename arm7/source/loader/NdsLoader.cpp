@@ -534,13 +534,19 @@ void NdsLoader::LoadFirmwareUserSettings()
 
 bool NdsLoader::ShouldAttemptDldiPatch()
 {
+    // Some games contain a fake dldi header to trick flashcards
+    // See also: https://shutterbug2000.github.io/very-clever/
     switch (_romHeader.ntrHeader.gameCode)
     {
-        // Final Fantasy IV contains a fake dldi header to trick flashcards
-        // See also: https://shutterbug2000.github.io/very-clever/
+        // Final Fantasy IV
         case GAMECODE("YF4P"):
         case GAMECODE("YF4E"):
         case GAMECODE("YF4J"):
+        // Final Fantasy Crystal Chronicles - Ring of Fates
+        case GAMECODE("AFXE"):
+        case GAMECODE("AFXP"):
+        // Nanashi no Geemu
+        case GAMECODE("YFQJ"):
         {
             return false;
         }

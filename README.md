@@ -27,6 +27,7 @@ Note that there can be some game compatibility differences between different pla
 | AKRPG         | Acekard RPG SD card                                                                            | ❌ |
 | DSPICO        | DSpico                                                                                         | ✅ |
 | DSTT          | DSTT, SuperCard DSONE SDHC, r4isdhc.com carts 2014+, r4i-sdhc.com carts, various derivatives   | ❌ |
+| EZP           | EZ-Flash Parallel                                                                              | ❌ |
 | G003          | M3i Zero (GMP-Z003)                                                                            | ✅ |
 | ISNITRO       | Supports the IS-NITRO-EMULATOR through agb semihosting.                                        | ❌ |
 | M3DS          | M3 DS Real, M3i Zero, iTouchDS, r4rts.com, r4isdhc.com RTS (black)                             | ❌ |

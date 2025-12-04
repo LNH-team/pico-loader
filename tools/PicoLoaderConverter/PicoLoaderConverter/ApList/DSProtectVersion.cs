@@ -21,5 +21,6 @@ enum DSProtectVersion
     V2_00s,
     V2_01s,
     V2_03s,
-    V2_05s
+    V2_05s,
+    V1_00_2
 }

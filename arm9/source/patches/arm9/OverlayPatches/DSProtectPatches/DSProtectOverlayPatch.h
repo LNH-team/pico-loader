@@ -17,8 +17,5 @@ private:
     DSProtectVersion _version;
     u32 _functionMask;
 
-    void SetOldV1Offsets(const u16* offsets) const;
-    const void* InsertPatchV1(PatchContext& patchContext) const;
-    const void* InsertPatchV2(PatchContext& patchContext) const;
-    const void* InsertPatchV2s(PatchContext& patchContext) const;
+    void ConfigurePatch(PatchContext& patchContext) const;
 };
