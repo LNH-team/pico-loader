@@ -2,7 +2,7 @@
 # Dockerfile for building pico-loader (with .NET 9.0)
 # -----------------------------------------------------------------------------
 
-FROM --platform=linux/amd64 skylyrac/blocksds:1.13.1
+FROM --platform=linux/amd64 skylyrac/blocksds:slim-v1.13.1
 
 WORKDIR /workdir
 
