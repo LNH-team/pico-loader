@@ -865,6 +865,39 @@ void NdsLoader::StartRom(BootMode bootMode)
 
 void NdsLoader::SetupTwlConfig()
 {
+    char romRegion = (_romHeader.gameCode >> 24) & 0xFF;
+    u8 newRegion = 2; // default region set to EUR, 2 = europe
+    if (romRegion != 'A' && romRegion != 'O')
+    {
+        // Determine region by TID
+        if (romRegion == 'J') {
+            newRegion = 0;
+        } else if (romRegion == 'E' || romRegion == 'T') {
+            newRegion = 1;
+        } else if (romRegion == 'P' || romRegion == 'V') {
+            // newRegion = 2;
+        } else if (romRegion == 'U') {
+            newRegion = 3;
+        } else if (romRegion == 'C') {
+            newRegion = 4;
+        } else if (romRegion== 'K') {
+            newRegion = 5;
+        }
+    }
+
+    u8 userLang = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x64];
+    // Set language based on rom region, TODO: allow user to override this via some config or so
+    if (newRegion == 0)
+        userLang = 0;
+    else if (newRegion == 1 && (userLang != 1 || userLang != 2 || userLang != 5))
+        userLang = 1;
+    else if (newRegion == 2 && userLang < 1 && userLang > 5)
+        userLang = 1;
+    else if (newRegion == 4)
+        userLang = 6;
+    else if (newRegion == 5)
+        userLang = 7;
+
     twl_config_t* twlConfig = (twl_config_t*)0x02000400;
     *(twl_config_t**)0x02FFFDFC = twlConfig;
     *(vu8*)0x02FFFDFA = 0x80;
@@ -872,7 +905,7 @@ void NdsLoader::SetupTwlConfig()
     memset(twlConfig, 0, sizeof(twl_config_t));
     twlConfig->configFlags = 0x0100000F;
     twlConfig->country = 0x4E;
-    twlConfig->language = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x64];
+    twlConfig->language = userLang;
     twlConfig->rtcYear = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x66];
     twlConfig->rtcOffset = *(s64*)&TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x68];
     twlConfig->eulaAgreeVersion[0] = 1;
@@ -906,9 +939,23 @@ void NdsLoader::SetupTwlConfig()
     }
     *(vu16*)0x020005E2 = swi_getCrc16(0xFFFF, (void*)0x020005E4, 0xC);
 
-    *(vu32*)0x02FFFD68 = 0x3E; // supported languages
+    // Set bitmask for supported languages
+    if (newRegion == 1) {
+        *(vu32*)0x02FFFD68 = 0x26; // USA
+    } else if (newRegion == 2) {
+        *(vu32*)0x02FFFD68 = 0x3E; // EUR
+    } else if (newRegion == 3) {
+        *(vu32*)0x02FFFD68 = 0x02; // AUS
+    } else if (newRegion == 4) {
+        *(vu32*)0x02FFFD68 = 0x40; // CHN
+    } else if (newRegion == 5) {
+        *(vu32*)0x02FFFD68 = 0x80; // KOR
+    } else if (newRegion == 0) {
+        *(vu32*)0x02FFFD68 = 0x01; // JAP
+    }
+
     *(vu32*)0x02FFFD6C = 0;
-    *(vu8*)0x02FFFD70 = 2; // region, 2 = europe
+    *(vu8*)0x02FFFD70 = newRegion; // region
 }
 
 void NdsLoader::SetDeviceListEntry(dsi_devicelist_entry_t& deviceListEntry,
