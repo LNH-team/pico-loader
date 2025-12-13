@@ -931,8 +931,22 @@ void NdsLoader::SetupDsiDeviceList()
     auto deviceList = (dsi_devicelist_t*)_romHeader.arm7DeviceListAddress;
     memset(deviceList, 0, sizeof(dsi_devicelist_t));
 
+    char romRegion = (_romHeader.gameCode >> 24) & 0xFF;
+    const char *nandPath = "nand2:/_twln";
+    if (romRegion == 'C')
+    {
+        nandPath = "nand2:/_twlc";
+    }
+    else if (romRegion == 'K')
+    {
+        nandPath = "nand2:/_twlk";
+    }
+
     int listEntry = 0;
-    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'A', "nand", "/",
+    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'A', "nand", nandPath,
+        DSI_DEVICELIST_ENTRY_FLAGS_DRIVE_SDMC | DSI_DEVICELIST_ENTRY_FLAGS_TYPE_FOLDER,
+        DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
+    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'B', "nand2", "/",
         DSI_DEVICELIST_ENTRY_FLAGS_DRIVE_SDMC | DSI_DEVICELIST_ENTRY_FLAGS_TYPE_PHYSICAL,
         DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
     SetDeviceListEntry(deviceList->deviceList[listEntry++], 'D', "shared1", "nand:/shared1",
@@ -956,7 +970,7 @@ void NdsLoader::SetupDsiDeviceList()
             DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
     }
 
-    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'I', "sdmc", "nand:/.",
+    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'I', "sdmc", "nand2:/.",
         DSI_DEVICELIST_ENTRY_FLAGS_DRIVE_SDMC | DSI_DEVICELIST_ENTRY_FLAGS_TYPE_FOLDER,
         DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
 
