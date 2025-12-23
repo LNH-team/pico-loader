@@ -865,7 +865,7 @@ void NdsLoader::StartRom(BootMode bootMode)
 
 void NdsLoader::SetupTwlConfig()
 {
-    ConsoleRegion romRegion = GetRomRegion((_romHeader.gameCode >> 24) & 0xFF);
+    ConsoleRegion romRegion = GetRomRegion(_romHeader.gameCode);
     // Set language based on rom region, TODO: allow user to override this via some config or so
     UserLanguage userLang = GetLanguageByRomRegion(romRegion);
 
@@ -1017,8 +1017,9 @@ bool NdsLoader::TryDecryptSecureArea()
     return true;
 }
 
-ConsoleRegion NdsLoader::GetRomRegion(char gameRegionCode)
+ConsoleRegion NdsLoader::GetRomRegion(u32 gameCode)
 {
+    u8 gameRegionCode = (gameCode >> 24) & 0xFF;
     if (gameRegionCode != 'A' && gameRegionCode != 'O')
     {
         // Determine region by TID
