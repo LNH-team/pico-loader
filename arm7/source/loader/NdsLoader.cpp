@@ -932,8 +932,8 @@ void NdsLoader::SetupDsiDeviceList()
     memset(deviceList, 0, sizeof(dsi_devicelist_t));
 
     char romRegion = (_romHeader.gameCode >> 24) & 0xFF;
-    const char *nandPath = "nand2:/_pico/twln";
-    const char *sharedPath = "nand2:/_pico/twln/shared1";
+    const char* nandPath = "nand2:/_pico/twln";
+    const char* sharedPath = "nand2:/_pico/twln/shared1";
     if (romRegion == 'C')
     {
         nandPath = "nand2:/_pico/twlc";
