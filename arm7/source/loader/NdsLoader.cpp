@@ -1053,7 +1053,7 @@ u8 NdsLoader::getRomRegion(char gameRegionCode)
 
 u8 NdsLoader::getLanguageByRomRegion(u8 romRegion)
 {
-    u8 userLang = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x64];
+    u8 userLang = (TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x64] & 0x07);
 
     if (romRegion == JPN)
     {
