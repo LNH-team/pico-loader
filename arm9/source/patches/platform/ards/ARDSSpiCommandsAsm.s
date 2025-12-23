@@ -15,17 +15,14 @@
 BEGIN_ASM_FUNC_NO_SECTION ARDS_SendNtrCommandF2
 	push    {r0-r3,lr}
 	movs    r2, #0xF2
-	ldr     r1, =REG_MCCMD0
-	lsls    r3, r0, #8
-	stmia   r1!, {r2, r3}
-	@ REG_MCCMD0 - REG_MCCNT0 = 8, stmia increased r1 by 4*2
 	ldr     r1, =REG_MCCNT0
-	@ subs    r1, #16
-	
-	@ ensure nothing broke
-	@ ldr    r2, =0x8000
-	movs    r2, #0x80
-	lsls    r2, #8
+	@ loads REG_MCCMD0 in r1, we do this so that the only loaded constant is REG_MCCNT0, shared with other pieces of code
+	lsls    r3, r0, #8
+	str     r2, [r1, #8]
+	str     r3, [r1, #12]
+
+	@ we shift 0xF2 above by 14 to get 0xXXXX8000
+	lsls    r2, #14
 
 	ldrh    r3, [r1]
 	lsls    r3, r3, #19
@@ -33,8 +30,7 @@ BEGIN_ASM_FUNC_NO_SECTION ARDS_SendNtrCommandF2
 	orrs    r3, r2
 	strh    r3, [r1]
 	ldr     r2, =#0xA07F6000
-	@ REG_MCCNT0 - REG_MCCNT1 = -4, so we add 4 to get the right address
-	@ ldr     r3, =REG_MCCNT1
+	@ REG_MCCNT0 + 4 = REG_MCCNT1
 	str     r2, [r1, #4]
 1:
 	ldr     r2, [r1, #4]
@@ -46,37 +42,18 @@ BEGIN_ASM_FUNC_NO_SECTION ARDS_SendNtrCommandF2
 BEGIN_ASM_FUNC_NO_SECTION ARDS_EnableSpi
 	push    {r0-r3,lr}
 	ldr     r1, =REG_MCCNT0
-	ldr     r3, =#0x1FBF
+	@ Use 0x1FBF here
+	ldr     r3, =#0xA0401FBF
 	ldrh    r2, [r1]
 	ands    r2, r3
-	@ shifted left by 9 gives us 0x8000
-	ldr     r3, =#0xFFFFA040
+	@ Use 0xA040 here
+	lsrs    r3, #16
 	orrs    r3, r2
 	strh    r3, [r1]
 	pop     {r0-r3,pc}
 
-@ NOTE!!!: This function needs to set r0 last with mov or something similar so that it updates the zero flags
-@u8 ARDS_ReadSpiByte(void);
-BEGIN_ASM_FUNC_NO_SECTION ARDS_ReadSpiByte
-    movs r0, 0xFF
-@u8 ARDS_ReadWriteSpiByte(u8);
-BEGIN_ASM_FUNC_NO_SECTION ARDS_ReadWriteSpiByte
-	push    {r1-r3, lr}
-	movs    r2, #0x80
-	ldr     r3, =REG_MCD0
-	strh    r0, [r3]
-	ldr     r0, =REG_MCCNT0
-1:
-	ldrh    r1, [r0]
-	tst     r1, r2
-	bne     1b
-	@uppper half always 0
-	ldrh    r0, [r3]
-	cmp     r0, #0
-	pop     {r1-r3, pc}
-
 @void ARDS_CycleSpi();
-BEGIN_ASM_FUNC ARDS_CycleSpi
+BEGIN_ASM_FUNC_NO_SECTION ARDS_CycleSpi
 	push    {r0-r3, lr}
 	movs    r0, ARDS_CMD_F2_SPI_DISABLE
 	bl      ARDS_SendNtrCommandF2
@@ -87,10 +64,32 @@ BEGIN_ASM_FUNC ARDS_CycleSpi
 	bl      ARDS_EnableSpi
 	pop     {r0-r3, pc}
 
+@ NOTE!!!: This function needs to set r0 last with mov or something similar so that it updates the zero flags
+@u8 ARDS_ReadSpiByte(void);
+BEGIN_ASM_FUNC ARDS_ReadSpiByte
+    movs r0, 0xFF
+@u8 ARDS_ReadWriteSpiByte(u8);
+BEGIN_ASM_FUNC_NO_SECTION ARDS_ReadWriteSpiByte
+	push    {r1-r3, lr}
+	movs    r2, #0x80
+	ldr     r3, =REG_MCCNT0
+	strh    r0, [r3, #2]
+1:
+	ldrh    r1, [r3]
+	tst     r1, r2
+	bne     1b
+	@uppper half always 0
+	ldrh    r0, [r3, #2]
+	cmp     r0, #0
+	pop     {r1-r3, pc}
+
 @u8 ARDS_ReadSpiByteTimeout(void);
 BEGIN_ASM_FUNC_NO_SECTION ARDS_ReadSpiByteTimeout
 	push    {r1-r4, lr}
-	ldr     r4, =ARDS_SD_CMD_TIMEOUT_LEN
+	@ use a timeout of 0x1000 instead of 0xFFF, easier to setup
+	@ ldr     r4, =ARDS_SD_CMD_TIMEOUT_LEN
+	movs    r4, #1
+	lsls    r4, #12
 1:
 	bl      ARDS_ReadSpiByte
 	cmp     r0, #0xFF
@@ -106,15 +105,13 @@ BEGIN_ASM_FUNC ARDS_SpiSendSDIOCommandR0
 	movs r2, 0
 @u8 ARDS_SpiSendSDIOCommand(u32 arg, u8 cmdId, int extraBytes);
 BEGIN_ASM_FUNC_NO_SECTION ARDS_SpiSendSDIOCommand
-	push    {r0-r7, lr}
-	@ we store r2-1 so that later we can use the loop counter starting from -1
-	subs    r6, r2, #1
+	push    {r0-r6, lr}
 	@ we use the cmd and arg directly from the stack
 	@ r0 is on top, r1 is right below, we read the command id as the last byte pushed of r1,
 	@ so at sp -1, the command arguments are at sp+0,sp+1,sp+2,sp+3, the 6th byte is garbage data read
 	@ from sp+4, we don't need it to be something meaningful
 	mov     r4, sp
-	@ TODO: this can be optimized by making better use of r5 ad both loop counter here and control variable below
+	@ TODO: this could maybe be optimized by setting 4 in r5, and having the last extra byte be sent by the timeout function itself
 	subs r4, #1
 	bl      ARDS_CycleSpi
 	movs    r5, #5
@@ -126,14 +123,13 @@ BEGIN_ASM_FUNC_NO_SECTION ARDS_SpiSendSDIOCommand
 	bl      ARDS_ReadSpiByteTimeout
 	@ r5 is -1 from the iteration above
 	@ movs    r5, #0
-	movs    r7, r0
+	movs    r6, r0
 1:
-	cmp     r4, r6
-	blt     2f
-	movs    r0, r7
+	subs    r2, #1
+	bcc     2f
+	movs    r0, r6
 	pop     {r1}
-	pop     {r1-r7, pc}
+	pop     {r1-r6, pc}
 2:
 	bl      ARDS_ReadSpiByte
-	adds    r5, r5, #1
 	b       1b

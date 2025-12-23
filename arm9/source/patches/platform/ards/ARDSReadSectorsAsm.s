@@ -62,9 +62,9 @@ read_next_byte:
 	bne     1b
 
 read_timeout_expired:
-	movs    r0, r4
-	subs    r3, r0, #1
-	sbcs    r0, r3
+	@ movs    r0, r4
+	@ subs    r3, r0, #1
+	@ sbcs    r0, r3
 
 @ pico loader has no error result
 	@ pop     {r3-r7, pc}

@@ -39,11 +39,11 @@ write_next_sector:
 
 	@ Send start token
 	movs    r0, ARDS_SPI_MULTI_BLOCK_WRITE_TOKEN
-	bl      cardExt_ReadWriteSpiByte2
+	bl      ARDS_ReadWriteSpiByte
 
 write_next_byte:
 	ldrb    r0, [r4, r5]
-	bl      cardExt_ReadWriteSpiByte2
+	bl      ARDS_ReadWriteSpiByte
 
 	adds    r5, #1
 	@ Shifting left by 0x17 will set the Zero flag if the number that was shifted is a multiple
@@ -64,14 +64,14 @@ write_next_byte:
 
 	@ Wait for card to write data
 	bl      WaitSpiByteTimeout
-	bcc     sector_write_timeout_expired
+	beq     sector_write_timeout_expired
 
 	cmp     r6, r5
 	bne     write_next_sector
 
 	@ send stop token
 	movs    r0, ARDS_SPI_END_MULTI_BLOCK_WRITE
-	bl      cardExt_ReadWriteSpiByte2
+	bl      ARDS_ReadWriteSpiByte
 
 	@ send 1 byte clock
 	bl      ARDS_ReadSpiByte
@@ -88,14 +88,14 @@ wait_busy:
 	subs    r3, #1
 	bne     wait_busy
 
-@ pico loader has no error result
+@ pico loader has no error result, but this function gets called from above
 CMD25_not_ok:
 write_command_failed:
 sector_write_timeout_expired:
-	@ movs    r0, #0
-	@ pop     {r1-r7, pc}
+	movs    r0, #0
+	pop     {r1-r7, pc}
 
 wait_no_longer_busy:
-	@ movs    r0, #1
+	movs    r0, #1
 	pop     {r1-r7, pc}
 
