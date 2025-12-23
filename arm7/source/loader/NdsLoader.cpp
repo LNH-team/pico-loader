@@ -865,38 +865,9 @@ void NdsLoader::StartRom(BootMode bootMode)
 
 void NdsLoader::SetupTwlConfig()
 {
-    char romRegion = (_romHeader.gameCode >> 24) & 0xFF;
-    u8 newRegion = 2; // default region set to EUR, 2 = europe
-    if (romRegion != 'A' && romRegion != 'O')
-    {
-        // Determine region by TID
-        if (romRegion == 'J') {
-            newRegion = 0;
-        } else if (romRegion == 'E' || romRegion == 'T') {
-            newRegion = 1;
-        } else if (romRegion == 'P' || romRegion == 'V') {
-            // newRegion = 2;
-        } else if (romRegion == 'U') {
-            newRegion = 3;
-        } else if (romRegion == 'C') {
-            newRegion = 4;
-        } else if (romRegion== 'K') {
-            newRegion = 5;
-        }
-    }
-
-    u8 userLang = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x64];
+    u8 romRegion = getRomRegion((_romHeader.gameCode >> 24) & 0xFF);
     // Set language based on rom region, TODO: allow user to override this via some config or so
-    if (newRegion == 0)
-        userLang = 0;
-    else if (newRegion == 1 && (userLang != 1 || userLang != 2 || userLang != 5))
-        userLang = 1;
-    else if (newRegion == 2 && userLang < 1 && userLang > 5)
-        userLang = 1;
-    else if (newRegion == 4)
-        userLang = 6;
-    else if (newRegion == 5)
-        userLang = 7;
+    u8 userLang = getLanguageByRomRegion(romRegion);
 
     twl_config_t* twlConfig = (twl_config_t*)0x02000400;
     *(twl_config_t**)0x02FFFDFC = twlConfig;
@@ -913,7 +884,7 @@ void NdsLoader::SetupTwlConfig()
     twlConfig->alarmMinute = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x53];
     twlConfig->alarmEnable = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x56];
     twlConfig->systemMenuUsedTitleSlots = 9;
-    twlConfig->systemMenuUsedTitleSlots = 30;
+    twlConfig->systemMenuFreeTitleSlots = 30;
     twlConfig->field24 = 3;
     memcpy(&twlConfig->touchCalibrationX1Adc, &TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x58], 0xC);
     twlConfig->field3C = 0x0201209C;
@@ -940,22 +911,9 @@ void NdsLoader::SetupTwlConfig()
     *(vu16*)0x020005E2 = swi_getCrc16(0xFFFF, (void*)0x020005E4, 0xC);
 
     // Set bitmask for supported languages
-    if (newRegion == 1) {
-        *(vu32*)0x02FFFD68 = 0x26; // USA
-    } else if (newRegion == 2) {
-        *(vu32*)0x02FFFD68 = 0x3E; // EUR
-    } else if (newRegion == 3) {
-        *(vu32*)0x02FFFD68 = 0x02; // AUS
-    } else if (newRegion == 4) {
-        *(vu32*)0x02FFFD68 = 0x40; // CHN
-    } else if (newRegion == 5) {
-        *(vu32*)0x02FFFD68 = 0x80; // KOR
-    } else if (newRegion == 0) {
-        *(vu32*)0x02FFFD68 = 0x01; // JAP
-    }
-
+    *(vu32*)0x02FFFD68 = getSupportedLanguagesByRegion(romRegion);
     *(vu32*)0x02FFFD6C = 0;
-    *(vu8*)0x02FFFD70 = newRegion; // region
+    *(vu8*)0x02FFFD70 = romRegion; // region
 }
 
 void NdsLoader::SetDeviceListEntry(dsi_devicelist_entry_t& deviceListEntry,
@@ -1057,4 +1015,99 @@ bool NdsLoader::TryDecryptSecureArea()
 
     LOG_DEBUG("Decrypted secure area\n");
     return true;
+}
+
+u8 NdsLoader::getRomRegion(char gameRegionCode)
+{
+    if (gameRegionCode != 'A' && gameRegionCode != 'O')
+    {
+        // Determine region by TID
+        if (gameRegionCode == 'J')
+        {
+            return JPN;
+        }
+        else if (gameRegionCode == 'E' || gameRegionCode == 'T')
+        {
+            return USA;
+        }
+        else if (gameRegionCode == 'P' || gameRegionCode == 'V')
+        {
+            return EUR;
+        }
+        else if (gameRegionCode == 'U')
+        {
+            return AUS;
+        }
+        else if (gameRegionCode == 'C')
+        {
+            return CHN;
+        }
+        else if (gameRegionCode== 'K')
+        {
+            return KOR;
+        }
+    }
+
+    return EUR; // Default to EUR
+}
+
+u8 NdsLoader::getLanguageByRomRegion(u8 romRegion)
+{
+    u8 userLang = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x64];
+
+    if (romRegion == JPN)
+    {
+        return JAPANESE;
+    }
+    else if (romRegion == USA && (userLang != ENGLISH || userLang != FRENCH || userLang != SPANISH))
+    {
+        return ENGLISH;
+    }
+    else if (romRegion == EUR && userLang < ENGLISH && userLang > SPANISH)
+    {
+        return ENGLISH;
+    }
+    else if (romRegion == CHN)
+    {
+        return CHINESE;
+    }
+    else if (romRegion == KOR)
+    {
+        return KOREAN;
+    }
+
+    return userLang;
+}
+
+u32 NdsLoader::getSupportedLanguagesByRegion(u8 region)
+{
+    switch (region)
+    {
+        case JPN:
+        {
+            return 0x01;
+        }
+        case USA:
+        {
+            return 0x26;
+        }
+        case EUR:
+        {
+            return 0x3E;
+        }
+        case AUS:
+        {
+            return 0x02;
+        }
+        case CHN:
+        {
+            return 0x40;
+        }
+        case KOR:
+        {
+            return 0x80;
+        }
+    }
+
+    return 0x3E;
 }
