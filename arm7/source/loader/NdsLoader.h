@@ -3,32 +3,10 @@
 #include "ndsHeader.h"
 #include "DsiWareSaveArranger.h"
 #include "BootMode.h"
+#include "ConsoleRegion.h"
+#include "UserLanguage.h"
 
 struct dsi_devicelist_entry_t;
-
-/// @brief Enum for DSi console region.
-typedef enum
-{
-    JPN,
-    USA,
-    EUR,
-    AUS,
-    CHN,
-    KOR
-} ConsoleRegion;
-
-/// @brief Enum for DSi user language.
-typedef enum
-{
-    JAPANESE,
-    ENGLISH,
-    FRENCH,
-    GERMAN,
-    ITALIAN,
-    SPANISH,
-    CHINESE,
-    KOREAN
-} UserLanguage;
 
 /// @brief Class for loading DS(i) roms.
 class NdsLoader
@@ -96,7 +74,7 @@ private:
     void InsertArgv();
     bool TrySetupDsiWareSave();
     bool TryDecryptSecureArea();
-    u8 getRomRegion(char gameRegionCode);
-    u8 getLanguageByRomRegion(u8 romRegion);
-    u32 getSupportedLanguagesByRegion(u8 region);
+    ConsoleRegion GetRomRegion(char gameRegionCode);
+    UserLanguage GetLanguageByRomRegion(ConsoleRegion romRegion);
+    u32 GetSupportedLanguagesByRegion(ConsoleRegion region);
 };
