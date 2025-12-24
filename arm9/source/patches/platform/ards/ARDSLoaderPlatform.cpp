@@ -112,8 +112,8 @@ bool ARDSLoaderPlatform::InitializeSdCard()
     }
     ARDSLoader_SpiSendSDIOCommandR0(ARDS_SDIO_CMD16_SET_BLOCK_LEN, 0x200);
 
-    const u16 nonSdhcOpcode = THUMB_LSLS_IMM(THUMB_R1, THUMB_R0, 9);
-    const u16 sdhcOpcode = THUMB_MOVS_REG(THUMB_R1, THUMB_R0);
+    const u16 nonSdhcOpcode = THUMB_LSLS_IMM(THUMB_R0, THUMB_R0, 9);
+    const u16 sdhcOpcode = THUMB_MOVS_REG(THUMB_R0, THUMB_R0);
     const u16 opcode = isSdhc ? sdhcOpcode : nonSdhcOpcode;
     ARDS_writeSectorSdhcLabel = opcode;
     ARDS_readSectorSdhcLabel = opcode;
