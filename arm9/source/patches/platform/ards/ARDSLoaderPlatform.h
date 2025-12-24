@@ -12,15 +12,15 @@ public:
     const SdReadPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
-		auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
                     return new ARDSReadSpiBytePatchCode(patchHeap);
                 });
-		auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
                     return new ARDSCycleSpiPatchCode(patchHeap, spi);
                 });
-		auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
                     return new ARDSSendSDIOCommandPatchCode(patchHeap, spi, cycle);
                 });
@@ -33,15 +33,15 @@ public:
     const SdWritePatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
-		auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
                     return new ARDSReadSpiBytePatchCode(patchHeap);
                 });
-		auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
                     return new ARDSCycleSpiPatchCode(patchHeap, spi);
                 });
-		auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
                     return new ARDSSendSDIOCommandPatchCode(patchHeap, spi, cycle);
                 });

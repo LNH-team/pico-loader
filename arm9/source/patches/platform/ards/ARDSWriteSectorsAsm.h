@@ -20,12 +20,12 @@ public:
         const ARDSReadSpiBytePatchCode* ardsReadSpiBytePatchCode,
         const ARDSSendSDIOCommandPatchCode* ardsSendSDIOCommandPatchCode)
         : SdWritePatchCode(SECTION_START(ards_write), SECTION_SIZE(ards_write), patchHeap)
-		{
-			ARDS_SDWriteMultipleSector_SpiSendSDIOCommand = (u32)ardsSendSDIOCommandPatchCode->GetSpiSendSDIOCommandFunction();
+        {
+            ARDS_SDWriteMultipleSector_SpiSendSDIOCommand = (u32)ardsSendSDIOCommandPatchCode->GetSpiSendSDIOCommandFunction();
 
-			ARDS_SDWriteMultipleSector_WaitSpiByteTimeout = (u32)ardsReadSpiBytePatchCode->GetWaitSpiByteTimeoutFunction();
-			ARDS_SDWriteMultipleSector_ReadSpiByte = (u32)ardsReadSpiBytePatchCode->GetReadSpiByteFunction();
-		}
+            ARDS_SDWriteMultipleSector_WaitSpiByteTimeout = (u32)ardsReadSpiBytePatchCode->GetWaitSpiByteTimeoutFunction();
+            ARDS_SDWriteMultipleSector_ReadSpiByte = (u32)ardsReadSpiBytePatchCode->GetReadSpiByteFunction();
+        }
 
     const SdWriteFunc GetSdWriteFunction() const override
     {

@@ -55,9 +55,10 @@ class ARDSCycleSpiPatchCode : public PatchCode
 public:
     explicit ARDSCycleSpiPatchCode(PatchHeap& patchHeap,
         const ARDSReadSpiBytePatchCode* ardsReadSpiBytePatchCode)
-        : PatchCode(SECTION_START(ards_ntr_command), SECTION_SIZE(ards_ntr_command), patchHeap) {
-			ARDS_CycleSpi_ReadSpiByte = (u32)ardsReadSpiBytePatchCode->GetReadSpiByteFunction();
-		}
+        : PatchCode(SECTION_START(ards_ntr_command), SECTION_SIZE(ards_ntr_command), patchHeap)
+        {
+            ARDS_CycleSpi_ReadSpiByte = (u32)ardsReadSpiBytePatchCode->GetReadSpiByteFunction();
+        }
 
     const void* GetCycleSpiFunction() const
     {
@@ -70,13 +71,13 @@ class ARDSSendSDIOCommandPatchCode : public PatchCode
 public:
     ARDSSendSDIOCommandPatchCode(PatchHeap& patchHeap,
         const ARDSReadSpiBytePatchCode* ardsReadSpiBytePatchCode,
-		const ARDSCycleSpiPatchCode* ardsReadCycleSpiBytePatchCode)
+        const ARDSCycleSpiPatchCode* ardsReadCycleSpiBytePatchCode)
         : PatchCode(SECTION_START(ards_spi_send), SECTION_SIZE(ards_spi_send), patchHeap)
     {
-		ARDS_SpiSendSDIOCommandR0_CycleSpi = (u32)ardsReadCycleSpiBytePatchCode->GetCycleSpiFunction();
-	
-		ARDS_SpiSendSDIOCommandR0_ReadWriteSpiByte = (u32)ardsReadSpiBytePatchCode->GetReadWriteSpiByteFunction();
-		ARDS_SpiSendSDIOCommandR0_ReadSpiByteTimeout = (u32)ardsReadSpiBytePatchCode->GetReadSpiByteTimeoutFunction();
+        ARDS_SpiSendSDIOCommandR0_CycleSpi = (u32)ardsReadCycleSpiBytePatchCode->GetCycleSpiFunction();
+    
+        ARDS_SpiSendSDIOCommandR0_ReadWriteSpiByte = (u32)ardsReadSpiBytePatchCode->GetReadWriteSpiByteFunction();
+        ARDS_SpiSendSDIOCommandR0_ReadSpiByteTimeout = (u32)ardsReadSpiBytePatchCode->GetReadSpiByteTimeoutFunction();
     }
 
     const void* GetSpiSendSDIOCommandR0Function() const
