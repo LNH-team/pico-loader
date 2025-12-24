@@ -63,8 +63,9 @@ struct nds_header_ntr_t
 
 static_assert(sizeof(nds_header_ntr_t) == 0x170, "Invalid size for nds_header_ntr_t");
 
-#define NDS_HEADER_TWL_ACCESS_CONTROL_SD_ACCESS     (1 << 3)
-#define NDS_HEADER_TWL_ACCESS_CONTROL_NAND_ACCESS   (1 << 4)
+#define NDS_HEADER_TWL_ACCESS_CONTROL_SD_ACCESS      (1 << 3)
+#define NDS_HEADER_TWL_ACCESS_CONTROL_NAND_ACCESS    (1 << 4)
+#define NDS_HEADER_TWL_ACCESS_CONTROL_SHARED2_ACCESS (1 << 6)
 
 struct nds_header_twl_t : public nds_header_ntr_t
 {
@@ -145,6 +146,11 @@ struct nds_header_twl_t : public nds_header_ntr_t
     constexpr bool HasNandAccess() const
     {
         return IsTwlRom() && (accessControl & NDS_HEADER_TWL_ACCESS_CONTROL_NAND_ACCESS) != 0;
+    }
+
+    constexpr bool HasShared2Access() const
+    {
+        return IsTwlRom() && (accessControl & NDS_HEADER_TWL_ACCESS_CONTROL_SHARED2_ACCESS) != 0;
     }
 };
 
