@@ -1,12 +1,3 @@
-/*
-    ARDS - Datel Action Replay DS
-    SD intialization routine
-
-    Copyright (C) 2025 Edoardo Lolletti (edo9300)
-
-    SPDX-License-Identifier: Zlib
-*/
-
 #include "common.h"
 #include <libtwl/card/card.h>
 #include "ARDSLoaderPlatform.h"
