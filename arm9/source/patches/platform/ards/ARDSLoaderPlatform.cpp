@@ -7,31 +7,35 @@
     SPDX-License-Identifier: Zlib
 */
 
-#include <libtwl/card/card.h>
-#include <common/libtwl_ext.h>
+#include "common.h"
 #include "ARDSLoaderPlatform.h"
+#include "../SdioDefinitions.h"
+#include <libtwl/card/card.h>
+#include <libtwl/mem/memExtern.h>
+#include "libtwl_ext.h"
 #include "ards.h"
+#include "thumbInstructions.h"
 
-static void ARDS_SendNtrCommandF2(uint32_t param1, uint8_t param2) {
+static void ARDSLoader_SendNtrCommandF2(uint32_t param1, uint8_t param2) {
     cardExt_SendCommand(ARDS_CMD_F2(param1, param2), ARDS_CTRL_BASE);
 }
 
-static uint8_t ARDS_ReadSpiByte(void) {
+static uint8_t ARDSLoader_ReadSpiByte(void) {
     return cardExt_ReadWriteSpiByte(ARDS_SPI_READ_BYTE);
 }
 
-static void ARDS_CycleSpi() {
-    ARDS_SendNtrCommandF2(ARDS_CMD_F2_SPI_DISABLE);
+static void ARDSLoader_CycleSpi() {
+    ARDSLoader_SendNtrCommandF2(0, ARDS_CMD_F2_SPI_DISABLE);
     cardExt_EnableSpi();
-	ARDS_ReadSpiByte();
-    ARDS_SendNtrCommandF2(ARDS_CMD_F2_SPI_ENABLE);
+	ARDSLoader_ReadSpiByte();
+    ARDSLoader_SendNtrCommandF2(0, ARDS_CMD_F2_SPI_ENABLE);
     cardExt_EnableSpi();
 }
 
 // Sends SDIO command to ARDS.
-static uint8_t ARDS_SpiSendSDIOCommand(uint8_t cmdId, uint32_t arg, uint8_t * buffer, int len)
+static uint8_t ARDSLoader_SpiSendSDIOCommand(uint8_t cmdId, uint32_t arg, uint8_t * buffer, int len)
 {
-	ARDS_CycleSpi();
+	ARDSLoader_CycleSpi();
     uint8_t cmd[6];
 
     // Build a SPI SD command to be sent as-is.
@@ -51,7 +55,7 @@ static uint8_t ARDS_SpiSendSDIOCommand(uint8_t cmdId, uint32_t arg, uint8_t * bu
     const uint8_t * target = buffer == NULL ? NULL : (buffer + len);
     for(int i=0; i < len; i++)
     {
-        uint8_t data = ARDS_ReadSpiByte();
+        uint8_t data = ARDSLoader_ReadSpiByte();
         if(buffer < target)
             *buffer++ = data;
     }
@@ -59,21 +63,21 @@ static uint8_t ARDS_SpiSendSDIOCommand(uint8_t cmdId, uint32_t arg, uint8_t * bu
     return timeout;
 }
 
-static uint8_t ARDS_SpiSendSDIOCommandR0(uint8_t cmd, uint32_t arg)
+static uint8_t ARDSLoader_SpiSendSDIOCommandR0(uint8_t cmd, uint32_t arg)
 {
-    return ARDS_SpiSendSDIOCommand(cmd, arg, NULL, 0);
+    return ARDSLoader_SpiSendSDIOCommand(cmd, arg, NULL, 0);
 }
 
-bool ARDSLoaderPlatform::SuperCardLoaderPlatform::InitializeSdCard()
+bool ARDSLoaderPlatform::InitializeSdCard()
 {
     bool isv2 = false;
 	bool isSdhc = false;
     for (int i = 0; i < 0x100; i++) {
-        ARDS_SendNtrCommandF22(0x7FFFFFFF | ((i & 1) << 31), 0x00);
+        ARDSLoader_SendNtrCommandF2(0x7FFFFFFF | ((i & 1) << 31), 0x00);
     }
 
     // Send CMD0.
-    uint8_t r1 = ARDS_SpiSendSDIOCommandR0(0, 0);
+    uint8_t r1 = ARDSLoader_SpiSendSDIOCommandR0(0, 0);
     if (r1 != 0x01)  // Idle State.
     {
         // CMD 0 failed.
@@ -82,7 +86,7 @@ bool ARDSLoaderPlatform::SuperCardLoaderPlatform::InitializeSdCard()
 
     uint32_t r7_answer;
 
-    r1 = ARDS_SpiSendSDIOCommand(8, 0x1AA, (uint8_t*)&r7_answer, 4);
+    r1 = ARDSLoader_SpiSendSDIOCommand(8, 0x1AA, (uint8_t*)&r7_answer, 4);
 
     uint32_t acmd41_arg = 0;
 
@@ -93,8 +97,8 @@ bool ARDSLoaderPlatform::SuperCardLoaderPlatform::InitializeSdCard()
 
     for (int i = 0; i < ARDS_MAX_STARTUP_TRIES; ++i) {
         // Send ACMD41.
-        ARDS_SpiSendSDIOCommandR0(ARDS_SDIO_CMD55_APP_CMD, 0);
-        r1 = ARDS_SpiSendSDIOCommandR0(ARDS_SDIO_ACMD41_SD_SEND_OP_COND, acmd41_arg);
+        ARDSLoader_SpiSendSDIOCommandR0(ARDS_SDIO_CMD55_APP_CMD, 0);
+        r1 = ARDSLoader_SpiSendSDIOCommandR0(ARDS_SDIO_ACMD41_SD_SEND_OP_COND, acmd41_arg);
         if (r1 == 0) {
             break;
         }
@@ -103,10 +107,10 @@ bool ARDSLoaderPlatform::SuperCardLoaderPlatform::InitializeSdCard()
 
     if (isv2) {
         uint32_t r2_answer;
-        r1 = ARDS_SpiSendSDIOCommand(ARDS_SDIO_CMD58_READ_OCR, 0, (uint8_t*)&r2_answer, 4);
+        r1 = ARDSLoader_SpiSendSDIOCommand(ARDS_SDIO_CMD58_READ_OCR, 0, (uint8_t*)&r2_answer, 4);
         isSdhc = (r2_answer & 0x40) != 0;
     }
-    ARDS_SpiSendSDIOCommandR0(ARDS_SDIO_CMD16_SET_BLOCK_LEN, 0x200);
+    ARDSLoader_SpiSendSDIOCommandR0(ARDS_SDIO_CMD16_SET_BLOCK_LEN, 0x200);
 
     const u16 nonSdhcOpcode = THUMB_LSLS_IMM(THUMB_R1, THUMB_R0, 9);
     const u16 sdhcOpcode = THUMB_MOVS_REG(THUMB_R1, THUMB_R0);

@@ -2,55 +2,90 @@
 #include "sections.h"
 #include "../SdReadDmaPatchCode.h"
 
-DEFINE_SECTION_SYMBOLS(dspico_readsdsectordma);
-DEFINE_SECTION_SYMBOLS(dspico_readsdsectordma_pollSdDataReady);
+DEFINE_SECTION_SYMBOLS(ards_ntr_command);
+DEFINE_SECTION_SYMBOLS(ards_read_spi);
+DEFINE_SECTION_SYMBOLS(ards_spi_send);
 
-extern "C" void dspico_readSdSectorDma(u32 srcSector, u32 previousSrcSector, u32 dmaChannel, void* dst);
-extern "C" void dspico_readSdSectorDma_pollSdDataReady();
-extern "C" void dspico_finishReadSdSectorDma(void);
+extern "C" void ARDS_CycleSpi();
 
-extern u32 dspico_readSdSectorDma_miiCardDmaCopy32Ptr;
-extern u32 dspico_readSdSectorDma_pollSdDataReadyPtr;
+extern "C" u8 ARDS_ReadSpiByte();
+extern "C" u8 ARDS_ReadWriteSpiByte(u8 value);
+extern "C" u8 ARDS_ReadSpiByteTimeout();
+extern "C" bool ARDS_WaitSpiByteTimeout();
 
-class DSPicoReadSdSectorDmaPollSdDataReadyPatchCode : public PatchCode
+extern "C" u8 ARDS_SpiSendSDIOCommandR0(u32 arg, u8 cmd);
+extern "C" u8 ARDS_SpiSendSDIOCommand(u32 arg, u8 cmd, int extraBytes);
+
+extern u32 ARDS_CycleSpi_ReadSpiByte;
+
+extern u32 ARDS_SpiSendSDIOCommandR0_CycleSpi;
+
+extern u32 ARDS_SpiSendSDIOCommandR0_ReadWriteSpiByte;
+extern u32 ARDS_SpiSendSDIOCommandR0_ReadSpiByteTimeout;
+
+class ARDSReadSpiBytePatchCode : public PatchCode
 {
 public:
-    explicit DSPicoReadSdSectorDmaPollSdDataReadyPatchCode(PatchHeap& patchHeap)
-        : PatchCode(SECTION_START(dspico_readsdsectordma_pollSdDataReady), SECTION_SIZE(dspico_readsdsectordma_pollSdDataReady), patchHeap) { }
+    explicit ARDSReadSpiBytePatchCode(PatchHeap& patchHeap)
+        : PatchCode(SECTION_START(ards_read_spi), SECTION_SIZE(ards_read_spi), patchHeap) { }
 
-    const void* GetPollSdDataReadyFunction() const
+    const void* GetReadSpiByteFunction() const
     {
-        return GetAddressAtTarget((void*)dspico_readSdSectorDma_pollSdDataReady);
+        return GetAddressAtTarget((void*)ARDS_ReadSpiByte);
     }
 
-    const SdReadDmaPatchCode::SdReadDmaFinishFunc GetSdReadDmaFinishFunction() const
+    const void* GetReadWriteSpiByteFunction() const
     {
-        return (const SdReadDmaPatchCode::SdReadDmaFinishFunc)GetAddressAtTarget((void*)dspico_finishReadSdSectorDma);
+        return GetAddressAtTarget((void*)ARDS_ReadWriteSpiByte);
+    }
+
+    const void* GetWaitSpiByteTimeoutFunction() const
+    {
+        return GetAddressAtTarget((void*)ARDS_WaitSpiByteTimeout);
+    }
+
+    const void* GetReadSpiByteTimeoutFunction() const
+    {
+        return GetAddressAtTarget((void*)ARDS_ReadSpiByteTimeout);
     }
 };
 
-class DSPicoReadSdSectorDmaPatchCode : public SdReadDmaPatchCode
+class ARDSCycleSpiPatchCode : public PatchCode
 {
 public:
-    DSPicoReadSdSectorDmaPatchCode(PatchHeap& patchHeap,
-        const DSPicoReadSdSectorDmaPollSdDataReadyPatchCode* pollSdDataReadyPatchCode, const void* miiCardDmaCopy32Ptr)
-        : SdReadDmaPatchCode(SECTION_START(dspico_readsdsectordma), SECTION_SIZE(dspico_readsdsectordma), patchHeap)
-        , _sdReadDmaFinishFunc(pollSdDataReadyPatchCode->GetSdReadDmaFinishFunction())
+    explicit ARDSCycleSpiPatchCode(PatchHeap& patchHeap,
+        const ARDSReadSpiBytePatchCode* ardsReadSpiBytePatchCode)
+        : PatchCode(SECTION_START(ards_ntr_command), SECTION_SIZE(ards_ntr_command), patchHeap) {
+			ARDS_CycleSpi_ReadSpiByte = (u32)ardsReadSpiBytePatchCode->GetReadSpiByteFunction();
+		}
+
+    const void* GetCycleSpiFunction() const
     {
-        dspico_readSdSectorDma_miiCardDmaCopy32Ptr = (u32)miiCardDmaCopy32Ptr;
-        dspico_readSdSectorDma_pollSdDataReadyPtr = (u32)pollSdDataReadyPatchCode->GetPollSdDataReadyFunction();
+        return GetAddressAtTarget((void*)ARDS_CycleSpi);
+    }
+};
+
+class ARDSSendSDIOCommandPatchCode : public PatchCode
+{
+public:
+    ARDSSendSDIOCommandPatchCode(PatchHeap& patchHeap,
+        const ARDSReadSpiBytePatchCode* ardsReadSpiBytePatchCode,
+		const ARDSCycleSpiPatchCode* ardsReadCycleSpiBytePatchCode)
+        : PatchCode(SECTION_START(ards_spi_send), SECTION_SIZE(ards_spi_send), patchHeap)
+    {
+		ARDS_SpiSendSDIOCommandR0_CycleSpi = (u32)ardsReadCycleSpiBytePatchCode->GetCycleSpiFunction();
+	
+		ARDS_SpiSendSDIOCommandR0_ReadWriteSpiByte = (u32)ardsReadSpiBytePatchCode->GetReadWriteSpiByteFunction();
+		ARDS_SpiSendSDIOCommandR0_ReadSpiByteTimeout = (u32)ardsReadSpiBytePatchCode->GetReadSpiByteTimeoutFunction();
     }
 
-    const SdReadDmaFunc GetSdReadDmaFunction() const override
+    const void* GetSpiSendSDIOCommandR0Function() const
     {
-        return (const SdReadDmaFunc)GetAddressAtTarget((void*)dspico_readSdSectorDma);
+        return GetAddressAtTarget((void*)ARDS_SpiSendSDIOCommandR0);
     }
 
-    const SdReadDmaFinishFunc GetSdReadDmaFinishFunction() const override
+    const void* GetSpiSendSDIOCommandFunction() const
     {
-        return _sdReadDmaFinishFunc;
+        return GetAddressAtTarget((void*)ARDS_SpiSendSDIOCommand);
     }
-
-private:
-    const SdReadDmaFinishFunc _sdReadDmaFinishFunc;
 };

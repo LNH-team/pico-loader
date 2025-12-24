@@ -1,56 +1,33 @@
 #pragma once
 #include "sections.h"
-#include "../SdReadDmaPatchCode.h"
+#include "../SdReadPatchCode.h"
+DEFINE_SECTION_SYMBOLS(ards_read);
 
-DEFINE_SECTION_SYMBOLS(dspico_readsdsectordma);
-DEFINE_SECTION_SYMBOLS(dspico_readsdsectordma_pollSdDataReady);
+extern u16 ARDS_readSectorSdhcLabel;
 
-extern "C" void dspico_readSdSectorDma(u32 srcSector, u32 previousSrcSector, u32 dmaChannel, void* dst);
-extern "C" void dspico_readSdSectorDma_pollSdDataReady();
-extern "C" void dspico_finishReadSdSectorDma(void);
+extern u32 ARDS_SDReadMultipleSector_SpiSendSDIOCommandR0;
 
-extern u32 dspico_readSdSectorDma_miiCardDmaCopy32Ptr;
-extern u32 dspico_readSdSectorDma_pollSdDataReadyPtr;
+extern u32 ARDS_SDReadMultipleSector_ReadSpiByteTimeout;
+extern u32 ARDS_SDReadMultipleSector_ReadSpiByte;
 
-class DSPicoReadSdSectorDmaPollSdDataReadyPatchCode : public PatchCode
+extern "C" void ARDS_SDReadMultipleSector(u32 srcSector, void* dst, u32 sectorCount);
+
+class ARDSReadSdPatchCode : public SdReadPatchCode
 {
 public:
-    explicit DSPicoReadSdSectorDmaPollSdDataReadyPatchCode(PatchHeap& patchHeap)
-        : PatchCode(SECTION_START(dspico_readsdsectordma_pollSdDataReady), SECTION_SIZE(dspico_readsdsectordma_pollSdDataReady), patchHeap) { }
+    explicit ARDSReadSdPatchCode(PatchHeap& patchHeap,
+        const ARDSReadSpiBytePatchCode* ardsReadSpiBytePatchCode,
+        const ARDSSendSDIOCommandPatchCode* ardsSendSDIOCommandPatchCode)
+        : SdReadPatchCode(SECTION_START(ards_read), SECTION_SIZE(ards_read), patchHeap)
+		{
+			ARDS_SDReadMultipleSector_SpiSendSDIOCommandR0 = (u32)ardsSendSDIOCommandPatchCode->GetSpiSendSDIOCommandR0Function();
 
-    const void* GetPollSdDataReadyFunction() const
+			ARDS_SDReadMultipleSector_ReadSpiByteTimeout = (u32)ardsReadSpiBytePatchCode->GetReadSpiByteTimeoutFunction();
+			ARDS_SDReadMultipleSector_ReadSpiByte = (u32)ardsReadSpiBytePatchCode->GetReadSpiByteFunction();
+		}
+
+    const SdReadFunc GetSdReadFunction() const override
     {
-        return GetAddressAtTarget((void*)dspico_readSdSectorDma_pollSdDataReady);
+        return (const SdReadFunc)GetAddressAtTarget((void*)ARDS_SDReadMultipleSector);
     }
-
-    const SdReadDmaPatchCode::SdReadDmaFinishFunc GetSdReadDmaFinishFunction() const
-    {
-        return (const SdReadDmaPatchCode::SdReadDmaFinishFunc)GetAddressAtTarget((void*)dspico_finishReadSdSectorDma);
-    }
-};
-
-class DSPicoReadSdSectorDmaPatchCode : public SdReadDmaPatchCode
-{
-public:
-    DSPicoReadSdSectorDmaPatchCode(PatchHeap& patchHeap,
-        const DSPicoReadSdSectorDmaPollSdDataReadyPatchCode* pollSdDataReadyPatchCode, const void* miiCardDmaCopy32Ptr)
-        : SdReadDmaPatchCode(SECTION_START(dspico_readsdsectordma), SECTION_SIZE(dspico_readsdsectordma), patchHeap)
-        , _sdReadDmaFinishFunc(pollSdDataReadyPatchCode->GetSdReadDmaFinishFunction())
-    {
-        dspico_readSdSectorDma_miiCardDmaCopy32Ptr = (u32)miiCardDmaCopy32Ptr;
-        dspico_readSdSectorDma_pollSdDataReadyPtr = (u32)pollSdDataReadyPatchCode->GetPollSdDataReadyFunction();
-    }
-
-    const SdReadDmaFunc GetSdReadDmaFunction() const override
-    {
-        return (const SdReadDmaFunc)GetAddressAtTarget((void*)dspico_readSdSectorDma);
-    }
-
-    const SdReadDmaFinishFunc GetSdReadDmaFinishFunction() const override
-    {
-        return _sdReadDmaFinishFunc;
-    }
-
-private:
-    const SdReadDmaFinishFunc _sdReadDmaFinishFunc;
 };

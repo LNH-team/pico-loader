@@ -12,34 +12,42 @@ public:
     const SdReadPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
+		auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new ARDSReadSpiBytePatchCode(patchHeap);
+                });
+		auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new ARDSCycleSpiPatchCode(patchHeap, spi);
+                });
+		auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new ARDSSendSDIOCommandPatchCode(patchHeap, spi, cycle);
+                });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new DSPicoReadSdSectorsPatchCode(patchHeap,
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new DSPicoReadSdSectorsDirectPatchCode(patchHeap);
-                }));
+            return new ARDSReadSdPatchCode(patchHeap, spi, sendSdio);
         });
-    }
-
-    const SdReadDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
-        PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
-    {
-        auto pollSdDataReadyPatchCode = patchCodeCollection.GetOrAddSharedPatchCode([&]
-        {
-            return new DSPicoReadSdSectorDmaPollSdDataReadyPatchCode(patchHeap);
-        });
-
-        return patchCodeCollection.AddUniquePatchCode<DSPicoReadSdSectorDmaPatchCode>(
-            patchHeap, pollSdDataReadyPatchCode, miiCardDmaCopy32Ptr);
     }
 
     const SdWritePatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
+		auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new ARDSReadSpiBytePatchCode(patchHeap);
+                });
+		auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new ARDSCycleSpiPatchCode(patchHeap, spi);
+                });
+		auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new ARDSSendSDIOCommandPatchCode(patchHeap, spi, cycle);
+                });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new DSPicoWriteSdSectorsPatchCode(patchHeap);
+            return new ARDSWriteSdPatchCode(patchHeap, spi, sendSdio);
         });
     }
 
