@@ -1,5 +1,5 @@
 .macro BEGIN_ASM_FUNC name section=text
-    .section .\section\().\name\(), "ax", %progbits
+    // .section .\section\().\name\(), "ax", %progbits
     .global \name
     .type \name, %function
     .align 1
