@@ -1,12 +1,12 @@
 #pragma once
 #include "common.h"
 #include "../LoaderPlatform.h"
-#include "ARDSSpiCommandsAsm.h"
-#include "ARDSReadSectorsAsm.h"
-#include "ARDSWriteSectorsAsm.h"
+#include "DATELSpiCommandsAsm.h"
+#include "DATELReadSectorsAsm.h"
+#include "DATELWriteSectorsAsm.h"
 
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
-class ARDSLoaderPlatform : public LoaderPlatform
+class DATELLoaderPlatform : public LoaderPlatform
 {
 public:
     const SdReadPatchCode* CreateSdReadPatchCode(
@@ -14,19 +14,19 @@ public:
     {
         auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new ARDSReadSpiBytePatchCode(patchHeap);
+                    return new DATELReadSpiBytePatchCode(patchHeap);
                 });
         auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new ARDSCycleSpiPatchCode(patchHeap, spi);
+                    return new DATELCycleSpiPatchCode(patchHeap, spi);
                 });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new ARDSSendSDIOCommandPatchCode(patchHeap, spi, cycle);
+                    return new DATELSendSDIOCommandPatchCode(patchHeap, spi, cycle);
                 });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new ARDSReadSdPatchCode(patchHeap, spi, sendSdio);
+            return new DATELReadSdPatchCode(patchHeap, spi, sendSdio);
         });
     }
 
@@ -35,19 +35,19 @@ public:
     {
         auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new ARDSReadSpiBytePatchCode(patchHeap);
+                    return new DATELReadSpiBytePatchCode(patchHeap);
                 });
         auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new ARDSCycleSpiPatchCode(patchHeap, spi);
+                    return new DATELCycleSpiPatchCode(patchHeap, spi);
                 });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new ARDSSendSDIOCommandPatchCode(patchHeap, spi, cycle);
+                    return new DATELSendSDIOCommandPatchCode(patchHeap, spi, cycle);
                 });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new ARDSWriteSdPatchCode(patchHeap, spi, sendSdio);
+            return new DATELWriteSdPatchCode(patchHeap, spi, sendSdio);
         });
     }
 

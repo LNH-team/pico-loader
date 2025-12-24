@@ -13,7 +13,7 @@
 #include "patches/platform/r4idsn/R4iDSNLoaderPlatform.h"
 #include "patches/platform/supercard/SuperCardLoaderPlatform.h"
 #include "patches/platform/ezp/EZPLoaderPlatform.h"
-#include "patches/platform/ards/ARDSLoaderPlatform.h"
+#include "patches/platform/datel/DATELLoaderPlatform.h"
 #include "LoaderPlatformFactory.h"
 
 LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
@@ -44,8 +44,8 @@ LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
     return new SuperCardLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_EZP)
     return new EZPLoaderPlatform();
-#elif defined(PICO_LOADER_TARGET_ARDS)
-    return new ARDSLoaderPlatform();
+#elif defined(PICO_LOADER_TARGET_DATEL)
+    return new DATELLoaderPlatform();
 #else
 #error "No loader platform defined"
     return nullptr;

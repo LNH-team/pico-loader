@@ -25,7 +25,7 @@ Note that there can be some game compatibility differences between different pla
 | ACE3DS        | Ace3DS+, Gateway 3DS (blue), r4isdhc.com.cn carts, r4isdhc.hk carts 2020+, various derivatives | ✅ |
 | AK2           | Acekard 2, 2.1, 2i, r4ids.cn, various derivatives                                              | ❌ |
 | AKRPG         | Acekard RPG SD card                                                                            | ❌ |
-| ARDS          | DATEL devices consisting of GAMES n' MUSIC and Action Replay DS(i) Media Edition               | ❌ |
+| DATEL         | DATEL devices consisting of GAMES n' MUSIC and Action Replay DS(i) Media Edition               | ❌ |
 | DSPICO        | DSpico                                                                                         | ✅ |
 | DSTT          | DSTT, SuperCard DSONE SDHC, r4isdhc.com carts 2014+, r4i-sdhc.com carts, various derivatives   | ❌ |
 | EZP           | EZ-Flash Parallel                                                                              | ❌ |
