@@ -78,7 +78,7 @@ struct nds_header_twl_t : public nds_header_ntr_t
     u32 regionFlags;
     u32 accessControl;
     u32 arm7ScfgExt7;
-    u8 gap1B8[3];
+    u8 gap1BC[3];
     u8 twlFlags2;
     u32 arm9iRomOffset;
     u8 gap1C4[4];
