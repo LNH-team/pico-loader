@@ -28,6 +28,7 @@ public:
 
     const SdReadFunc GetSdReadFunction() const override
     {
+    LOG_DEBUG("called GetSdReadFunction\n");
         return (const SdReadFunc)GetAddressAtTarget((void*)ARDS_SDReadMultipleSector);
     }
 };

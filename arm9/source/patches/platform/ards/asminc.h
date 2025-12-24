@@ -1,18 +1,9 @@
 .macro BEGIN_ASM_FUNC name section=text
-    // .section .\section\().\name\(), "ax", %progbits
     .global \name
     .type \name, %function
     .align 1
 \name:
 .endm
-
-.macro BEGIN_ASM_FUNC_NO_SECTION name
-    .global \name
-    .type \name, %function
-    .align 1
-\name:
-.endm
-
 
 .equ REG_MCCNT0, 0x040001A0
 .equ REG_MCD0,   0x040001A2

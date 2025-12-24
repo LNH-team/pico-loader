@@ -40,7 +40,7 @@ BEGIN_ASM_FUNC ARDS_SendNtrCommandF2
 	pop     {r0-r3,pc}
 
 @void ARDS_EnableSpi();
-BEGIN_ASM_FUNC_NO_SECTION ARDS_EnableSpi
+BEGIN_ASM_FUNC ARDS_EnableSpi
 	push    {r0-r3,lr}
 	ldr     r1, =REG_MCCNT0
 	@ Use 0x1FBF here
@@ -54,7 +54,7 @@ BEGIN_ASM_FUNC_NO_SECTION ARDS_EnableSpi
 	pop     {r0-r3,pc}
 
 @void ARDS_CycleSpi();
-BEGIN_ASM_FUNC_NO_SECTION ARDS_CycleSpi
+BEGIN_ASM_FUNC ARDS_CycleSpi
 	push    {r0-r3, lr}
 	movs    r0, ARDS_CMD_F2_SPI_DISABLE
 	bl      ARDS_SendNtrCommandF2
@@ -79,7 +79,7 @@ ARDS_CycleSpi_ReadSpiByte:
 BEGIN_ASM_FUNC ARDS_ReadSpiByte
     movs r0, 0xFF
 @u8 ARDS_ReadWriteSpiByte(u8);
-BEGIN_ASM_FUNC_NO_SECTION ARDS_ReadWriteSpiByte
+BEGIN_ASM_FUNC ARDS_ReadWriteSpiByte
 	push    {r1-r3, lr}
 	movs    r2, #0x80
 	ldr     r3, =REG_MCCNT0
@@ -94,7 +94,7 @@ BEGIN_ASM_FUNC_NO_SECTION ARDS_ReadWriteSpiByte
 	pop     {r1-r3, pc}
 
 @u8 ARDS_ReadSpiByteTimeout(void);
-BEGIN_ASM_FUNC_NO_SECTION ARDS_ReadSpiByteTimeout
+BEGIN_ASM_FUNC ARDS_ReadSpiByteTimeout
 	push    {r1-r4, lr}
 	@ use a timeout of 0x1000 instead of 0xFFF, easier to setup
 	@ ldr     r4, =ARDS_SD_CMD_TIMEOUT_LEN
@@ -110,7 +110,7 @@ BEGIN_ASM_FUNC_NO_SECTION ARDS_ReadSpiByteTimeout
 	pop     {r1-r4, pc}
 
 @bool ARDS_WaitSpiByteTimeout();
-BEGIN_ASM_FUNC_NO_SECTION ARDS_WaitSpiByteTimeout
+BEGIN_ASM_FUNC ARDS_WaitSpiByteTimeout
 	push    {r1-r4, lr}
 	@ use a timeout of 0x1000 instead of 0xFFFF, easier to setup
 	@ ldr     r2, =ARDS_SD_WRITE_TIMEOUT_LEN
@@ -135,7 +135,7 @@ BEGIN_ASM_FUNC_NO_SECTION ARDS_WaitSpiByteTimeout
 BEGIN_ASM_FUNC ARDS_SpiSendSDIOCommandR0
 	movs r2, 0
 @u8 ARDS_SpiSendSDIOCommand(u32 arg, u8 cmdId, int extraBytes);
-BEGIN_ASM_FUNC_NO_SECTION ARDS_SpiSendSDIOCommand
+BEGIN_ASM_FUNC ARDS_SpiSendSDIOCommand
 	push    {r0-r7, lr}
 	
 	adr r4, ARDS_SpiSendSDIOCommandR0_ReadWriteSpiByte

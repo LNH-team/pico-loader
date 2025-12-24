@@ -8,34 +8,51 @@
 */
 
 #include "common.h"
+#include <libtwl/card/card.h>
 #include "ARDSLoaderPlatform.h"
 #include "../SdioDefinitions.h"
-#include <libtwl/card/card.h>
-#include <libtwl/mem/memExtern.h>
-#include "libtwl_ext.h"
-#include "ards.h"
 #include "thumbInstructions.h"
 
-static void ARDSLoader_SendNtrCommandF2(uint32_t param1, uint8_t param2) {
-    cardExt_SendCommand(ARDS_CMD_F2(param1, param2), ARDS_CTRL_BASE);
+static constexpr size_t MAX_STARTUP_TRIES = 5000;
+static constexpr uint32_t ARDS_CTRL_BASE = (MCCNT1_RESET_OFF | MCCNT1_CMD_SCRAMBLE | MCCNT1_READ_DATA_DESCRAMBLE | MCCNT1_CLOCK_SCRAMBLER | MCCNT1_LATENCY2(0x3F));
+
+static constexpr uint8_t ARDS_CMD_F2_SPI_ENABLE = 0xCC;
+static constexpr uint8_t ARDS_CMD_F2_SPI_DISABLE = 0xC8;
+
+static inline u64 ARDS_CMD_F2(u32 param1, u8 param2) {
+    return (0xF200000000000000ull | ((u64)param1 << 24) | ((u64)param2 << 16));
 }
 
-static uint8_t ARDSLoader_ReadSpiByte(void) {
-    return cardExt_ReadWriteSpiByte(ARDS_SPI_READ_BYTE);
+static inline void EnableSpi()
+{
+    REG_MCCNT0 = (REG_MCCNT0 & ~(MCCNT0_MODE_MASK | MCCNT0_ROM_XFER_IRQ)) | MCCNT0_MODE_SPI | MCCNT0_SPI_HOLD_CS | MCCNT0_ENABLE;
 }
 
-static void ARDSLoader_CycleSpi() {
-    ARDSLoader_SendNtrCommandF2(0, ARDS_CMD_F2_SPI_DISABLE);
-    cardExt_EnableSpi();
-	ARDSLoader_ReadSpiByte();
-    ARDSLoader_SendNtrCommandF2(0, ARDS_CMD_F2_SPI_ENABLE);
-    cardExt_EnableSpi();
+static uint8_t ReadWriteSpiByte(uint8_t data)
+{
+    REG_MCD0 = data;
+    while(REG_MCCNT0 & MCCNT0_SPI_BUSY);
+    return REG_MCD0;
+}
+
+static void SendNtrCommandF2(uint32_t param1, uint8_t param2) {
+    card_romSetCmd(ARDS_CMD_F2(param1, param2));
+    card_romStartXfer(ARDS_CTRL_BASE | MCCNT1_LEN_0, false);
+    card_romWaitBusy();
+}
+
+static void CycleSpi() {
+    SendNtrCommandF2(0, ARDS_CMD_F2_SPI_DISABLE);
+    EnableSpi();
+    ReadWriteSpiByte(0xFF);
+    SendNtrCommandF2(0, ARDS_CMD_F2_SPI_ENABLE);
+    EnableSpi();
 }
 
 // Sends SDIO command to ARDS.
-static uint8_t ARDSLoader_SpiSendSDIOCommand(uint8_t cmdId, uint32_t arg, uint8_t * buffer, int len)
+static uint8_t SpiSendSDIOCommand(uint8_t cmdId, uint32_t arg, uint8_t * buffer, int messageLen)
 {
-	ARDSLoader_CycleSpi();
+    CycleSpi();
     uint8_t cmd[6];
 
     // Build a SPI SD command to be sent as-is.
@@ -46,71 +63,75 @@ static uint8_t ARDSLoader_SpiSendSDIOCommand(uint8_t cmdId, uint32_t arg, uint8_
     cmd[4] = arg >> 0;
     // CRC in SPI mode is ignored for every command but CMD0 (hardcoded to 0x95)
     // and CMD8, hardcoded to 0x86 with the default 0x1AA argument.
-    cmd[5] = (len > 0) ? 0x86 : 0x95;
+    cmd[5] = (messageLen > 1) ? 0x86 : 0x95;
 
-    for (int i = 0; i < sizeof(cmd); i++) cardExt_ReadWriteSpiByte(cmd[i]);
+    for (auto byte : cmd) ReadWriteSpiByte(byte);
 
     uint8_t timeout = ARDS_ReadSpiByteTimeout();
 
-    const uint8_t * target = buffer == NULL ? NULL : (buffer + len);
-    for(int i=0; i < len; i++)
+    for(int i = 0; i < (messageLen - 1); i++)
     {
-        uint8_t data = ARDSLoader_ReadSpiByte();
-        if(buffer < target)
-            *buffer++ = data;
+        buffer[i] = ReadWriteSpiByte(0xFF);
     }
 
     return timeout;
 }
 
-static uint8_t ARDSLoader_SpiSendSDIOCommandR0(uint8_t cmd, uint32_t arg)
+static uint8_t SpiSendSDIOCommandR0(uint8_t cmd, uint32_t arg)
 {
-    return ARDSLoader_SpiSendSDIOCommand(cmd, arg, NULL, 0);
+    return SpiSendSDIOCommand(cmd, arg, nullptr, 1);
 }
 
 bool ARDSLoaderPlatform::InitializeSdCard()
 {
-    bool isv2 = false;
-	bool isSdhc = false;
-    for (int i = 0; i < 0x100; i++) {
-        ARDSLoader_SendNtrCommandF2(0x7FFFFFFF | ((i & 1) << 31), 0x00);
+    for (int i = 0; i < 0x100; i++)
+    {
+        SendNtrCommandF2(0x7FFFFFFF | ((i & 1) << 31), 0x00);
     }
 
     // Send CMD0.
-    uint8_t r1 = ARDSLoader_SpiSendSDIOCommandR0(0, 0);
-    if (r1 != 0x01)  // Idle State.
+    if (SpiSendSDIOCommandR0(SD_CMD0_GO_IDLE_STATE, 0) != 0x01)
     {
-        // CMD 0 failed.
         return false;
     }
 
-    uint32_t r7_answer;
-
-    r1 = ARDSLoader_SpiSendSDIOCommand(8, 0x1AA, (uint8_t*)&r7_answer, 4);
+    uint32_t cmd8_answer{};
 
     uint32_t acmd41_arg = 0;
+    bool isv2 = false;
 
-    if (r1 == 0x1 && r7_answer == 0xAA010000) {
+    if (SpiSendSDIOCommand(SD_CMD8_SEND_IF_COND, SD_IF_COND_PATTERN, (uint8_t*)&cmd8_answer, 5) == 0x1
+        && cmd8_answer == 0xAA010000)
+    {
         isv2 = true;
         acmd41_arg |= (1 << 30);  // Set HCS bit,Supports SDHC
     }
 
-    for (int i = 0; i < ARDS_MAX_STARTUP_TRIES; ++i) {
-        // Send ACMD41.
-        ARDSLoader_SpiSendSDIOCommandR0(ARDS_SDIO_CMD55_APP_CMD, 0);
-        r1 = ARDSLoader_SpiSendSDIOCommandR0(ARDS_SDIO_ACMD41_SD_SEND_OP_COND, acmd41_arg);
-        if (r1 == 0) {
-            break;
+    {
+        size_t i;
+        for (i = 0; i < MAX_STARTUP_TRIES; ++i)
+        {
+            // Send ACMD41.
+            SpiSendSDIOCommandR0(SD_CMD55_APP_CMD, 0);
+            if (SpiSendSDIOCommandR0(SD_ACMD41_SD_SEND_OP_COND, acmd41_arg) == 0)
+            {
+                break;
+            }
+        }
+        if (i >= MAX_STARTUP_TRIES)
+        {
+            return false;
         }
     }
-    if (r1 != 0) return false;
 
-    if (isv2) {
-        uint32_t r2_answer;
-        r1 = ARDSLoader_SpiSendSDIOCommand(ARDS_SDIO_CMD58_READ_OCR, 0, (uint8_t*)&r2_answer, 4);
-        isSdhc = (r2_answer & 0x40) != 0;
+    bool isSdhc = false;
+    if (isv2)
+    {
+        uint32_t cmd58_answer{};
+        SpiSendSDIOCommand(SD_SPI_CMD58_READ_OCR, 0, (uint8_t*)&cmd58_answer, 5);
+        isSdhc = (cmd58_answer & 0x40) != 0;
     }
-    ARDSLoader_SpiSendSDIOCommandR0(ARDS_SDIO_CMD16_SET_BLOCK_LEN, 0x200);
+    SpiSendSDIOCommandR0(SD_CMD16_SET_BLOCKLEN, 0x200);
 
     const u16 nonSdhcOpcode = THUMB_LSLS_IMM(THUMB_R0, THUMB_R0, 9);
     const u16 sdhcOpcode = THUMB_MOVS_REG(THUMB_R0, THUMB_R0);

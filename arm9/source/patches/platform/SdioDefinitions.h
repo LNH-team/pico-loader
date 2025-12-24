@@ -12,6 +12,8 @@
 #define SD_CMD16_SET_BLOCKLEN       16
 #define SD_CMD55_APP_CMD            55
 
+#define SD_SPI_CMD58_READ_OCR       58
+
 #define SD_ACMD6_SET_BUS_WIDTH      6
 #define SD_ACMD41_SD_SEND_OP_COND   41
 
