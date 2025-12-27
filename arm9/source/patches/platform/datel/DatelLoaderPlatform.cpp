@@ -5,6 +5,7 @@
 #include "thumbInstructions.h"
 
 static constexpr size_t MAX_STARTUP_TRIES = 5000;
+static constexpr size_t SD_COMMAND_TIMEOUT = 0xFFF;
 static constexpr u32 DATEL_CTRL_BASE = (MCCNT1_RESET_OFF | MCCNT1_CMD_SCRAMBLE | MCCNT1_READ_DATA_DESCRAMBLE | MCCNT1_CLOCK_SCRAMBLER | MCCNT1_LATENCY2(0x3F));
 
 static constexpr u8 DATEL_CMD_F2_SPI_ENABLE = 0xCC;
@@ -17,7 +18,7 @@ static inline u64 DATEL_CMD_F2(u32 param1, u8 param2)
 
 static inline void enableSpi()
 {
-    REG_MCCNT0 = (REG_MCCNT0 & ~(MCCNT0_MODE_MASK | MCCNT0_ROM_XFER_IRQ)) | MCCNT0_MODE_SPI | MCCNT0_SPI_HOLD_CS | MCCNT0_ENABLE;
+    REG_MCCNT0 = MCCNT0_MODE_SPI | MCCNT0_SPI_HOLD_CS | MCCNT0_ENABLE;
 }
 
 static u8 readWriteSpiByte(u8 data)
@@ -25,6 +26,15 @@ static u8 readWriteSpiByte(u8 data)
     REG_MCD0 = data;
     while(REG_MCCNT0 & MCCNT0_SPI_BUSY);
     return REG_MCD0;
+}
+
+static u8 readSpiByteTimeout() {
+    auto timeout = SD_COMMAND_TIMEOUT;
+    u8 res;
+    do {
+        res = readWriteSpiByte(0xFF);
+    } while (res == 0xFF && --timeout > 0);
+    return res;
 }
 
 static void sendNtrCommandF2(u32 param1, u8 param2)
@@ -64,7 +74,7 @@ static u8 spiSendSdioCommand(u8 cmdId, u32 arg, u8 * buffer, int messageLen)
         readWriteSpiByte(byte);
     }
 
-    u8 timeout = DATEL_ReadSpiByteTimeout();
+    u8 timeout = readSpiByteTimeout();
 
     for (int i = 0; i < (messageLen - 1); i++)
     {
@@ -133,8 +143,8 @@ bool DatelLoaderPlatform::InitializeSdCard()
     const u16 nonSdhcOpcode = THUMB_LSLS_IMM(THUMB_R0, THUMB_R0, 9);
     const u16 sdhcOpcode = THUMB_MOVS_REG(THUMB_R0, THUMB_R0);
     const u16 opcode = isSdhc ? sdhcOpcode : nonSdhcOpcode;
-    DATEL_writeSectorSdhcLabel = opcode;
-    DATEL_readSectorSdhcLabel = opcode;
+    datel_writeSectorSdhcLabel = opcode;
+    datel_readSectorSdhcLabel = opcode;
 
     return true;
 }

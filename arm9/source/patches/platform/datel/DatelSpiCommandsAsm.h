@@ -5,16 +5,16 @@
 DEFINE_SECTION_SYMBOLS(datel_read_spi);
 DEFINE_SECTION_SYMBOLS(datel_spi_send);
 
-extern "C" u8 DATEL_ReadSpiByte();
-extern "C" u8 DATEL_ReadWriteSpiByte(u8 value);
-extern "C" u8 DATEL_ReadSpiByteTimeout();
-extern "C" bool DATEL_WaitSpiByteTimeout();
+extern "C" u8 datel_readSpiByte();
+extern "C" u8 datel_readWriteSpiByte(u8 value);
+extern "C" u8 datel_readSpiByteTimeout();
+extern "C" bool datel_waitSpiByteTimeout();
 
-extern "C" u8 DATEL_SpiSendSDIOCommandR0(u32 arg, u8 cmd);
-extern "C" u8 DATEL_SpiSendSDIOCommand(u32 arg, u8 cmd, int extraBytes);
+extern "C" u8 datel_spiSendSDIOCommandR0(u32 arg, u8 cmd);
+extern "C" u8 datel_spiSendSDIOCommand(u32 arg, u8 cmd, int extraBytes);
 
-extern u32 DATEL_SpiSendSDIOCommandR0_ReadWriteSpiByte;
-extern u32 DATEL_SpiSendSDIOCommandR0_ReadSpiByteTimeout;
+extern u32 datel_spiSendSDIOCommandR0_ReadWriteSpiByte;
+extern u32 datel_spiSendSDIOCommandR0_ReadSpiByteTimeout;
 
 class DatelReadSpiBytePatchCode : public PatchCode
 {
@@ -24,22 +24,22 @@ public:
 
     const void* GetReadSpiByteFunction() const
     {
-        return GetAddressAtTarget((void*)DATEL_ReadSpiByte);
+        return GetAddressAtTarget((void*)datel_readSpiByte);
     }
 
     const void* GetReadWriteSpiByteFunction() const
     {
-        return GetAddressAtTarget((void*)DATEL_ReadWriteSpiByte);
+        return GetAddressAtTarget((void*)datel_readWriteSpiByte);
     }
 
     const void* GetWaitSpiByteTimeoutFunction() const
     {
-        return GetAddressAtTarget((void*)DATEL_WaitSpiByteTimeout);
+        return GetAddressAtTarget((void*)datel_waitSpiByteTimeout);
     }
 
     const void* GetReadSpiByteTimeoutFunction() const
     {
-        return GetAddressAtTarget((void*)DATEL_ReadSpiByteTimeout);
+        return GetAddressAtTarget((void*)datel_readSpiByteTimeout);
     }
 };
 
@@ -50,17 +50,17 @@ public:
         const DatelReadSpiBytePatchCode* datelReadSpiBytePatchCode)
         : PatchCode(SECTION_START(datel_spi_send), SECTION_SIZE(datel_spi_send), patchHeap)
     {
-        DATEL_SpiSendSDIOCommandR0_ReadWriteSpiByte = (u32)datelReadSpiBytePatchCode->GetReadWriteSpiByteFunction();
-        DATEL_SpiSendSDIOCommandR0_ReadSpiByteTimeout = (u32)datelReadSpiBytePatchCode->GetReadSpiByteTimeoutFunction();
+        datel_spiSendSDIOCommandR0_ReadWriteSpiByte = (u32)datelReadSpiBytePatchCode->GetReadWriteSpiByteFunction();
+        datel_spiSendSDIOCommandR0_ReadSpiByteTimeout = (u32)datelReadSpiBytePatchCode->GetReadSpiByteTimeoutFunction();
     }
 
     const void* GetSpiSendSDIOCommandR0Function() const
     {
-        return GetAddressAtTarget((void*)DATEL_SpiSendSDIOCommandR0);
+        return GetAddressAtTarget((void*)datel_spiSendSDIOCommandR0);
     }
 
     const void* GetSpiSendSDIOCommandFunction() const
     {
-        return GetAddressAtTarget((void*)DATEL_SpiSendSDIOCommand);
+        return GetAddressAtTarget((void*)datel_spiSendSDIOCommand);
     }
 };

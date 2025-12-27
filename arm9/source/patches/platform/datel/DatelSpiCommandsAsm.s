@@ -5,11 +5,11 @@
 
 .section "datel_read_spi", "ax"
 @ NOTE!!!: This function needs to set r0 last with mov or something similar so that it updates the zero flags
-@u8 DATEL_ReadSpiByte(void);
-BEGIN_ASM_FUNC DATEL_ReadSpiByte
+@u8 datel_readSpiByte(void);
+BEGIN_ASM_FUNC datel_readSpiByte
     movs r0, 0xFF
-@u8 DATEL_ReadWriteSpiByte(u8);
-BEGIN_ASM_FUNC DATEL_ReadWriteSpiByte
+@u8 datel_readWriteSpiByte(u8);
+BEGIN_ASM_FUNC datel_readWriteSpiByte
     push {r1-r3, lr}
     ldr r3, =REG_MCCNT0
     strh r0, [r3, #2]
@@ -22,15 +22,15 @@ BEGIN_ASM_FUNC DATEL_ReadWriteSpiByte
     cmp r0, #0
     pop {r1-r3, pc}
 
-@u8 DATEL_ReadSpiByteTimeout(void);
-BEGIN_ASM_FUNC DATEL_ReadSpiByteTimeout
+@u8 datel_readSpiByteTimeout(void);
+BEGIN_ASM_FUNC datel_readSpiByteTimeout
     push {r1-r4, lr}
     @ use a timeout of 0x1000 instead of 0xFFF, easier to setup
     @ ldr r4, =DATEL_SD_CMD_TIMEOUT_LEN
     movs r4, #1
     lsls r4, #12
 1:
-    bl DATEL_ReadSpiByte
+    bl datel_readSpiByte
     cmp r0, #0xFF
     bne 1f
     subs r4, r4, #1
@@ -38,15 +38,15 @@ BEGIN_ASM_FUNC DATEL_ReadSpiByteTimeout
 1:
     pop {r1-r4, pc}
 
-@bool DATEL_WaitSpiByteTimeout();
-BEGIN_ASM_FUNC DATEL_WaitSpiByteTimeout
+@bool datel_waitSpiByteTimeout();
+BEGIN_ASM_FUNC datel_waitSpiByteTimeout
     push {r1-r4, lr}
     @ use a timeout of 0x1000 instead of 0xFFFF, easier to setup
     @ ldr r2, =DATEL_SD_WRITE_TIMEOUT_LEN
     movs r2, #1
     lsls r2, #16
 1:
-    bl DATEL_ReadSpiByte
+    bl datel_readSpiByte
     bne 1f
     subs r2, #1
     bne 1b
@@ -59,15 +59,15 @@ BEGIN_ASM_FUNC DATEL_WaitSpiByteTimeout
     pop {r1-r4, pc}
 
 .section "datel_spi_send", "ax"
-@void DATEL_CycleSpi();
-BEGIN_ASM_FUNC DATEL_CycleSpi
+@void datel_cycleSpi();
+datel_cycleSpi:
     push {r0-r4, lr}
-    adr r0, DATEL_CycleSpi_data
+    adr r0, datel_cycleSpi_data
     ldm r0!, {r1,r3,r4}
     strh r3, [r1] @ Enable Spi
     movs r0, DATEL_CMD_F2_SPI_ENABLE
     
-    @ DATEL_SendNtrCommandF2
+    @ datel_SendNtrCommandF2
     movs r2, #0xF2
     lsls r0, r0, #8
     str r2, [r1, #8]
@@ -87,16 +87,16 @@ BEGIN_ASM_FUNC DATEL_CycleSpi
     pop {r0-r4, pc}
 
 @ NOTE!!!: This function needs to set r0 last with mov or something similar so that it updates the zero flags
-@u8 DATEL_SpiSendSDIOCommandR0(u32 arg, u8 cmd);
-BEGIN_ASM_FUNC DATEL_SpiSendSDIOCommandR0
+@u8 datel_spiSendSDIOCommandR0(u32 arg, u8 cmd);
+BEGIN_ASM_FUNC datel_spiSendSDIOCommandR0
     movs r2, 0
-@u8 DATEL_SpiSendSDIOCommand(u32 arg, u8 cmdId, int extraBytes);
-BEGIN_ASM_FUNC DATEL_SpiSendSDIOCommand
+@u8 datel_spiSendSDIOCommand(u32 arg, u8 cmdId, int extraBytes);
+BEGIN_ASM_FUNC datel_spiSendSDIOCommand
     push {r0-r7, lr}
 
-    bl DATEL_CycleSpi
+    bl datel_cycleSpi
 
-    adr r4, DATEL_SpiSendSDIOCommandR0_ReadSpiByteTimeout
+    adr r4, datel_spiSendSDIOCommandR0_ReadSpiByteTimeout
     @ r3 contains ReadSpiByteTimeout
     @ r7 contains ReadWriteSpiByte
     ldm r4!, {r3,r7}
@@ -116,13 +116,13 @@ BEGIN_ASM_FUNC DATEL_SpiSendSDIOCommand
 1:
     subs r5, r5, #1
     ldrb r0, [r4, r5]
-    @ branch to DATEL_ReadWriteSpiByte
-    bcs DATEL_SpiSendSDIOCommandR0_Interwork
+    @ branch to datel_readWriteSpiByte
+    bcs datel_spiSendSDIOCommandR0_Interwork
 
-    @ branch to DATEL_ReadSpiByteTimeout
-    bl DATEL_SpiSendSDIOCommandR0_InterworkR3
+    @ branch to datel_readSpiByteTimeout
+    bl datel_spiSendSDIOCommandR0_InterworkR3
 
-    @ load DATEL_ReadSpiByte since it's 1 thumb instruction before DATEL_ReadWriteSpiByte
+    @ load datel_readSpiByte since it's 1 thumb instruction before datel_readWriteSpiByte
     subs r7, r7, #2
 
     @ Save the return value
@@ -132,25 +132,25 @@ BEGIN_ASM_FUNC DATEL_SpiSendSDIOCommand
     bl 1f
 1:
     subs r2, #1
-    @ branch to DATEL_ReadSpiByte
-    bcc DATEL_SpiSendSDIOCommandR0_Interwork
+    @ branch to datel_readSpiByte
+    bcc datel_spiSendSDIOCommandR0_Interwork
     movs r0, r6
     pop {r1}
     pop {r1-r7, pc}
 
-DATEL_SpiSendSDIOCommandR0_Interwork:
+datel_spiSendSDIOCommandR0_Interwork:
     bx r7
-DATEL_SpiSendSDIOCommandR0_InterworkR3:
+datel_spiSendSDIOCommandR0_InterworkR3:
     bx r3
 .balign 4
 .pool
-DATEL_CycleSpi_data:
+datel_cycleSpi_data:
     .word REG_MCCNT0
     .word 0x0000A040 @ MCCNT0_MODE_SPI | MCCNT0_SPI_HOLD_CS | MCCNT0_ENABLE
     .word 0xA07F6000 @ MCCNT1_RESET_OFF | MCCNT1_CMD_SCRAMBLE | MCCNT1_READ_DATA_DESCRAMBLE | MCCNT1_CLOCK_SCRAMBLER | MCCNT1_LATENCY2(0x3F)
-.global DATEL_SpiSendSDIOCommandR0_ReadSpiByteTimeout
-DATEL_SpiSendSDIOCommandR0_ReadSpiByteTimeout:
+.global datel_spiSendSDIOCommandR0_ReadSpiByteTimeout
+datel_spiSendSDIOCommandR0_ReadSpiByteTimeout:
     .word 0
-.global DATEL_SpiSendSDIOCommandR0_ReadWriteSpiByte
-DATEL_SpiSendSDIOCommandR0_ReadWriteSpiByte:
+.global datel_spiSendSDIOCommandR0_ReadWriteSpiByte
+datel_spiSendSDIOCommandR0_ReadWriteSpiByte:
     .word 0

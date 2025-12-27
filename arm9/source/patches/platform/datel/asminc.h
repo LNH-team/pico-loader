@@ -1,4 +1,4 @@
-.macro BEGIN_ASM_FUNC name section=text
+.macro BEGIN_ASM_FUNC name
     .global \name
     .type \name, %function
     .align 1
@@ -9,7 +9,6 @@
 .equ REG_MCD0,   0x040001A2
 .equ REG_MCCNT1, 0x040001A4
 .equ REG_MCCMD0, 0x040001A8
-.equ DATEL_SD_CMD_TIMEOUT_LEN, 0xFFF
 
 .equ DATEL_SDIO_CMD18_READ_MULTIPLE_BLOCK, 18 | 0x40
 .equ DATEL_SDIO_CMD12_STOP_TRANSMISSION, 12 | 0x40
