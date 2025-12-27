@@ -132,6 +132,7 @@ BEGIN_ASM_FUNC DATEL_SpiSendSDIOCommand
     bl 1f
 1:
     subs r2, #1
+    @ branch to DATEL_ReadSpiByte
     bcc DATEL_SpiSendSDIOCommandR0_Interwork
     movs r0, r6
     pop {r1}
