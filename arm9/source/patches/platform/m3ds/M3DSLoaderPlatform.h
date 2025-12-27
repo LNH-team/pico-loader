@@ -33,4 +33,6 @@ public:
                 }));
         });
     }
+
+    LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
 };

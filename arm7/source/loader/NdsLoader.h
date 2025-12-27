@@ -3,6 +3,8 @@
 #include "ndsHeader.h"
 #include "DsiWareSaveArranger.h"
 #include "BootMode.h"
+#include "ConsoleRegion.h"
+#include "UserLanguage.h"
 
 struct dsi_devicelist_entry_t;
 
@@ -72,4 +74,7 @@ private:
     void InsertArgv();
     bool TrySetupDsiWareSave();
     bool TryDecryptSecureArea();
+    ConsoleRegion GetRomRegion(u32 gameCode);
+    UserLanguage GetLanguageByRomRegion(ConsoleRegion romRegion);
+    u32 GetSupportedLanguagesByRegion(ConsoleRegion region);
 };

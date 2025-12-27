@@ -99,6 +99,8 @@ public:
         }
     }
 
+    LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot2; }
+
     bool InitializeSdCard() override;
 
 private:

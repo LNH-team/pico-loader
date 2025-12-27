@@ -3,16 +3,16 @@
 .syntax unified
 .thumb
 
-// r1 = save src
-// r2 = memory src
+// r1 = memory src
+// r2 = save src
 // r3 = byte length
 .global verifysave_asm
 .type verifysave_asm, %function
 verifysave_asm:
     push {r4,r5,r6,r7,lr}
     movs r4, r3 // remaining bytes
-    movs r5, r1
-    movs r6, r2
+    movs r5, r2
+    movs r6, r1
 1:
     movs r0, r5 // will be rounded down by function
     ldr r3, verifysave_save_offset_to_sd_sector_asm_address

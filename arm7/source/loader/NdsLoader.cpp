@@ -865,6 +865,10 @@ void NdsLoader::StartRom(BootMode bootMode)
 
 void NdsLoader::SetupTwlConfig()
 {
+    ConsoleRegion romRegion = GetRomRegion(_romHeader.gameCode);
+    // Set language based on rom region, TODO: allow user to override this via some config or so
+    UserLanguage userLang = GetLanguageByRomRegion(romRegion);
+
     twl_config_t* twlConfig = (twl_config_t*)0x02000400;
     *(twl_config_t**)0x02FFFDFC = twlConfig;
     *(vu8*)0x02FFFDFA = 0x80;
@@ -872,7 +876,7 @@ void NdsLoader::SetupTwlConfig()
     memset(twlConfig, 0, sizeof(twl_config_t));
     twlConfig->configFlags = 0x0100000F;
     twlConfig->country = 0x4E;
-    twlConfig->language = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x64];
+    twlConfig->language = static_cast<u8>(userLang);
     twlConfig->rtcYear = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x66];
     twlConfig->rtcOffset = *(s64*)&TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x68];
     twlConfig->eulaAgreeVersion[0] = 1;
@@ -880,7 +884,7 @@ void NdsLoader::SetupTwlConfig()
     twlConfig->alarmMinute = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x53];
     twlConfig->alarmEnable = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x56];
     twlConfig->systemMenuUsedTitleSlots = 9;
-    twlConfig->systemMenuUsedTitleSlots = 30;
+    twlConfig->systemMenuFreeTitleSlots = 30;
     twlConfig->field24 = 3;
     memcpy(&twlConfig->touchCalibrationX1Adc, &TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x58], 0xC);
     twlConfig->field3C = 0x0201209C;
@@ -906,9 +910,10 @@ void NdsLoader::SetupTwlConfig()
     }
     *(vu16*)0x020005E2 = swi_getCrc16(0xFFFF, (void*)0x020005E4, 0xC);
 
-    *(vu32*)0x02FFFD68 = 0x3E; // supported languages
+    // Set bitmask for supported languages
+    *(vu32*)0x02FFFD68 = GetSupportedLanguagesByRegion(romRegion);
     *(vu32*)0x02FFFD6C = 0;
-    *(vu8*)0x02FFFD70 = 2; // region, 2 = europe
+    *(vu8*)0x02FFFD70 = static_cast<u8>(romRegion); // region
 }
 
 void NdsLoader::SetDeviceListEntry(dsi_devicelist_entry_t& deviceListEntry,
@@ -1010,4 +1015,103 @@ bool NdsLoader::TryDecryptSecureArea()
 
     LOG_DEBUG("Decrypted secure area\n");
     return true;
+}
+
+ConsoleRegion NdsLoader::GetRomRegion(u32 gameCode)
+{
+    u8 gameRegionCode = (gameCode >> 24) & 0xFF;
+    if (gameRegionCode != 'A' && gameRegionCode != 'O')
+    {
+        // Determine region by TID
+        if (gameRegionCode == 'J')
+        {
+            return ConsoleRegion::Japan;
+        }
+        else if (gameRegionCode == 'E' || gameRegionCode == 'T')
+        {
+            return ConsoleRegion::America;
+        }
+        else if (gameRegionCode == 'P' || gameRegionCode == 'V')
+        {
+            return ConsoleRegion::Europe;
+        }
+        else if (gameRegionCode == 'U')
+        {
+            return ConsoleRegion::Australia;
+        }
+        else if (gameRegionCode == 'C')
+        {
+            return ConsoleRegion::China;
+        }
+        else if (gameRegionCode== 'K')
+        {
+            return ConsoleRegion::Korea;
+        }
+    }
+
+    return ConsoleRegion::Europe; // Default to EUR
+}
+
+UserLanguage NdsLoader::GetLanguageByRomRegion(ConsoleRegion romRegion)
+{
+    UserLanguage userLang = static_cast<UserLanguage>(TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x64] & 0x07);
+
+    if (romRegion == ConsoleRegion::Japan)
+    {
+        return UserLanguage::Japanese;
+    }
+    else if (romRegion == ConsoleRegion::America &&
+            (userLang != UserLanguage::English ||
+             userLang != UserLanguage::French ||
+             userLang != UserLanguage::Spanish))
+    {
+        return UserLanguage::English;
+    }
+    else if (romRegion == ConsoleRegion::Europe && userLang < UserLanguage::English && userLang > UserLanguage::Spanish)
+    {
+        return UserLanguage::English;
+    }
+    else if (romRegion == ConsoleRegion::China)
+    {
+        return UserLanguage::Chinese;
+    }
+    else if (romRegion == ConsoleRegion::Korea)
+    {
+        return UserLanguage::Korean;
+    }
+
+    return userLang;
+}
+
+u32 NdsLoader::GetSupportedLanguagesByRegion(ConsoleRegion region)
+{
+    switch (region)
+    {
+        case ConsoleRegion::Japan:
+        {
+            return 0x01;
+        }
+        case ConsoleRegion::America:
+        {
+            return 0x26;
+        }
+        case ConsoleRegion::Europe:
+        {
+            return 0x3E;
+        }
+        case ConsoleRegion::Australia:
+        {
+            return 0x02;
+        }
+        case ConsoleRegion::China:
+        {
+            return 0x40;
+        }
+        case ConsoleRegion::Korea:
+        {
+            return 0x80;
+        }
+    }
+
+    return 0x3E;
 }

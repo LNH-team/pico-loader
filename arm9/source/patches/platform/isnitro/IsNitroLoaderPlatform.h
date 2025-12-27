@@ -27,6 +27,8 @@ public:
         });
     }
 
+    LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot2; }
+
 private:
     u32 GetAgbRamPtr() const
     {

@@ -34,5 +34,7 @@ public:
         });
     }
 
+    LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
+
     bool HasDmaSdReads() const override { return true; }
 };

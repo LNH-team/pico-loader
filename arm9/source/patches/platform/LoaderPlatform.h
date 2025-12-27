@@ -5,6 +5,7 @@
 #include "SdWritePatchCode.h"
 #include "../PatchHeap.h"
 #include "../PatchCodeCollection.h"
+#include "LoaderPlatformType.h"
 
 /// @brief Abstract class for platform (flashcard or other sd access method) specific parts of the loader.
 class LoaderPlatform
@@ -37,6 +38,10 @@ public:
     /// @return A unique pointer to the created rom read patch code.
     virtual const SdReadPatchCode* CreateRomReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const { return nullptr; }
+
+    /// @brief Returns the type of this loader platform.
+    /// @return The type of this loader platform.
+    virtual LoaderPlatformType GetPlatformType() const = 0;
 
     /// @brief Checks if the platform supports rom reads directly.
     /// @return True if the platform supports rom reads, or false otherwise.

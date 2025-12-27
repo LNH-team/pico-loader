@@ -30,4 +30,6 @@ public:
             return new EZPWriteSectorsPatchCode(patchHeap);
         });
     }
+
+    LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
 };

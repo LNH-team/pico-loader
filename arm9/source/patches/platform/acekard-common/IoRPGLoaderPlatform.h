@@ -11,6 +11,8 @@ public:
     explicit IoRPGLoaderPlatform(u8 ioRpgCmdSdioByte)
         : _ioRpgCmdSdioByte(ioRpgCmdSdioByte) { }
 
+    LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
+
     bool InitializeSdCard() override;
 
 protected:

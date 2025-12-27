@@ -21,30 +21,34 @@ __patch_carditaskthread_mov_cardicommon_to_r4:
 __patch_carditaskthread_mov_command_to_r0:
     ldr r0, [r4, #4] // r0 = command
 
+    ldr r1,= 0x04000204
+    ldrh r1, [r1]
+.global __patch_carditaskthread_lsls_exmemstat_bit_to_r1
+__patch_carditaskthread_lsls_exmemstat_bit_to_r1:
+    lsls r1, r1, #20
+    mvns r1, r1
+    lsrs r1, r1, #31 // r1 = 0 when slot mapped to arm7, 1 when slot not mapped to arm7
+
     cmp r0, #2
-    beq identify_backup
-
+        beq end_success // identify
     cmp r0, #6
-    beq read_backup
-
+        beq read_backup
     cmp r0, #7
-    beq write_backup
-
+        beq write_backup
     cmp r0, #8
-    beq write_backup
-
+        beq write_backup
     cmp r0, #9
-    beq verify_backup
+        beq verify_backup
 
     // erase
     cmp r0, #10
-    beq end_success
+        beq end_success
     cmp r0, #11
-    beq end_success
+        beq end_success
     cmp r0, #12
-    beq end_success
+        beq end_success
     cmp r0, #15
-    beq end_success
+        beq end_success
 
 end_fail:
     ldr r0, __patch_carditaskthread_failoffset
@@ -58,18 +62,8 @@ end:
     adds r3, r0
     bx r3
 
-identify_backup:
-    b end_success
-
 read_backup:
-    ldr r0, [r4]
-    movs r1, #0
-    str r1, [r0] // result
-    ldr r1, [r0, #0xC] // src
-    ldr r2, [r0, #0x10] // dst
-    ldr r3, [r0, #0x14] // len
-    cmp r3, #0
-        beq end_success
+    bl read_write_verify_backup_common
 
     ldr r0, __patch_carditaskthread_readsave_asm_address
     bl blx_r0
@@ -77,14 +71,7 @@ read_backup:
     b end_success
 
 write_backup:
-    ldr r0, [r4]
-    movs r1, #0
-    str r1, [r0] // result
-    ldr r1, [r0, #0xC] // src
-    ldr r2, [r0, #0x10] // dst
-    ldr r3, [r0, #0x14] // len
-    cmp r3, #0
-        beq end_success
+    bl read_write_verify_backup_common
 
     ldr r0, __patch_carditaskthread_writesave_asm_address
     bl blx_r0
@@ -92,12 +79,7 @@ write_backup:
     b end_success
 
 verify_backup:
-    ldr r0, [r4]
-    ldr r2, [r0, #0xC] // src
-    ldr r1, [r0, #0x10] // dst
-    ldr r3, [r0, #0x14] // len
-    cmp r3, #0
-        beq end_success
+    bl read_write_verify_backup_common
 
     push {r0}
     ldr r0, __patch_carditaskthread_verifysave_asm_address
@@ -105,6 +87,18 @@ verify_backup:
     pop {r1}
     str r0, [r1] // result
     b end_success
+
+read_write_verify_backup_common:
+    ldr r0, [r4]
+    str r1, [r0] // result
+    cmp r1, #0
+        bne end_success
+    ldr r1, [r0, #0xC] // src
+    ldr r2, [r0, #0x10] // dst
+    ldr r3, [r0, #0x14] // len
+    cmp r3, #0
+        beq end_success
+    bx lr
 
 blx_r0:
     bx r0

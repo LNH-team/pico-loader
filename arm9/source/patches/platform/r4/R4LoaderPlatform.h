@@ -37,6 +37,8 @@ public:
         });
     }
 
+    LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
+
     bool HasRomReads() const override { return true; }
 
     void PrepareRomBoot(u32 romDirSector, u32 romDirSectorOffset) const override;

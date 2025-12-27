@@ -93,6 +93,16 @@ void CardiDoTaskFromArm9Patch::ApplyPatch(PatchContext& patchContext)
     __patch_carditaskthread_readsave_asm_address = (u32)readSavePatchCode->GetReadSaveFunction();
     __patch_carditaskthread_writesave_asm_address = (u32)writeSavePatchCode->GetWriteSaveFunction();
     __patch_carditaskthread_verifysave_asm_address = (u32)verifySavePatchCode->GetVerifySaveFunction();
+    if (loaderPlatform->GetPlatformType() == LoaderPlatformType::Slot1)
+    {
+        // Test REG_EXMEMSTAT bit 11
+        __patch_carditaskthread_lsls_exmemstat_bit_to_r1 = THUMB_LSLS_IMM(THUMB_R1, THUMB_R1, 31 - 11);
+    }
+    else
+    {
+        // Test REG_EXMEMSTAT bit 7
+        __patch_carditaskthread_lsls_exmemstat_bit_to_r1 = THUMB_LSLS_IMM(THUMB_R1, THUMB_R1, 31 - 7);
+    }
 
     u32 patchOffset;
 

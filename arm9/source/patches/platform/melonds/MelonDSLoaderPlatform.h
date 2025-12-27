@@ -25,4 +25,6 @@ public:
             return new MelonDSWriteSdPatchCode(patchHeap);
         });
     }
+
+    LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
 };
