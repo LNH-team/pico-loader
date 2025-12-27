@@ -41,7 +41,7 @@ datel_writeSectorSdhcLabel:
 
     @ We use the r2 set above to put 0x10000 to use later as write timeout
     @ it's 1 bigger than the timeout len but we save an instruction
-    @ ldr     r2, =DATEL_SD_WRITE_TIMEOUT_LEN
+    @ ldr r2, =DATEL_SD_WRITE_TIMEOUT_LEN
     lsls r2, r2, #16
 
 write_next_sector:
