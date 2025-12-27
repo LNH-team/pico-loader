@@ -15,7 +15,7 @@ extern "C" void DATEL_SDReadMultipleSector(u32 srcSector, void* dst, u32 sectorC
 class DATELReadSdPatchCode : public SdReadPatchCode
 {
 public:
-    explicit DATELReadSdPatchCode(PatchHeap& patchHeap,
+    DATELReadSdPatchCode(PatchHeap& patchHeap,
         const DATELReadSpiBytePatchCode* datelReadSpiBytePatchCode,
         const DATELSendSDIOCommandPatchCode* datelSendSDIOCommandPatchCode)
         : SdReadPatchCode(SECTION_START(datel_read), SECTION_SIZE(datel_read), patchHeap)

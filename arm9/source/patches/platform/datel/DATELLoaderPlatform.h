@@ -13,13 +13,13 @@ public:
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new DATELReadSpiBytePatchCode(patchHeap);
-                });
+        {
+            return new DATELReadSpiBytePatchCode(patchHeap);
+        });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new DATELSendSDIOCommandPatchCode(patchHeap, spi);
-                });
+        {
+            return new DATELSendSDIOCommandPatchCode(patchHeap, spi);
+        });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
             return new DATELReadSdPatchCode(patchHeap, spi, sendSdio);
@@ -30,13 +30,13 @@ public:
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new DATELReadSpiBytePatchCode(patchHeap);
-                });
+        {
+            return new DATELReadSpiBytePatchCode(patchHeap);
+        });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new DATELSendSDIOCommandPatchCode(patchHeap, spi);
-                });
+        {
+            return new DATELSendSDIOCommandPatchCode(patchHeap, spi);
+        });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
             return new DATELWriteSdPatchCode(patchHeap, spi, sendSdio);

@@ -5,46 +5,49 @@
 #include "thumbInstructions.h"
 
 static constexpr size_t MAX_STARTUP_TRIES = 5000;
-static constexpr uint32_t DATEL_CTRL_BASE = (MCCNT1_RESET_OFF | MCCNT1_CMD_SCRAMBLE | MCCNT1_READ_DATA_DESCRAMBLE | MCCNT1_CLOCK_SCRAMBLER | MCCNT1_LATENCY2(0x3F));
+static constexpr u32 DATEL_CTRL_BASE = (MCCNT1_RESET_OFF | MCCNT1_CMD_SCRAMBLE | MCCNT1_READ_DATA_DESCRAMBLE | MCCNT1_CLOCK_SCRAMBLER | MCCNT1_LATENCY2(0x3F));
 
-static constexpr uint8_t DATEL_CMD_F2_SPI_ENABLE = 0xCC;
-static constexpr uint8_t DATEL_CMD_F2_SPI_DISABLE = 0xC8;
+static constexpr u8 DATEL_CMD_F2_SPI_ENABLE = 0xCC;
+static constexpr u8 DATEL_CMD_F2_SPI_DISABLE = 0xC8;
 
-static inline u64 DATEL_CMD_F2(u32 param1, u8 param2) {
+static inline u64 DATEL_CMD_F2(u32 param1, u8 param2)
+{
     return (0xF200000000000000ull | ((u64)param1 << 24) | ((u64)param2 << 16));
 }
 
-static inline void EnableSpi()
+static inline void enableSpi()
 {
     REG_MCCNT0 = (REG_MCCNT0 & ~(MCCNT0_MODE_MASK | MCCNT0_ROM_XFER_IRQ)) | MCCNT0_MODE_SPI | MCCNT0_SPI_HOLD_CS | MCCNT0_ENABLE;
 }
 
-static uint8_t ReadWriteSpiByte(uint8_t data)
+static u8 readWriteSpiByte(u8 data)
 {
     REG_MCD0 = data;
     while(REG_MCCNT0 & MCCNT0_SPI_BUSY);
     return REG_MCD0;
 }
 
-static void SendNtrCommandF2(uint32_t param1, uint8_t param2) {
+static void sendNtrCommandF2(u32 param1, u8 param2)
+{
     card_romSetCmd(DATEL_CMD_F2(param1, param2));
     card_romStartXfer(DATEL_CTRL_BASE | MCCNT1_LEN_0, false);
     card_romWaitBusy();
 }
 
-static void CycleSpi() {
-    SendNtrCommandF2(0, DATEL_CMD_F2_SPI_DISABLE);
-    EnableSpi();
-    ReadWriteSpiByte(0xFF);
-    SendNtrCommandF2(0, DATEL_CMD_F2_SPI_ENABLE);
-    EnableSpi();
+static void cycleSpi()
+{
+    sendNtrCommandF2(0, DATEL_CMD_F2_SPI_DISABLE);
+    enableSpi();
+    readWriteSpiByte(0xFF);
+    sendNtrCommandF2(0, DATEL_CMD_F2_SPI_ENABLE);
+    enableSpi();
 }
 
 // Sends SDIO command to DATEL device.
-static uint8_t SpiSendSDIOCommand(uint8_t cmdId, uint32_t arg, uint8_t * buffer, int messageLen)
+static u8 spiSendSdioCommand(u8 cmdId, u32 arg, u8 * buffer, int messageLen)
 {
-    CycleSpi();
-    uint8_t cmd[6];
+    cycleSpi();
+    u8 cmd[6];
 
     // Build a SPI SD command to be sent as-is.
     cmd[0] = 0x40 | (cmdId & 0x3f);
@@ -56,46 +59,49 @@ static uint8_t SpiSendSDIOCommand(uint8_t cmdId, uint32_t arg, uint8_t * buffer,
     // and CMD8, hardcoded to 0x86 with the default 0x1AA argument.
     cmd[5] = (messageLen > 1) ? 0x86 : 0x95;
 
-    for (auto byte : cmd) ReadWriteSpiByte(byte);
-
-    uint8_t timeout = DATEL_ReadSpiByteTimeout();
-
-    for(int i = 0; i < (messageLen - 1); i++)
+    for (u8 byte : cmd)
     {
-        buffer[i] = ReadWriteSpiByte(0xFF);
+        readWriteSpiByte(byte);
+    }
+
+    u8 timeout = DATEL_ReadSpiByteTimeout();
+
+    for (int i = 0; i < (messageLen - 1); i++)
+    {
+        buffer[i] = readWriteSpiByte(0xFF);
     }
 
     return timeout;
 }
 
-static uint8_t SpiSendSDIOCommandR0(uint8_t cmd, uint32_t arg)
+static u8 spiSendSdioCommandR0(u8 cmd, u32 arg)
 {
-    return SpiSendSDIOCommand(cmd, arg, nullptr, 1);
+    return spiSendSdioCommand(cmd, arg, nullptr, 1);
 }
 
 bool DATELLoaderPlatform::InitializeSdCard()
 {
     for (int i = 0; i < 0x100; i++)
     {
-        SendNtrCommandF2(0x7FFFFFFF | ((i & 1) << 31), 0x00);
+        sendNtrCommandF2(0x7FFFFFFF | ((i & 1) << 31), 0x00);
     }
 
     // Send CMD0.
-    if (SpiSendSDIOCommandR0(SD_CMD0_GO_IDLE_STATE, 0) != 0x01)
+    if (spiSendSdioCommandR0(SD_CMD0_GO_IDLE_STATE, 0) != 0x01)
     {
         return false;
     }
 
-    uint32_t cmd8_answer{};
+    u32 cmd8Answer = 0;
 
-    uint32_t acmd41_arg = 0;
-    bool isv2 = false;
+    u32 acmd41Arg = 0;
+    bool isV2 = false;
 
-    if (SpiSendSDIOCommand(SD_CMD8_SEND_IF_COND, SD_IF_COND_PATTERN, (uint8_t*)&cmd8_answer, 5) == 0x1
-        && cmd8_answer == 0xAA010000)
+    if (spiSendSdioCommand(SD_CMD8_SEND_IF_COND, SD_IF_COND_PATTERN, (u8*)&cmd8Answer, 5) == 0x1
+        && cmd8Answer == 0xAA010000)
     {
-        isv2 = true;
-        acmd41_arg |= (1 << 30);  // Set HCS bit,Supports SDHC
+        isV2 = true;
+        acmd41Arg |= (1 << 30);  // Set HCS bit,Supports SDHC
     }
 
     {
@@ -103,8 +109,8 @@ bool DATELLoaderPlatform::InitializeSdCard()
         for (i = 0; i < MAX_STARTUP_TRIES; ++i)
         {
             // Send ACMD41.
-            SpiSendSDIOCommandR0(SD_CMD55_APP_CMD, 0);
-            if (SpiSendSDIOCommandR0(SD_ACMD41_SD_SEND_OP_COND, acmd41_arg) == 0)
+            spiSendSdioCommandR0(SD_CMD55_APP_CMD, 0);
+            if (spiSendSdioCommandR0(SD_ACMD41_SD_SEND_OP_COND, acmd41Arg) == 0)
             {
                 break;
             }
@@ -116,13 +122,13 @@ bool DATELLoaderPlatform::InitializeSdCard()
     }
 
     bool isSdhc = false;
-    if (isv2)
+    if (isV2)
     {
-        uint32_t cmd58_answer{};
-        SpiSendSDIOCommand(SD_SPI_CMD58_READ_OCR, 0, (uint8_t*)&cmd58_answer, 5);
-        isSdhc = (cmd58_answer & 0x40) != 0;
+        u32 cmd58Answer = 0;
+        spiSendSdioCommand(SD_SPI_CMD58_READ_OCR, 0, (u8*)&cmd58Answer, 5);
+        isSdhc = (cmd58Answer & 0x40) != 0;
     }
-    SpiSendSDIOCommandR0(SD_CMD16_SET_BLOCKLEN, 0x200);
+    spiSendSdioCommandR0(SD_CMD16_SET_BLOCKLEN, 0x200);
 
     const u16 nonSdhcOpcode = THUMB_LSLS_IMM(THUMB_R0, THUMB_R0, 9);
     const u16 sdhcOpcode = THUMB_MOVS_REG(THUMB_R0, THUMB_R0);

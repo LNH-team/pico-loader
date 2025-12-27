@@ -16,7 +16,7 @@ extern "C" void DATEL_SDWriteMultipleSector(u32 srcSector, void* dst, u32 sector
 class DATELWriteSdPatchCode : public SdWritePatchCode
 {
 public:
-    explicit DATELWriteSdPatchCode(PatchHeap& patchHeap,
+    DATELWriteSdPatchCode(PatchHeap& patchHeap,
         const DATELReadSpiBytePatchCode* datelReadSpiBytePatchCode,
         const DATELSendSDIOCommandPatchCode* datelSendSDIOCommandPatchCode)
         : SdWritePatchCode(SECTION_START(datel_write), SECTION_SIZE(datel_write), patchHeap)
