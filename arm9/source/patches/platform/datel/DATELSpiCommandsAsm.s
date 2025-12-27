@@ -94,6 +94,8 @@ BEGIN_ASM_FUNC DATEL_SpiSendSDIOCommandR0
 BEGIN_ASM_FUNC DATEL_SpiSendSDIOCommand
     push {r0-r7, lr}
 
+    bl DATEL_CycleSpi
+
     adr r4, DATEL_SpiSendSDIOCommandR0_ReadSpiByteTimeout
     @ r3 contains ReadSpiByteTimeout
     @ r7 contains ReadWriteSpiByte
@@ -107,35 +109,33 @@ BEGIN_ASM_FUNC DATEL_SpiSendSDIOCommand
     @ TODO: this could maybe be optimized by setting 4 in r5, and having the last extra byte be sent by the timeout function itself
     subs r4, #1
 
-    @ branch to DATEL_CycleSpi
-    bl DATEL_CycleSpi
-    movs r5, #5
+    movs r5, #6
 
+    @ sets up lr so that the interwork function jumps back here
+    bl 1f
 1:
+    subs r5, r5, #1
     ldrb r0, [r4, r5]
     @ branch to DATEL_ReadWriteSpiByte
-    bl DATEL_SpiSendSDIOCommandR0_Interwork
-    subs r5, r5, #1
-    bcs 1b
+    bcs DATEL_SpiSendSDIOCommandR0_Interwork
+
     @ branch to DATEL_ReadSpiByteTimeout
     bl DATEL_SpiSendSDIOCommandR0_InterworkR3
 
     @ load DATEL_ReadSpiByte since it's 1 thumb instruction before DATEL_ReadWriteSpiByte
     subs r7, r7, #2
 
-    @ r5 is -1 from the iteration above
-    @ movs r5, #0
+    @ Save the return value
     movs r6, r0
+
+    @ sets up lr so that the interwork function jumps back here
+    bl 1f
 1:
     subs r2, #1
-    bcc 2f
+    bcc DATEL_SpiSendSDIOCommandR0_Interwork
     movs r0, r6
     pop {r1}
     pop {r1-r7, pc}
-2:
-    @ branch to DATEL_ReadSpiByte
-    bl DATEL_SpiSendSDIOCommandR0_Interwork
-    b 1b
 
 DATEL_SpiSendSDIOCommandR0_Interwork:
     bx r7
