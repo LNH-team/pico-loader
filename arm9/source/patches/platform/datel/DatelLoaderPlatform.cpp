@@ -1,6 +1,6 @@
 #include "common.h"
 #include <libtwl/card/card.h>
-#include "DATELLoaderPlatform.h"
+#include "DatelLoaderPlatform.h"
 #include "../SdioDefinitions.h"
 #include "thumbInstructions.h"
 
@@ -79,7 +79,7 @@ static u8 spiSendSdioCommandR0(u8 cmd, u32 arg)
     return spiSendSdioCommand(cmd, arg, nullptr, 1);
 }
 
-bool DATELLoaderPlatform::InitializeSdCard()
+bool DatelLoaderPlatform::InitializeSdCard()
 {
     for (int i = 0; i < 0x100; i++)
     {

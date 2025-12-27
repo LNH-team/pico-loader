@@ -16,10 +16,10 @@ extern "C" u8 DATEL_SpiSendSDIOCommand(u32 arg, u8 cmd, int extraBytes);
 extern u32 DATEL_SpiSendSDIOCommandR0_ReadWriteSpiByte;
 extern u32 DATEL_SpiSendSDIOCommandR0_ReadSpiByteTimeout;
 
-class DATELReadSpiBytePatchCode : public PatchCode
+class DatelReadSpiBytePatchCode : public PatchCode
 {
 public:
-    explicit DATELReadSpiBytePatchCode(PatchHeap& patchHeap)
+    explicit DatelReadSpiBytePatchCode(PatchHeap& patchHeap)
         : PatchCode(SECTION_START(datel_read_spi), SECTION_SIZE(datel_read_spi), patchHeap) { }
 
     const void* GetReadSpiByteFunction() const
@@ -47,7 +47,7 @@ class DATELSendSDIOCommandPatchCode : public PatchCode
 {
 public:
     DATELSendSDIOCommandPatchCode(PatchHeap& patchHeap,
-        const DATELReadSpiBytePatchCode* datelReadSpiBytePatchCode)
+        const DatelReadSpiBytePatchCode* datelReadSpiBytePatchCode)
         : PatchCode(SECTION_START(datel_spi_send), SECTION_SIZE(datel_spi_send), patchHeap)
     {
         DATEL_SpiSendSDIOCommandR0_ReadWriteSpiByte = (u32)datelReadSpiBytePatchCode->GetReadWriteSpiByteFunction();

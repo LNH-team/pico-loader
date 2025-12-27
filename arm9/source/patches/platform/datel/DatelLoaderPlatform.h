@@ -6,7 +6,7 @@
 #include "DATELWriteSectorsAsm.h"
 
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
-class DATELLoaderPlatform : public LoaderPlatform
+class DatelLoaderPlatform : public LoaderPlatform
 {
 public:
     const SdReadPatchCode* CreateSdReadPatchCode(
@@ -14,7 +14,7 @@ public:
     {
         auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new DATELReadSpiBytePatchCode(patchHeap);
+            return new DatelReadSpiBytePatchCode(patchHeap);
         });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
@@ -22,7 +22,7 @@ public:
         });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new DATELReadSdPatchCode(patchHeap, spi, sendSdio);
+            return new DatelReadSdPatchCode(patchHeap, spi, sendSdio);
         });
     }
 
@@ -31,7 +31,7 @@ public:
     {
         auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new DATELReadSpiBytePatchCode(patchHeap);
+            return new DatelReadSpiBytePatchCode(patchHeap);
         });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
@@ -39,7 +39,7 @@ public:
         });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new DATELWriteSdPatchCode(patchHeap, spi, sendSdio);
+            return new DatelWriteSdPatchCode(patchHeap, spi, sendSdio);
         });
     }
 

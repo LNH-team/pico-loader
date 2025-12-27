@@ -12,11 +12,11 @@ extern u32 DATEL_SDReadMultipleSector_ReadSpiByte;
 
 extern "C" void DATEL_SDReadMultipleSector(u32 srcSector, void* dst, u32 sectorCount);
 
-class DATELReadSdPatchCode : public SdReadPatchCode
+class DatelReadSdPatchCode : public SdReadPatchCode
 {
 public:
-    DATELReadSdPatchCode(PatchHeap& patchHeap,
-        const DATELReadSpiBytePatchCode* datelReadSpiBytePatchCode,
+    DatelReadSdPatchCode(PatchHeap& patchHeap,
+        const DatelReadSpiBytePatchCode* datelReadSpiBytePatchCode,
         const DATELSendSDIOCommandPatchCode* datelSendSDIOCommandPatchCode)
         : SdReadPatchCode(SECTION_START(datel_read), SECTION_SIZE(datel_read), patchHeap)
         {

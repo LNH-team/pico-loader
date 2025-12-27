@@ -13,11 +13,11 @@ extern u32 DATEL_SDWriteMultipleSector_ReadSpiByte;
 
 extern "C" void DATEL_SDWriteMultipleSector(u32 srcSector, void* dst, u32 sectorCount);
 
-class DATELWriteSdPatchCode : public SdWritePatchCode
+class DatelWriteSdPatchCode : public SdWritePatchCode
 {
 public:
-    DATELWriteSdPatchCode(PatchHeap& patchHeap,
-        const DATELReadSpiBytePatchCode* datelReadSpiBytePatchCode,
+    DatelWriteSdPatchCode(PatchHeap& patchHeap,
+        const DatelReadSpiBytePatchCode* datelReadSpiBytePatchCode,
         const DATELSendSDIOCommandPatchCode* datelSendSDIOCommandPatchCode)
         : SdWritePatchCode(SECTION_START(datel_write), SECTION_SIZE(datel_write), patchHeap)
         {
