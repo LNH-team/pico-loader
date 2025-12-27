@@ -18,7 +18,7 @@ public:
                 });
         auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new DATELCycleSpiPatchCode(patchHeap, spi);
+                    return new DATELCycleSpiPatchCode(patchHeap);
                 });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
@@ -39,7 +39,7 @@ public:
                 });
         auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new DATELCycleSpiPatchCode(patchHeap, spi);
+                    return new DATELCycleSpiPatchCode(patchHeap);
                 });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {

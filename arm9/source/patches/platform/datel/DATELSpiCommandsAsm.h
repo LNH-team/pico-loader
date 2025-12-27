@@ -2,7 +2,7 @@
 #include "sections.h"
 #include "../SdReadDmaPatchCode.h"
 
-DEFINE_SECTION_SYMBOLS(datel_ntr_command);
+DEFINE_SECTION_SYMBOLS(datel_cycle_spi);
 DEFINE_SECTION_SYMBOLS(datel_read_spi);
 DEFINE_SECTION_SYMBOLS(datel_spi_send);
 
@@ -15,8 +15,6 @@ extern "C" bool DATEL_WaitSpiByteTimeout();
 
 extern "C" u8 DATEL_SpiSendSDIOCommandR0(u32 arg, u8 cmd);
 extern "C" u8 DATEL_SpiSendSDIOCommand(u32 arg, u8 cmd, int extraBytes);
-
-extern u32 DATEL_CycleSpi_ReadSpiByte;
 
 extern u32 DATEL_SpiSendSDIOCommandR0_CycleSpi;
 
@@ -53,12 +51,8 @@ public:
 class DATELCycleSpiPatchCode : public PatchCode
 {
 public:
-    explicit DATELCycleSpiPatchCode(PatchHeap& patchHeap,
-        const DATELReadSpiBytePatchCode* datelReadSpiBytePatchCode)
-        : PatchCode(SECTION_START(datel_ntr_command), SECTION_SIZE(datel_ntr_command), patchHeap)
-        {
-            DATEL_CycleSpi_ReadSpiByte = (u32)datelReadSpiBytePatchCode->GetReadSpiByteFunction();
-        }
+    explicit DATELCycleSpiPatchCode(PatchHeap& patchHeap)
+        : PatchCode(SECTION_START(datel_cycle_spi), SECTION_SIZE(datel_cycle_spi), patchHeap) { }
 
     const void* GetCycleSpiFunction() const
     {
