@@ -16,13 +16,9 @@ public:
                 {
                     return new DATELReadSpiBytePatchCode(patchHeap);
                 });
-        auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new DATELCycleSpiPatchCode(patchHeap);
-                });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new DATELSendSDIOCommandPatchCode(patchHeap, spi, cycle);
+                    return new DATELSendSDIOCommandPatchCode(patchHeap, spi);
                 });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
@@ -37,13 +33,9 @@ public:
                 {
                     return new DATELReadSpiBytePatchCode(patchHeap);
                 });
-        auto cycle = patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new DATELCycleSpiPatchCode(patchHeap);
-                });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new DATELSendSDIOCommandPatchCode(patchHeap, spi, cycle);
+                    return new DATELSendSDIOCommandPatchCode(patchHeap, spi);
                 });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
