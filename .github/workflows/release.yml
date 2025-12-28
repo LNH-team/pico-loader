@@ -1,0 +1,67 @@
+name: Build Pico Loader release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  pico_loader:
+    strategy:
+      matrix:
+        platform: [
+          "ACE3DS",
+          "AK2",
+          "AKRPG",
+          "DATEL",
+          "DSPICO",
+          "DSTT",
+          "EZP",
+          "G003",
+          "M3DS",
+          "R4",
+          "R4iDSN",
+          "STARGATE",
+          "SUPERCARD"
+        ]
+    runs-on: ubuntu-latest
+    container: skylyrac/blocksds:slim-v1.13.1
+    name: Build Pico Loader
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1
+      DOTNET_NOLOGO: true
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.x
+      - name: Install zip
+        run:
+          apt-get update && apt-get -y install zip
+      - name: Run build script
+        run: |
+          make PICO_PLATFORM=${{ matrix.platform }}
+      - name: Package artifact
+        run: |
+          mkdir Pico_Loader_${{ matrix.platform }}
+          mv picoLoader7.bin data/aplist.bin data/savelist.bin Pico_Loader_${{ matrix.platform }}
+          mv picoLoader9_${{ matrix.platform }}.bin Pico_Loader_${{ matrix.platform }}/picoLoader9.bin
+      - name: Publish build to GH Actions
+        uses: actions/upload-artifact@v4
+        with:
+          path: |
+            Pico_Loader_${{ matrix.platform }}
+          # For some reason without explicitly setting a name there is some odd conflicts
+          name: Pico_Loader_${{ matrix.platform }}
+      - name: Package for release
+        run: |
+          cd Pico_Loader_${{ matrix.platform }} && zip -r $PWD.zip *
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            Pico_Loader_${{ matrix.platform }}.zip
