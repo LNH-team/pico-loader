@@ -1,9 +1,9 @@
 #pragma once
 #include "common.h"
 #include "../LoaderPlatform.h"
-#include "DATELSpiCommandsAsm.h"
-#include "DATELReadSectorsAsm.h"
-#include "DATELWriteSectorsAsm.h"
+#include "DatelSpiCommandsAsm.h"
+#include "DatelReadSectorsAsm.h"
+#include "DatelWriteSectorsAsm.h"
 
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class DatelLoaderPlatform : public LoaderPlatform
