@@ -33,7 +33,7 @@ static u8 readSpiByteTimeout()
     auto timeout = SD_COMMAND_TIMEOUT;
     u8 res;
     do
-	{
+    {
         res = readWriteSpiByte(0xFF);
     } while (res == 0xFF && --timeout > 0);
     return res;
@@ -91,6 +91,20 @@ static u8 spiSendSdioCommandR0(u8 cmd, u32 arg)
     return spiSendSdioCommand(cmd, arg, nullptr, 1);
 }
 
+static bool trySendAcmd41(u32 acmd41Arg)
+{
+    for (size_t i = 0; i < MAX_STARTUP_TRIES; ++i)
+    {
+        // Send ACMD41.
+        spiSendSdioCommandR0(SD_CMD55_APP_CMD, 0);
+        if (spiSendSdioCommandR0(SD_ACMD41_SD_SEND_OP_COND, acmd41Arg) == 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool DatelLoaderPlatform::InitializeSdCard()
 {
     for (int i = 0; i < 0x100; i++)
@@ -116,21 +130,9 @@ bool DatelLoaderPlatform::InitializeSdCard()
         acmd41Arg |= (1 << 30);  // Set HCS bit,Supports SDHC
     }
 
+    if (!trySendAcmd41(acmd41Arg))
     {
-        size_t i;
-        for (i = 0; i < MAX_STARTUP_TRIES; ++i)
-        {
-            // Send ACMD41.
-            spiSendSdioCommandR0(SD_CMD55_APP_CMD, 0);
-            if (spiSendSdioCommandR0(SD_ACMD41_SD_SEND_OP_COND, acmd41Arg) == 0)
-            {
-                break;
-            }
-        }
-        if (i >= MAX_STARTUP_TRIES)
-        {
-            return false;
-        }
+        return false;
     }
 
     bool isSdhc = false;
