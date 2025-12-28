@@ -35,6 +35,7 @@ Note that there can be some game compatibility differences between different pla
 | MELONDS       | Melon DS support for testing purposes only.                                                    | ❌ |
 | R4            | Original R4DS (non-SDHC), M3 DS Simply                                                         | ❌ |
 | R4iDSN        | r4idsn.com                                                                                     | ❌ |
+| STARGATE      | Stargate 3DS DS-mode                                                                           | ✅ |
 | SUPERCARD     | SuperCard (Slot-2 flashcart)                                                                   | ❌ |
 
 The DMA column indicates whether DMA card reads are implemented for the platform . Without DMA card reads, some games can have cache related issues.<br>
