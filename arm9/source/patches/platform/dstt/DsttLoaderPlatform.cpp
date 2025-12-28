@@ -190,7 +190,7 @@ bool DsttLoaderPlatform::InitializeSdCard(void)
     if (isSdhc)
     {
         sdHostSetRegister(DSTT_SD_HOST_REG_RESET | DSTT_SD_HOST_REG_CLEAN_ROM_MODE | DSTT_SD_HOST_REG_SDHC);
-        dstt_readSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R7, THUMB_R0);
+        dstt_readSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R6, THUMB_R0);
         dstt_writeSd_sdsc_shift = THUMB_NOP;
     }
     return true;

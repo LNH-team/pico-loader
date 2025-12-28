@@ -3,36 +3,34 @@
 #include "thumbInstructions.h"
 #include "patches/PatchCode.h"
 #include "../IReadSectorsPatchCode.h"
+#include "DsttSdStopTransmissionPatchCode.h"
+#include "DsttReadSdApplySectorCommandPatchCode.h"
+#include "DsttReadSdWaitDataReadyPatchCode.h"
+#include "DsttReadSdTransferDataPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(dstt_readsd);
-DEFINE_SECTION_SYMBOLS(dstt_readsd_stopTransmission);
 
 extern "C" void dstt_readSd(u32 srcSector, void* dst, u32 sectorCount);
-extern "C" void dstt_stopTransmission();
 
+extern u32 dstt_readSd_applySectorCommand_address;
+extern u32 dstt_waitDataReady_address;
+extern u32 dstt_transferData_address;
 extern u32 dstt_stopTransmission_address;
-extern u16 dstt_readSd_sdsc_shift;
-
-class DsttReadSdStopTransmissionPatchCode : public PatchCode
-{
-public:
-    explicit DsttReadSdStopTransmissionPatchCode(PatchHeap& patchHeap)
-        : PatchCode(SECTION_START(dstt_readsd_stopTransmission), SECTION_SIZE(dstt_readsd_stopTransmission), patchHeap) { }
-
-    const void* GetStopTransmissionFunction() const
-    {
-        return GetAddressAtTarget((void*)dstt_stopTransmission);
-    }
-};
 
 class DsttReadSdPatchCode : public PatchCode, public IReadSectorsPatchCode
 {
 public:
     explicit DsttReadSdPatchCode(PatchHeap& patchHeap,
-        const DsttReadSdStopTransmissionPatchCode* dsttReadSdStopTransmissionPatchCode)
+        const DsttSdStopTransmissionPatchCode* dsttSdStopTransmissionPatchCode,
+        const DsttReadSdApplySectorCommandPatchCode* dsttReadSdApplySectorCommandPatchCode,
+        const DsttReadSdWaitDataReadyPatchCode* dsttReadSdWaitDataReadyPatchCode,
+        const DsttReadSdTransferDataPatchCode* dsttReadSdTransferDataPatchCode)
         : PatchCode(SECTION_START(dstt_readsd), SECTION_SIZE(dstt_readsd), patchHeap)
         {
-            dstt_stopTransmission_address = (u32)dsttReadSdStopTransmissionPatchCode->GetStopTransmissionFunction();
+            dstt_readSd_applySectorCommand_address = (u32)dsttReadSdApplySectorCommandPatchCode->GetApplySectorCommandFunction();
+            dstt_stopTransmission_address = (u32)dsttSdStopTransmissionPatchCode->GetStopTransmissionFunction();
+            dstt_waitDataReady_address = (u32)dsttReadSdWaitDataReadyPatchCode->GetWaitDataReadyFunction();
+            dstt_transferData_address = (u32)dsttReadSdTransferDataPatchCode->GetTransferDataFunction();
         }
 
     const ReadSectorsFunc GetReadSectorsFunction() const override

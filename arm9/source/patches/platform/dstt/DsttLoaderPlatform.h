@@ -2,6 +2,10 @@
 #include "../LoaderPlatform.h"
 #include "DsttReadSdPatchCode.h"
 #include "DsttWriteSdPatchCode.h"
+#include "DsttSdStopTransmissionPatchCode.h"
+#include "DsttReadSdApplySectorCommandPatchCode.h"
+#include "DsttReadSdWaitDataReadyPatchCode.h"
+#include "DsttReadSdTransferDataPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the DSTT flashcard
 class DsttLoaderPlatform : public LoaderPlatform
@@ -15,7 +19,19 @@ public:
             return new DsttReadSdPatchCode(patchHeap,
                 patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new DsttReadSdStopTransmissionPatchCode(patchHeap);
+                    return new DsttSdStopTransmissionPatchCode(patchHeap);
+                }),
+                patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new DsttReadSdApplySectorCommandPatchCode(patchHeap);
+                }),
+                patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new DsttReadSdWaitDataReadyPatchCode(patchHeap);
+                }),
+                patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new DsttReadSdTransferDataPatchCode(patchHeap);
                 }));
         });
     }
