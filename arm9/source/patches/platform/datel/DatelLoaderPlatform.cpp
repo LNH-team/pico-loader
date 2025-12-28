@@ -1,11 +1,11 @@
 #include "common.h"
 #include <libtwl/card/card.h>
-#include "DatelLoaderPlatform.h"
 #include "../SdioDefinitions.h"
 #include "thumbInstructions.h"
+#include "DatelLoaderPlatform.h"
 
-static constexpr size_t MAX_STARTUP_TRIES = 5000;
-static constexpr size_t SD_COMMAND_TIMEOUT = 0xFFF;
+static constexpr int MAX_STARTUP_TRIES = 5000;
+static constexpr int SD_COMMAND_TIMEOUT = 0xFFF;
 static constexpr u32 DATEL_CTRL_BASE = (MCCNT1_RESET_OFF | MCCNT1_CMD_SCRAMBLE | MCCNT1_READ_DATA_DESCRAMBLE | MCCNT1_CLOCK_SCRAMBLER | MCCNT1_LATENCY2(0x3F));
 
 static constexpr u8 DATEL_CMD_F2_SPI_ENABLE = 0xCC;
@@ -93,7 +93,7 @@ static u8 spiSendSdioCommandR0(u8 cmd, u32 arg)
 
 static bool trySendAcmd41(u32 acmd41Arg)
 {
-    for (size_t i = 0; i < MAX_STARTUP_TRIES; ++i)
+    for (int i = 0; i < MAX_STARTUP_TRIES; i++)
     {
         // Send ACMD41.
         spiSendSdioCommandR0(SD_CMD55_APP_CMD, 0);
