@@ -1,8 +1,10 @@
 .cpu arm7tdmi
 .syntax unified
-.section "scsd_common", "ax"
+.section "scsd_change_mode", "ax"
 
 #include "asminc.h"
+
+.equ sd_resetaddr,   0x9440000
 
 @ void sc_change_mode(uint16_t mode);
 BEGIN_THUMB_FUNCTION sccmn_changeMode
@@ -12,8 +14,17 @@ BEGIN_THUMB_FUNCTION sccmn_changeMode
     strh r3, [r2]
     strh r0, [r2]
     strh r0, [r2]
-    mov pc,lr
+	cmp r0, #3
+	bne 1f
+	@ if mode is 3 (sd enable), reset the sd card
+    @ SDResetCard
+    @ write 0
+    ldr r2,= sd_resetaddr
+    strh r2, [r2]
+1:
+    mov pc, lr
 
+.section "scsd_common", "ax"
 @ this function will trash r4 but leave r0 and r1 untouched
 @ void SDSendClock10(void)
 BEGIN_THUMB_FUNCTION sccmn_sdSendClock10

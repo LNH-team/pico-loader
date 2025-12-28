@@ -73,11 +73,12 @@ class SuperCardReadSectorLitePatchCode : public SdReadPatchCode
 public:
     SuperCardReadSectorLitePatchCode(PatchHeap& patchHeap,
         const SuperCardCommonPatchCode* superCardCommonPatchCode,
+        const SuperCardChangeModePatchCode* superCardChangeModePatchCode,
         const SuperCardSDCommandAndDropLitePatchCode* superCardSdCommandAndDropLitePatchCode,
         const SuperCardReadDataLitePatchCode* superCardReadDataLitePatchCode)
         : SdReadPatchCode(SECTION_START(sclite_read_sector), SECTION_SIZE(sclite_read_sector), patchHeap)
     {
-        INTERWORK_LABEL(sccmn_changeMode, readInterwork) = (u32)superCardCommonPatchCode->GetScChangeModeFunction();
+        INTERWORK_LABEL(sccmn_changeMode, readInterwork) = (u32)superCardChangeModePatchCode->GetScChangeModeFunction();
         INTERWORK_LABEL(sclite_sdCommandAndDropResponse6, readInterwork)
             = (u32)superCardSdCommandAndDropLitePatchCode->GetSdCommandAndDropResponse6Function();
         INTERWORK_LABEL(sclite_readData, readInterwork) = (u32)superCardReadDataLitePatchCode->GetReadDataLiteFunction();
@@ -95,6 +96,7 @@ class SuperCardWriteSectorLitePatchCode : public SdWritePatchCode
 public:
     SuperCardWriteSectorLitePatchCode(PatchHeap& patchHeap,
         const SuperCardCommonPatchCode* superCardCommonPatchCode,
+        const SuperCardChangeModePatchCode* superCardChangeModePatchCode,
         const SuperCardSDCommandAndDropLitePatchCode* superCardSdCommandAndDropLitePatchCode,
         const SuperCardWriteDataLitePatchCode* superCardWriteDataLitePatchCode)
         : SdWritePatchCode(SECTION_START(sclite_write_sector), SECTION_SIZE(sclite_write_sector), patchHeap)
@@ -102,7 +104,7 @@ public:
         INTERWORK_LABEL(sclite_writeData, writeInterwork) = (u32)superCardWriteDataLitePatchCode->GetWriteDataLiteFunction();
         INTERWORK_LABEL(sccmn_sdio4BitCrc16, writeInterwork) = (u32)superCardCommonPatchCode->GetCrc16ChecksumFunction();
         INTERWORK_LABEL(sccmn_sdSendClock10, writeInterwork) = (u32)superCardCommonPatchCode->GetSdSendClock10Function();
-        INTERWORK_LABEL(sccmn_changeMode, writeInterwork) = (u32)superCardCommonPatchCode->GetScChangeModeFunction();
+        INTERWORK_LABEL(sccmn_changeMode, writeInterwork) = (u32)superCardChangeModePatchCode->GetScChangeModeFunction();
         INTERWORK_LABEL(sclite_sdCommandAndDropResponse6, writeInterwork)
             = (u32)superCardSdCommandAndDropLitePatchCode->GetSdCommandAndDropResponse6Function();
     }

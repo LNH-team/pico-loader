@@ -23,12 +23,12 @@
 .pool
 .endm
 
-#ifdef LITE
-
 .macro CALL func, interworkLabel
-    ldr r4, \func\()_\interworkLabel\()Lite_address
+    LOAD_INTERWORK_FUNCTION \func \interworkLabel r4
     bl \interworkLabel
 .endm
+
+#ifdef LITE
 
 .macro INTERWORK_FUNCTION func, interworkLabel
 .global \func\()_\interworkLabel\()Lite_address
@@ -36,17 +36,20 @@
     .word 0
 .endm
 
-#else
-
-.macro CALL func, interworkLabel
-    ldr r4, \func\()_\interworkLabel\()_address
-    bl \interworkLabel
+.macro LOAD_INTERWORK_FUNCTION func, interworkLabel, reg
+    ldr \reg, \func\()_\interworkLabel\()Lite_address
 .endm
+
+#else
 
 .macro INTERWORK_FUNCTION func, interworkLabel
 .global \func\()_\interworkLabel\()_address
 \func\()_\interworkLabel\()_address:
     .word 0
+.endm
+
+.macro LOAD_INTERWORK_FUNCTION func, interworkLabel, reg
+    ldr \reg, \func\()_\interworkLabel\()_address
 .endm
 
 #endif

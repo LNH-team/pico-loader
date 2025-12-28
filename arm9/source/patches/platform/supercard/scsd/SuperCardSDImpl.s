@@ -182,21 +182,16 @@ scsd_writeSectorSdhcLabel:
     @ enable sd access
     @ this function won't touch r1
     movs r0, #3
-    CALL sccmn_changeMode writeInterwork
-
-    @ SDResetCard
-    @ write 0
-    ldr r2,= sd_resetaddr
-    strh r2, [r2]
+    bl scsd_sccmn_changeMode_call
 
     @ WRITE_MULTIPLE_BLOCK
     SD_COMMAND_ARGUMENT #25
     @ 2nd parameter is in r1 from above
 
-    CALL scsd_sdCommandAndDropResponse6 writeInterwork
+    bl scsd_sdCommandAndDropResponse6_call
 
     @ this function will trash r4 but leave r0 and r1 untouched
-    CALL sccmn_sdSendClock10 writeInterwork
+    bl scsd_sccmn_sdSendClock10_call
 
     LOAD_FAST_EXMEMCNT
 
@@ -215,7 +210,7 @@ write_sector_loop:
     CALL scsd_writeData writeInterwork
 
     @ this function will trash r4 but leave r0 and r1 untouched
-    CALL sccmn_sdSendClock10 writeInterwork
+    bl scsd_sccmn_sdSendClock10_call
 
     subs r1, #1
     bne write_sector_loop
@@ -227,10 +222,10 @@ write_sector_loop:
     @ 2nd parameter is passed in r1
     @ and from the loop above r1 is already 0
 
-    CALL scsd_sdCommandAndDropResponse6 writeInterwork
+    bl scsd_sdCommandAndDropResponse6_call
 
     @ this function will trash r4 but leave r0 and r1 untouched
-    CALL sccmn_sdSendClock10 writeInterwork
+    bl scsd_sccmn_sdSendClock10_call
 
     @ SD_DATAADD is loaded by scsd_writeData into r5
     @ while(*r5 &0x100) == 0
@@ -240,12 +235,20 @@ beginwhile_WriteSector:
     bcc beginwhile_WriteSector
 
     movs r0, #1
-    CALL sccmn_changeMode writeInterwork
+    bl scsd_sccmn_changeMode_call
 
     @ restore EXMEMCNT register
     RESTORE_EXMEMCNT
 
     pop {r4-r7,pc}
+scsd_sccmn_sdSendClock10_call:
+	LOAD_INTERWORK_FUNCTION sccmn_sdSendClock10 writeInterwork r4
+	bx r4
+scsd_sdCommandAndDropResponse6_call:
+	LOAD_INTERWORK_FUNCTION scsd_sdCommandAndDropResponse6 writeInterwork r4
+	bx r4
+scsd_sccmn_changeMode_call:
+	LOAD_INTERWORK_FUNCTION sccmn_changeMode writeInterwork r4
 INTERWORK writeInterwork
 INTERWORK_FUNCTION scsd_writeData writeInterwork
 INTERWORK_FUNCTION sccmn_sdio4BitCrc16 writeInterwork
@@ -253,8 +256,6 @@ INTERWORK_FUNCTION sccmn_sdSendClock10 writeInterwork
 INTERWORK_FUNCTION sccmn_changeMode writeInterwork
 INTERWORK_FUNCTION scsd_sdCommandAndDropResponse6 writeInterwork
 
-.balign 4
-.pool
 
 .section "scsd_read_sector", "ax"
 @ bool scsd_readSector(uint32_t sector, uint8_t *buff, uint32_t readnum)
@@ -273,11 +274,6 @@ scsd_readSectorSdhcLabel:
     @ this function won't touch r1
     movs r0, #3
     CALL sccmn_changeMode readInterwork
-
-    @ SDResetCard
-    @ write 0
-    ldr r2,= sd_resetaddr
-    strh r2, [r2]
 
     @ READ_MULTIPLE_BLOCK
     SD_COMMAND_ARGUMENT #18

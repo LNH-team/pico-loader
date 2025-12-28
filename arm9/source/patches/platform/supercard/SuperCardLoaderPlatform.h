@@ -12,15 +12,19 @@ public:
     const SdReadPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
+		auto common = patchCodeCollection.GetOrAddSharedPatchCode([&]
+		{
+			return new SuperCardCommonPatchCode(patchHeap);
+		});
+		auto changeMode = patchCodeCollection.GetOrAddSharedPatchCode([&]
+		{
+			return new SuperCardChangeModePatchCode(patchHeap);
+		});
         if (isScLite)
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
-                return new SuperCardReadSectorLitePatchCode(patchHeap,
-                    patchCodeCollection.GetOrAddSharedPatchCode([&]
-                    {
-                        return new SuperCardCommonPatchCode(patchHeap);
-                    }),
+                return new SuperCardReadSectorLitePatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
                         return new SuperCardSDCommandAndDropLitePatchCode(patchHeap);
@@ -36,11 +40,7 @@ public:
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
-                return new SuperCardReadSectorPatchCode(patchHeap,
-                    patchCodeCollection.GetOrAddSharedPatchCode([&]
-                    {
-                        return new SuperCardCommonPatchCode(patchHeap);
-                    }),
+                return new SuperCardReadSectorPatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
                         return new SuperCardSdCommandAndDropPatchCode(patchHeap);
@@ -57,15 +57,19 @@ public:
     const SdWritePatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
+		auto common = patchCodeCollection.GetOrAddSharedPatchCode([&]
+		{
+			return new SuperCardCommonPatchCode(patchHeap);
+		});
+		auto changeMode = patchCodeCollection.GetOrAddSharedPatchCode([&]
+		{
+			return new SuperCardChangeModePatchCode(patchHeap);
+		});
         if (isScLite)
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
-                return new SuperCardWriteSectorLitePatchCode(patchHeap,
-                    patchCodeCollection.GetOrAddSharedPatchCode([&]
-                    {
-                        return new SuperCardCommonPatchCode(patchHeap);
-                    }),
+                return new SuperCardWriteSectorLitePatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
                         return new SuperCardSDCommandAndDropLitePatchCode(patchHeap);
@@ -81,11 +85,7 @@ public:
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
-                return new SuperCardWriteSectorPatchCode(patchHeap,
-                    patchCodeCollection.GetOrAddSharedPatchCode([&]
-                    {
-                        return new SuperCardCommonPatchCode(patchHeap);
-                    }),
+                return new SuperCardWriteSectorPatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
                         return new SuperCardSdCommandAndDropPatchCode(patchHeap);

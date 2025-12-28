@@ -125,11 +125,6 @@ sclite_writeSectorSdhcLabel:
     movs r0, #3
     CALL sccmn_changeMode writeInterwork
 
-    @ SDResetCard
-    @ write 0
-    ldr r2,=sd_resetaddr
-    strh r2, [r2]
-
     @ WRITE_MULTIPLE_BLOCK
     SD_COMMAND_ARGUMENT #25
     @ 2nd parameter is in r1 from above
@@ -212,11 +207,6 @@ sclite_readSectorSdhcLabel:
     @ this function won't touch r1
     movs r0, #3
     CALL sccmn_changeMode readInterwork
-
-    @ SDResetCard
-    @ write 0
-    ldr r2,= sd_resetaddr
-    strh r2, [r2]
 
     @ READ_MULTIPLE_BLOCK
     SD_COMMAND_ARGUMENT #18
