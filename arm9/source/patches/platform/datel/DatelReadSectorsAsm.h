@@ -17,7 +17,7 @@ class DatelReadSdPatchCode : public SdReadPatchCode
 public:
     DatelReadSdPatchCode(PatchHeap& patchHeap,
         const DatelReadSpiBytePatchCode* datelReadSpiBytePatchCode,
-        const DATELSendSDIOCommandPatchCode* datelSendSDIOCommandPatchCode)
+        const DatelSendSDIOCommandPatchCode* datelSendSDIOCommandPatchCode)
         : SdReadPatchCode(SECTION_START(datel_read), SECTION_SIZE(datel_read), patchHeap)
         {
             datel_SDReadMultipleSector_SpiSendSDIOCommandR0 = (u32)datelSendSDIOCommandPatchCode->GetSpiSendSDIOCommandR0Function();

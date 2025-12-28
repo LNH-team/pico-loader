@@ -43,10 +43,10 @@ public:
     }
 };
 
-class DATELSendSDIOCommandPatchCode : public PatchCode
+class DatelSendSDIOCommandPatchCode : public PatchCode
 {
 public:
-    DATELSendSDIOCommandPatchCode(PatchHeap& patchHeap,
+    DatelSendSDIOCommandPatchCode(PatchHeap& patchHeap,
         const DatelReadSpiBytePatchCode* datelReadSpiBytePatchCode)
         : PatchCode(SECTION_START(datel_spi_send), SECTION_SIZE(datel_spi_send), patchHeap)
     {

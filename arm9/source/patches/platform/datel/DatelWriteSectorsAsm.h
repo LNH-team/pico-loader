@@ -18,7 +18,7 @@ class DatelWriteSdPatchCode : public SdWritePatchCode
 public:
     DatelWriteSdPatchCode(PatchHeap& patchHeap,
         const DatelReadSpiBytePatchCode* datelReadSpiBytePatchCode,
-        const DATELSendSDIOCommandPatchCode* datelSendSDIOCommandPatchCode)
+        const DatelSendSDIOCommandPatchCode* datelSendSDIOCommandPatchCode)
         : SdWritePatchCode(SECTION_START(datel_write), SECTION_SIZE(datel_write), patchHeap)
         {
             datel_SDWriteMultipleSector_SpiSendSDIOCommand = (u32)datelSendSDIOCommandPatchCode->GetSpiSendSDIOCommandFunction();

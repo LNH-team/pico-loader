@@ -18,7 +18,7 @@ public:
         });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new DATELSendSDIOCommandPatchCode(patchHeap, spi);
+            return new DatelSendSDIOCommandPatchCode(patchHeap, spi);
         });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
@@ -35,7 +35,7 @@ public:
         });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new DATELSendSDIOCommandPatchCode(patchHeap, spi);
+            return new DatelSendSDIOCommandPatchCode(patchHeap, spi);
         });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
