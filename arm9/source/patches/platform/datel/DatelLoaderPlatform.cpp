@@ -28,10 +28,12 @@ static u8 readWriteSpiByte(u8 data)
     return REG_MCD0;
 }
 
-static u8 readSpiByteTimeout() {
+static u8 readSpiByteTimeout()
+{
     auto timeout = SD_COMMAND_TIMEOUT;
     u8 res;
-    do {
+    do
+	{
         res = readWriteSpiByte(0xFF);
     } while (res == 0xFF && --timeout > 0);
     return res;
