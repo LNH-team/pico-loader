@@ -7,6 +7,7 @@
 
 ### Fixed
 - DMA card read offsets for Pokemon Ranger (EU) - by @taxicat1
+- Split DSTT SD read to multiple patches to avoid running out of space - by @lifehackerhansol
 
 ## [v1.6.0] - 29 Mar 2026
 
