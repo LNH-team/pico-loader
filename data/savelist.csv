@@ -1622,10 +1622,8 @@ AUBJ;flash;0x40000
 AUCJ;flash;0x40000
 AUDJ;flash;0x40000
 AUEJ;flash;0x40000
-AUFE;eeprom;0x10000
 AUFE;eeprom;0x2000
 AUFJ;eeprom;0x2000
-AUFP;eeprom;0x10000
 AUFP;eeprom;0x2000
 AUGE;eeprom;0x2000
 AUGP;eeprom;0x2000
@@ -2998,7 +2996,6 @@ BPJP;eeprom;0x200
 BPLP;eeprom;0x200
 BPME;eeprom;0x200
 BPMP;eeprom;0x200
-BPNE;eeprom;0x2000
 BPNE;eeprom;0x200
 BPNP;eeprom;0x2000
 BPOJ;eeprom;0x10000
@@ -5231,7 +5228,7 @@ TECJ;flash;0x40000
 TEDJ;eeprom;0x10000
 TENJ;eeprom;0x2000
 TERP;eeprom;0x200
-TF2E;none;0x0
+TF2E;eeprom;0x200
 TF4J;flash;0x40000
 TFBE;eeprom;0x200
 TFBP;eeprom;0x200
@@ -5249,7 +5246,6 @@ TG3D;eeprom;0x2000
 TG4J;flash;0x40000
 TGAP;eeprom;0x200
 TGBJ;eeprom;0x2000
-TGBJ;eeprom;0x10000
 TGCJ;eeprom;0x10000
 TGDJ;eeprom;0x2000
 TGGE;eeprom;0x200
@@ -6375,7 +6371,6 @@ YF9E;eeprom;0x200
 YF9P;eeprom;0x200
 YFAJ;eeprom;0x10000
 YFBF;eeprom;0x200
-YFBF;eeprom;0x2000
 YFCE;eeprom;0x2000
 YFCP;eeprom;0x2000
 YFEE;flash;0x40000
