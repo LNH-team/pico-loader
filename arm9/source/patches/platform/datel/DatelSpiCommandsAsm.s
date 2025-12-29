@@ -12,6 +12,13 @@ BEGIN_ASM_FUNC datel_readSpiByte
 BEGIN_ASM_FUNC datel_readWriteSpiByte
     push {r1-r3, lr}
     ldr r3, =REG_MCCNT0
+    @ Wait if there's a transfer in progress (can happen if the random byte sent by the cycle spi function is still on its way)
+1:
+    ldrh r1, [r3]
+    lsrs r1, r1, #8
+    bcs 1b
+
+    @ Actually write the byte of interest and wait for it to be sent
     strh r0, [r3, #2]
 1:
     ldrh r1, [r3]
@@ -61,15 +68,14 @@ BEGIN_ASM_FUNC datel_waitSpiByteTimeout
 .section "datel_spi_send", "ax"
 @void datel_cycleSpi();
 datel_cycleSpi:
-    push {r0-r4, lr}
+    push {r0-r5, lr}
     adr r0, datel_cycleSpi_data
     ldm r0!, {r1,r3,r4}
-    strh r3, [r1] @ Enable Spi
-    movs r0, DATEL_CMD_F2_SPI_ENABLE
-    
-    @ datel_SendNtrCommandF2
+    @ First send spi disable command, the second time this loop is called we send spi enable
+    movs r5, DATEL_CMD_F2_SPI_DISABLE
+datel_sendNtrCommandF2:
     movs r2, #0xF2
-    lsls r0, r0, #8
+    lsls r0, r5, #8
     str r2, [r1, #8]
     str r0, [r1, #12]
 
@@ -82,9 +88,14 @@ datel_cycleSpi:
     ldr r2, [r1, #4]
     cmp r2, #0
     blt 1b
-    
-    strh r3, [r1] @ Enable Spi
-    pop {r0-r4, pc}
+
+    adds r5, #4
+    cmp r5, DATEL_CMD_F2_SPI_ENABLE
+    @ Enable spi and also send a dummy byte at the same time by writing first to REG_MCCNT0 and then to REG_MCD0
+    str r3, [r1]
+    beq datel_sendNtrCommandF2
+
+    pop {r0-r5, pc}
 
 @ NOTE!!!: This function needs to set r0 last with mov or something similar so that it updates the zero flags
 @u8 datel_spiSendSDIOCommandR0(u32 arg, u8 cmd);
@@ -146,7 +157,7 @@ datel_spiSendSDIOCommandR0_InterworkR3:
 .pool
 datel_cycleSpi_data:
     .word REG_MCCNT0
-    .word 0x0000A040 @ MCCNT0_MODE_SPI | MCCNT0_SPI_HOLD_CS | MCCNT0_ENABLE
+    .word 0x00FFA040 @ MCCNT0_MODE_SPI | MCCNT0_SPI_HOLD_CS | MCCNT0_ENABLE in lower 16 bit, 0xFF in upper 16
     .word 0xA07F6000 @ MCCNT1_RESET_OFF | MCCNT1_CMD_SCRAMBLE | MCCNT1_READ_DATA_DESCRAMBLE | MCCNT1_CLOCK_SCRAMBLER | MCCNT1_LATENCY2(0x3F)
 .global datel_spiSendSDIOCommandR0_ReadSpiByteTimeout
 datel_spiSendSDIOCommandR0_ReadSpiByteTimeout:
