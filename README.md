@@ -45,7 +45,7 @@ Note that there are still SDK versions and variants for which Pico Loader does n
 We recommend using WSL (Windows Subsystem for Linux), or MSYS2 to compile this repository.
 The steps provided will assume you already have one of those environments set up.
 
-1. Install [BlocksDS](https://blocksds.skylyrac.net/docs/setup/options/)
+1. Install [BlocksDS](https://blocksds.skylyrac.net/docs/setup/)
 2. Install [.NET 9.0](https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install?tabs=dotnet9&pivots=os-linux-ubuntu-2404) for your system (note: this link points to the instructions for Ubuntu, but links for most OS'es are available on the same page)
 
 ## Compiling
