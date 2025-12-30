@@ -20,14 +20,14 @@ const void* KirbySuperStarUltraPatch::InsertPatch(PatchContext& patchContext)
             kirbyultrapatch_offset = 0x6460;
             break;
         }
-        case GAMECODE("YKWP"):
-        {
-            kirbyultrapatch_offset = 0x6550;
-            break;
-        }
         case GAMECODE("YKWK"):
         {
             kirbyultrapatch_offset = 0x6508;
+            break;
+        }
+        case GAMECODE("YKWP"):
+        {
+            kirbyultrapatch_offset = 0x6550;
             break;
         }
     }

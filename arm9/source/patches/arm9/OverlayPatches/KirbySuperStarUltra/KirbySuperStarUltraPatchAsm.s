@@ -14,7 +14,7 @@ kirbyultrapatch_entry:
     ldr r0, kirbyultrapatch_offset
     adds r1, r0
     ldm r1!, {r2, r3, r4, r5, r6, r7}
-	subs r1, #24 // Reset pointer
+    subs r1, #24 // Reset pointer
     subs r2, #3 // Correct function call offset
     stm r1!, {r5, r6, r7}
     stm r1!, {r2, r3, r4}

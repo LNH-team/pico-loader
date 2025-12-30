@@ -405,11 +405,11 @@ void Arm9Patcher::AddGameSpecificPatches(
             patchCollection.AddPatch(new NintendoDSGuideNandSavePatch());
             break;
         }
-		// Kirby Super Star Ultra
-		case GAMECODE("YKWE"):
+        // Kirby Super Star Ultra
+        case GAMECODE("YKWE"):
         case GAMECODE("YKWJ"):
-        case GAMECODE("YKWP"):
         case GAMECODE("YKWK"):
+        case GAMECODE("YKWP"):
         {
             overlayHookPatch->AddOverlayPatch(new KirbySuperStarUltraPatch());
             break;
