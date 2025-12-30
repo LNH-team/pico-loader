@@ -1,6 +1,6 @@
 #include "common.h"
 #include "gameCode.h"
-#include "../../../PatchContext.h"
+#include "patches/PatchContext.h"
 #include "KirbySuperStarUltraPatchAsm.h"
 #include "KirbySuperStarUltraPatch.h"
 

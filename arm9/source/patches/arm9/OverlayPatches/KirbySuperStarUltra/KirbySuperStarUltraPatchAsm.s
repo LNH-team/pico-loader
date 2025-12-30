@@ -16,7 +16,7 @@ kirbyultrapatch_entry:
     ldm r1!, {r2, r3, r4, r5, r6, r7}
     subs r1, #24 // Reset pointer
     subs r2, #3 // Correct function call offset
-    stm r1!, {r5, r6, r7}
+    stm r1!, {r5, r6, r7} // Swap the two blocks of 3 instructions
     stm r1!, {r2, r3, r4}
 
 continue_to_next:
