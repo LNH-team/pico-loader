@@ -8,7 +8,7 @@ extern u16 datel_readSectorSdhcLabel;
 extern u32 datel_SDReadMultipleSector_SpiSendSDIOCommandR0;
 
 extern u32 datel_SDReadMultipleSector_ReadSpiByteTimeout;
-extern u32 datel_SDReadMultipleSector_ReadSpiByte;
+extern u32 datel_SDReadMultipleSector_ReadSpiShort;
 
 extern "C" void datel_SDReadMultipleSector(u32 srcSector, void* dst, u32 sectorCount);
 
@@ -23,7 +23,7 @@ public:
             datel_SDReadMultipleSector_SpiSendSDIOCommandR0 = (u32)datelSendSDIOCommandPatchCode->GetSpiSendSDIOCommandR0Function();
 
             datel_SDReadMultipleSector_ReadSpiByteTimeout = (u32)datelReadSpiBytePatchCode->GetReadSpiByteTimeoutFunction();
-            datel_SDReadMultipleSector_ReadSpiByte = (u32)datelReadSpiBytePatchCode->GetReadSpiByteFunction();
+            datel_SDReadMultipleSector_ReadSpiShort = (u32)datelReadSpiBytePatchCode->GetReadSpiShortFunction();
         }
 
     const SdReadFunc GetSdReadFunction() const override

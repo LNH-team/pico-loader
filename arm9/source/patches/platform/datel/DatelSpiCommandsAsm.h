@@ -7,6 +7,7 @@ DEFINE_SECTION_SYMBOLS(datel_spi_send);
 
 extern "C" u8 datel_readSpiByte();
 extern "C" u8 datel_readWriteSpiByte(u8 value);
+extern "C" u16 datel_readSpiShort();
 extern "C" u8 datel_readSpiByteTimeout();
 extern "C" bool datel_waitSpiByteTimeout();
 
@@ -25,6 +26,11 @@ public:
     const void* GetReadSpiByteFunction() const
     {
         return GetAddressAtTarget((void*)datel_readSpiByte);
+    }
+
+    const void* GetReadSpiShortFunction() const
+    {
+        return GetAddressAtTarget((void*)datel_readSpiShort);
     }
 
     const void* GetReadWriteSpiByteFunction() const

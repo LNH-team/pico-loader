@@ -29,6 +29,16 @@ BEGIN_ASM_FUNC datel_readWriteSpiByte
     cmp r0, #0
     pop {r1-r3, pc}
 
+@u16 datel_readWriteSpiShort();
+BEGIN_ASM_FUNC datel_readSpiShort
+    push {r1-r7, lr}
+    bl datel_readSpiByte
+    movs r1, r0
+    bl datel_readSpiByte
+    lsls r0, #8
+    orrs r0, r1
+    pop {r1-r7, pc}
+
 @u8 datel_readSpiByteTimeout(void);
 BEGIN_ASM_FUNC datel_readSpiByteTimeout
     push {r1-r4, lr}
