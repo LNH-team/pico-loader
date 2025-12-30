@@ -64,7 +64,11 @@ read_next_byte:
     adds r7, #2
     bl datel_SDReadMultipleSector_Interwork
 
-    ldr r4, =DATEL_SD_CMD_TIMEOUT_LEN
+    @ use a timeout of 0x1000 instead of 0xFFF, easier to setup, then halve it
+	@ since we're reading 2 bytes at the time
+    @ ldr r4, =DATEL_SD_CMD_TIMEOUT_LEN
+    movs r4, #1
+    lsls r4, #11
     ldr r7, datel_SDReadMultipleSector_ReadSpiShort
 1:
     bl datel_SDReadMultipleSector_Interwork
