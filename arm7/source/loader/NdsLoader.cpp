@@ -30,6 +30,7 @@
 
 #define AP_LIST_PATH      "/_pico/aplist.bin"
 #define BIOS_NDS7_PATH    "/_pico/biosnds7.rom"
+#define BIOS_DSI7_PATH    "/_pico/biosdsi7.rom"
 
 typedef void (*entrypoint_t)(void);
 
@@ -290,7 +291,15 @@ void NdsLoader::Load(BootMode bootMode)
 
     if (Environment::IsDsiMode() && _romHeader.IsTwlRom())
     {
+        if (!TrySetupSSLCertKey())
+        {
+            LOG_WARNING("Failed to setup SSL cert key\n");
+        }
+
         SetupDsiDeviceList();
+
+        // restore MBK9 settings from rom header
+        REG_MBK9 = _romHeader.mbk9Setting[0] | (_romHeader.mbk9Setting[1] << 8) | (_romHeader.mbk9Setting[2] << 16);
 
         u32 scfgExt7 = 0x93FBFB00 | (_romHeader.arm7ScfgExt7 & 0x40407);
         REG_SCFG_EXT = scfgExt7;
@@ -978,6 +987,30 @@ void NdsLoader::SetupDsiDeviceList()
         DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
 
     strcpy(deviceList->appFileName, _dsiwareSaveResult.romFilePath);
+}
+
+bool NdsLoader::TrySetupSSLCertKey()
+{
+    if (!_romHeader.HasSSLCertAccess())
+    {
+        // No SSL cert access needed
+        return true;
+    }
+
+    auto bios7File = std::make_unique<FIL>();
+    auto keyTable = std::make_unique_for_overwrite<aes_u128_t>();
+    UINT bytesRead = 0;
+    if (f_open(bios7File.get(), BIOS_DSI7_PATH, FA_OPEN_EXISTING | FA_READ) != FR_OK ||
+        f_lseek(bios7File.get(), 0xB5D8 + 0x30) != FR_OK ||
+        f_read(bios7File.get(), keyTable.get(), sizeof(aes_u128_t), &bytesRead) != FR_OK ||
+        bytesRead != sizeof(aes_u128_t))
+    {
+        return false;
+    }
+
+    TwlAes().SetupKeySlot(0, (const aes_u128_t*)keyTable.get());
+
+    return true;
 }
 
 bool NdsLoader::TrySetupDsiWareSave()
