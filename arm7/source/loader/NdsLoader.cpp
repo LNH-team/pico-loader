@@ -220,6 +220,7 @@ void NdsLoader::Load(BootMode bootMode)
     if (bootMode == BootMode::Normal)
     {
         bootType = _romHeader.IsDsiWare() ? BOOT_TYPE_NAND : BOOT_TYPE_CARD;
+        HandleiQueRegionFreePatching();
     }
     else if (bootMode == BootMode::Multiboot)
     {
@@ -1011,6 +1012,15 @@ bool NdsLoader::TryDecryptSecureArea()
 
     LOG_DEBUG("Decrypted secure area\n");
     return true;
+}
+
+void NdsLoader::HandleiQueRegionFreePatching()
+{
+    if ((_romHeader.ndsRegion & 0x80) == 0x80)
+    {
+        _romHeader.ndsRegion = 0;
+        _romHeader.headerCrc = swi_getCrc16(0xFFFF, (void*)&_romHeader, 0x15E);
+    }
 }
 
 ConsoleRegion NdsLoader::GetRomRegion(u32 gameCode)
