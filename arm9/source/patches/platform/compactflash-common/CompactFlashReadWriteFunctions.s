@@ -1,0 +1,181 @@
+.cpu arm7tdmi
+.syntax unified
+
+.section "cf_read_write_functions", "ax"
+
+.equ CF_STS_INSERTED, 0x50
+.equ CF_STS_READY, 0x58
+.equ CF_STS_BUSY, 0x80
+
+.equ CF_CMD_LBA, 0xE0
+.equ CF_CMD_READ, 0x20
+.equ CF_CMD_WRITE, 0x30
+
+.equ CF_CARD_TIMEOUT, 10000000
+
+@ bool CF_PerformTransferSectors(u32 numSectors, u32 sector, u8 command, void* srcAddr, void* dstAddr)
+.type CF_PerformTransferSectors, %function
+CF_PerformTransferSectors:
+	push {r0-r7,lr}
+	ldr r7, cf_readWriteFunctions_available_for_command
+	bl interwork
+	beq error
+	
+	adr r7, cf_readWriteFunctions_reg_sector_count
+	ldm r7!, {r1,r2,r3,r4,r5,r6}
+	strh r0, [r1]
+	
+	movs r7, 0xFF
+	@ r0 is sector
+	ldr r0, [sp, #4]
+	ands r1, r0, r7
+	strh r1, [r2]
+
+	lsrs r0, r0, #8
+	ands r1, r0, r7
+	strh r1, [r3]
+
+	lsrs r0, r0, #8
+	ands r1, r0, r7
+	strh r1, [r4]
+
+	lsrs r0, r0, #8
+	ands r1, r0, r7
+	movs r3, CF_CMD_LBA
+	orrs r1, r4
+	strh r1, [r5]
+
+	@ r0 is numSectors
+	@ r1 is sector
+	@ r2 is command
+	@ r3 is srcAddr
+	@ r4 is dstAddr
+	pop {r0-r4}
+	strh r2, [r6]
+	@ get total number of bytes to write
+	lsls r0, #9
+
+read_next_block:
+	ldr r7, cf_readWriteFunctions_waitCardNextBlockReady
+	bl interwork7
+	beq error
+
+read_next_int:
+	ldm r3!, {r1,r5,r6,r7}
+	stm r4!, {r1,r5,r6,r7}
+
+	subs r0, #16
+	beq done
+	
+    @ Shifting left by 0x17 will set the Zero flag if the number that was shifted is a multiple
+    @ of 0x200 (indicating a full sector has been written)
+	lsls r1, r0, #0x17
+	bne read_next_int
+
+	b read_next_block
+done:
+	pop {r5-r7, pc}
+error:
+	pop {r0-r7, pc}
+
+interwork:
+	bx r7
+
+.balign 4
+.pool
+.global cf_readWriteFunctions_reg_sector_count
+cf_readWriteFunctions_reg_sector_count:
+	.word 0
+.global cf_readWriteFunctions_reg_lba1
+cf_readWriteFunctions_reg_lba1:
+	.word 0
+.global cf_readWriteFunctions_reg_lba2
+cf_readWriteFunctions_reg_lba2:
+	.word 0
+.global cf_readWriteFunctions_reg_lba3
+cf_readWriteFunctions_reg_lba3:
+	.word 0
+.global cf_readWriteFunctions_reg_lba4
+cf_readWriteFunctions_reg_lba4:
+	.word 0
+.global cf_readWriteFunctions_reg_command
+cf_readWriteFunctions_reg_command:
+	.word 0
+.global cf_readWriteFunctions_available_for_command
+cf_readWriteFunctions_available_for_command:
+	.word 0
+.global cf_readWriteFunctions_waitCardNextBlockReady
+cf_readWriteFunctions_waitCardNextBlockReady:
+	.word 0
+
+.section "cf_read_write_functions_2", "ax"
+@ CF_PerformTransfer(u32 numSectors, u32 sector, u8 command, void* srcAddr, void* dstAddr)
+.type CF_PerformTransfer, %function
+CF_PerformTransfer:
+	@ leave r2,r3,r4 untouched, r0-r1 are thrashed, only available regs are r5,r6,r7
+	
+	ldr r7, =cf_readWriteFunctions2_performTransferSectors
+	
+	@ sector counter
+	movs r6, r1
+
+	@ remaining sectors
+	movs r5, r0
+
+readNextSectorBlock:
+	cmp r5, 0xFF
+	blt lastRead
+
+	movs r0, 0xFF
+	movs r1, r6
+	adds r6, r0
+	subs r5, r0
+	bl interwork
+	beq error
+	b readNextSectorBlock
+	
+lastRead:
+	movs r0, r5
+	movs r1, r6
+	bl interwork
+
+error:
+	pop {r4-r7, pc}
+interwork:
+	bx r7
+
+@ CF_readSectors(u32 sector, void* buffer, u32 numSectors)
+.type CF_readSectors, %function
+CF_readSectors:
+	push {r4-r7, lr}
+
+	ldr r3, =cf_readWriteFunctions_reg_data
+	movs r4, r1
+	movs r1, r0
+	movs r0, r2
+
+	movs r2, CF_CMD_READ
+
+	b CF_PerformTransfer
+
+@ CF_writeSectors(u32 sector, void* buffer, u32 numSectors)
+.type CF_writeSectors, %function
+CF_writeSectors:
+	push {r4-r7, lr}
+
+	movs r3, r1
+	ldr r4, =cf_readWriteFunctions_reg_data
+	movs r1, r0
+	movs r0, r2
+
+	movs r2, CF_CMD_WRITE
+
+	b CF_PerformTransfer
+
+.balign 4
+.global cf_readWriteFunctions_reg_data
+cf_readWriteFunctions_reg_data:
+	.word 0
+.global cf_readWriteFunctions2_performTransferSectors
+cf_readWriteFunctions2_performTransferSectors:
+	.word 0
