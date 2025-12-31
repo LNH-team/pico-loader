@@ -4,6 +4,7 @@ Pico Loader is a homebrew and retail DS(i) rom loader supporting a variety of pl
 ## Features
 - Supports both homebrew and retail DS(i) roms
 - Supports DSiWare and redirects NAND to the flashcard SD card (acting as "emunand", see below for how to setup)
+- Supports multi-region emunand (Standard, CHN and KOR)
 - Supports DS roms with an encrypted secure area if a DS arm7 bios is present at `/_pico/biosnds7.rom`
 - Supports a wide range of platforms, including popular flashcards and the DSpico
 - Built-in patches for DS Protect
@@ -62,25 +63,34 @@ The steps provided will assume you already have one of those environments set up
     - `savelist.bin` (generated in the `data` folder of the repo)
 
 ## Emunand
-When running DSiWare, Pico Loader redirects NAND to the flashcard SD card. This requires the following files and folders, obtained from a DSi nand dump, in the root of your flashcard SD card:
+When running DSiWare, Pico Loader redirects NAND to the flashcard SD card. This requires the following files and folders, obtained from a DSi nand dump or 3DS TWLNAND partition, in the `_pico` folder of your flashcard SD card (File names starting with **\*** indicate that they are optional and are used by a few system tools, such as `DSi System Settings`):
 - `photo` - The photo partition of nand will be redirected to this folder
-- `shared1`
-    - `TWLCFG0.dat`
-    - `TWLCFG1.dat`
-- `shared2`
-    - `launcher`
-        - `wrap.bin`
-- `sys`
-    - `log`
-        - `product.log`
-        - `shop.log`
-        - `sysmenu.log`
-    - `cert.sys`
-    - `dev.kp`
-    - `HWID.sgn`
-    - `HWINFO_N.dat`
-    - `HWINFO_S.dat`
-    - `TWLFontTable.dat`
+- `snd` - The sound files of nand will be redirected to this folder
+    - `0000` - The default sound file used by DSi Sound
+- `twln` - The standard region (aka worldwide) NAND folder
+    - `shared1`
+        - **\*** `TWLCFG0.dat`
+        - **\*** `TWLCFG1.dat`
+    - `shared2`
+        - `launcher`
+            - **\*** `wrap.bin`
+    - `sys`
+        - **\*** `cert.sys`
+        - **\*** `dev.kp`
+        - **\*** `HWID.sgn`
+        - **\*** `HWINFO_N.dat`
+        - **\*** `HWINFO_S.dat`
+        - `TWLFontTable.dat` - Normal Font (843.1KB)
+- `twlc` - The CHN region NAND folder (optional, only used by the CHN version of DSiWare)
+    - **•••**
+    - `sys`
+        - **•••**
+        - `TWLFontTable.dat` - CHN Font (568.1KB)
+- `twlk` - The KOR region NAND folder (optional, only used by the KOR version of DSiWare)
+    - **•••**
+    - `sys`
+        - **•••**
+        - `TWLFontTable.dat` - KOR Font (158.9KB)
 
 ## How to use Pico Loader from homebrew
 On the arm9:
