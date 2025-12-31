@@ -1,6 +1,6 @@
 .cpu arm7tdmi
 .syntax unified
-
+.thumb
 .section "cf_read_write_functions", "ax"
 
 .equ CF_STS_INSERTED, 0x50
@@ -26,25 +26,24 @@ CF_PerformTransferSectors:
 	ldm r7!, {r1,r2,r3,r4,r5,r6}
 	strh r0, [r1]
 	
-	movs r7, 0xFF
 	@ r0 is sector
 	ldr r0, [sp, #4]
-	ands r1, r0, r7
-	strh r1, [r2]
+	lsls r7, r0, #24
+	lsrs r7, r7, #24
+	strh r7, [r2]
 
-	lsrs r0, r0, #8
-	ands r1, r0, r7
-	strh r1, [r3]
+	lsls r7, r0, #16
+	lsrs r7, r7, #24
+	strh r7, [r3]
 
-	lsrs r0, r0, #8
-	ands r1, r0, r7
+	lsls r7, r0, #8
+	lsrs r7, r7, #24
 	strh r1, [r4]
 
-	lsrs r0, r0, #8
-	ands r1, r0, r7
+	lsrs r7, r7, #24
 	movs r3, CF_CMD_LBA
-	orrs r1, r4
-	strh r1, [r5]
+	orrs r7, r3
+	strh r7, [r5]
 
 	@ r0 is numSectors
 	@ r1 is sector

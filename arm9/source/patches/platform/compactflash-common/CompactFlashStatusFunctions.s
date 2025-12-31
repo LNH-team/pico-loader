@@ -1,5 +1,6 @@
 .cpu arm7tdmi
 .syntax unified
+.thumb
 
 .section "cf_wait_functions", "ax"
 

@@ -1,5 +1,6 @@
 .cpu arm7tdmi
 .syntax unified
+.thumb
 .section "sccf_change_mode", "ax"
 
 .global sccf_lockUnlockCard
