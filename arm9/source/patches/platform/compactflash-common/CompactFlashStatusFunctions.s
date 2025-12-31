@@ -75,7 +75,9 @@ ready:
 .balign 4
 data:
 	.word CF_CARD_TIMEOUT
-.global cf_waitFunctions_reg_cmd:
+.global cf_waitFunctions_reg_cmd
+cf_waitFunctions_reg_cmd:
 	.word 0
-.global cf_waitFunctions_reg_status:
+.global cf_waitFunctions_reg_status
+cf_waitFunctions_reg_status:
 	.word 0

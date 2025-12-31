@@ -2,6 +2,11 @@
 .syntax unified
 .section "sccf_change_mode", "ax"
 
+.global sccf_lockUnlockCard
+.type sccf_lockUnlockCard, %function
+sccf_lockUnlockCard:
+	cmp r0, #1
+	bne unlock
 @ void sc_change_mode(uint16_t mode);
 sccf_changeMode:
     ldr r2,= 0x09FFFFFE
@@ -12,15 +17,7 @@ sccf_changeMode:
     strh r0, [r2]
     mov pc, lr
 
-.global sccf_lockCard
-.type sccf_lockCard, %function
-sccf_lockCard:
-	movs r0, #1
-	b sccf_changeMode
-
-.global sccf_unlockCard
-.type sccf_unlockCard, %function
-sccf_unlockCard:
+unlock:
 	movs r0, #3
 	b sccf_changeMode
 

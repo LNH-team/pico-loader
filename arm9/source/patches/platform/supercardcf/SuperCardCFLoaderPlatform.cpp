@@ -1,5 +1,5 @@
 #include "common.h"
-#include "SuperCardCFLoaderPlatform.h
+#include "SuperCardCFLoaderPlatform.h"
 
 #define SC_MODE_REG         (*(vu16*)0x09FFFFFE)
 #define SC_MODE_MAGIC       0xA55A
@@ -15,28 +15,12 @@ static void changeSupercardMode(u8 mode)
     SC_MODE_REG = mode;
 }
 
-void SuperCardCFLoaderPlatform::CardUnlock()
+void SuperCardCFLoaderPlatform::CardUnlock() const
 {
 	changeSupercardMode(SC_MODE_MEDIA);
 }
 
-void SuperCardCFLoaderPlatform::CardLock()
+void SuperCardCFLoaderPlatform::CardLock() const
 {
 	changeSupercardMode(SC_MODE_RAM_RO);
-}
-
-bool SuperCardCFLoaderPlatform::InitializeSdCard()
-{
-    u16 temp = CF_REG_LBA1;
-    CF_REG_LBA1 = (~temp & 0xFF);
-    temp = (~temp & 0xFF);
-    if (!(CF_REG_LBA1 == temp)) {
-        return false;
-    }
-
-    CF_REG_LBA1 = 0xAA55;
-    if (CF_REG_LBA1 == 0xAA55) {
-        return false;
-    }
-    return true;
 }

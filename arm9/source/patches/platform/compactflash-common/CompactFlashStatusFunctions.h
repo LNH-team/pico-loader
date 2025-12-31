@@ -15,19 +15,19 @@ extern u32 cf_waitFunctions_reg_status;
 class CompactFlashStatusFunctionsPatchCode : public PatchCode
 {
 public:
-    CompactFlashStatusFunctionsPatchCode(PatchHeap& patchHeap, const CF_REGISTERS& registers)
-        : SdReadPatchCode(SECTION_START(scsd_read_sector), SECTION_SIZE(scsd_read_sector), patchHeap)
+    CompactFlashStatusFunctionsPatchCode(PatchHeap& patchHeap, const CompactFlash::CF_REGISTERS& registers)
+        : PatchCode(SECTION_START(cf_wait_functions), SECTION_SIZE(cf_wait_functions), patchHeap)
     {
 		cf_waitFunctions_reg_cmd = registers.command;
 		cf_waitFunctions_reg_status = registers.status;
     }
 
-    const void* GetWaitAvailableForCommands() const override
+    const void* GetWaitAvailableForCommandsFunction() const
     {
         return GetAddressAtTarget((void*)cf_waitAvailableForCommands);
     }
 
-    const void* GetWaitCardNextBlockReady() const override
+    const void* GetWaitCardNextBlockReadyFunction() const
     {
         return GetAddressAtTarget((void*)cf_waitCardNextBlockReady);
     }

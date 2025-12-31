@@ -1,4 +1,5 @@
 #include "common.h"
+#include <libtwl/mem/memExtern.h>
 #include "CompactFlashCommonLoaderPlatform.h"
 
 static constexpr int CF_CARD_TIMEOUT = 10000000;
@@ -41,7 +42,7 @@ static bool waitAvailableForCommands(const auto& regs) {
 bool CompactFlashCommonLoaderPlatform::InitializeCFCard()
 {
 	const auto& regs = GetCfRegisters();
-	if(!waitAvailableForCommands(regs))
+	if(!waitAvailableForCommands(regs))
 	{
 		return false;
 	}
