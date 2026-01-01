@@ -43,7 +43,7 @@ public:
         cf_readWriteFunctions_reg_lba4 = registers.lba4;
         cf_readWriteFunctions_reg_command = registers.command;
         cf_readWriteFunctions_available_for_command = (u32)compactFlashStatusFunctionsPatchCode->GetWaitAvailableForCommandsFunction();
-        cf_readWriteFunctions_waitCardNextBlockReady= (u32)compactFlashStatusFunctionsPatchCode->GetWaitCardNextBlockReadyFunction();
+        cf_readWriteFunctions_waitCardNextBlockReady = (u32)compactFlashStatusFunctionsPatchCode->GetWaitCardNextBlockReadyFunction();
     }
 
     const void* GetPerformTransferSectorsFunction() const
