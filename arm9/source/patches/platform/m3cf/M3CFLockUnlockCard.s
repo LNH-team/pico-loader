@@ -64,7 +64,8 @@ M3_changeMode:
     ldrh r1, [r2]
 
     cmp r0, M3_MODE_ROM
-    bne lastRomRead
+    beq lastRomRead
+    @ READ_REG #0x09000000
     ldrh r1, [r7]
     pop {r1-r7, pc}
 
