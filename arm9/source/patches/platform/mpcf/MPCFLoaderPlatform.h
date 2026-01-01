@@ -1,6 +1,5 @@
 #pragma once
 #include "common.h"
-#include "SuperCardCFCommon.h"
 #include "../compactflash-common/CompactFlashCommonLoaderPlatform.h"
 
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
@@ -10,29 +9,21 @@ public:
     const SdReadPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
-        auto lockUnlock = patchCodeCollection.GetOrAddSharedPatchCode([&]
-        {
-            return new SuperCardCFChangeModePatchCode(patchHeap);
-        });
-        return CreateCommonCfReadPatchCode(patchCodeCollection, patchHeap, lockUnlock->GetScLockUnlockCardFunction());
+        return CreateCommonCfReadPatchCode(patchCodeCollection, patchHeap, nullptr);
     }
 
     const SdWritePatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
-        auto lockUnlock = patchCodeCollection.GetOrAddSharedPatchCode([&]
-        {
-            return new SuperCardCFChangeModePatchCode(patchHeap);
-        });
-        return CreateCommonCfWritePatchCode(patchCodeCollection, patchHeap, lockUnlock->GetScLockUnlockCardFunction());
+        return CreateCommonCfWritePatchCode(patchCodeCollection, patchHeap, nullptr);
     }
     
 private:
-    bool RequiresLocking() const override { return true; }
+    bool RequiresLocking() const override { return false; }
 
-    void CardUnlock() const override;
+    void CardUnlock() const override {}
 
-    void CardLock() const override;
+    void CardLock() const override {}
 
     const CompactFlash::CF_REGISTERS& GetCfRegisters() const override
     {
