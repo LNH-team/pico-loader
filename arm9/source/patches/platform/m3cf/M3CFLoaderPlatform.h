@@ -8,7 +8,7 @@ class M3CFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
     bool RequiresLocking() const override { return true; }
     
-    CompactFlashLockUnlockPatchCode* NewCardLockUnlockPatchCode(PatchHeap& patchHeap) const    override
+    CompactFlashLockUnlockPatchCode* NewCardLockUnlockPatchCode(PatchHeap& patchHeap) const override
     {
         return new M3CFLockUnlockCardPatchCode(patchHeap);
     }
