@@ -15,10 +15,12 @@ static bool detectIsNitroEmulator()
     return true;
 }
 
-static bool detectNocashPrintSuppport()
+static bool detectNocashPrintSupport()
 {
     u32 nocashIdentifier = *(vu32*)0x04FFFA00;
-    return nocashIdentifier == 0x67246F6E; //no$g
+    // No$gba (no$g) or melonDS (melo)
+    if (nocashIdentifier == 0x67246F6E || nocashIdentifier == 0x6F6C656D)
+        return true;
 }
 
 static bool detectPicoAgbAdapter()
@@ -55,7 +57,7 @@ void Environment::Initialize(bool dsiMode)
     }
     if (!(_flags & ENVIRONMENT_FLAGS_IS_NITRO_EMULATOR))
     {
-        if (detectNocashPrintSuppport())
+        if (detectNocashPrintSupport())
             _flags |= ENVIRONMENT_FLAGS_NOCASH_PRINT;
     }
 }
