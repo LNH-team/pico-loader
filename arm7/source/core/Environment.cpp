@@ -21,6 +21,7 @@ static bool detectNocashPrintSupport()
     // No$gba (no$g) or melonDS (melo)
     if (nocashIdentifier == 0x67246F6E || nocashIdentifier == 0x6F6C656D)
         return true;
+    return false;
 }
 
 static bool detectPicoAgbAdapter()
