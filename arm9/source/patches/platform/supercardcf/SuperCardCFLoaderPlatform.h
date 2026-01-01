@@ -29,6 +29,8 @@ public:
     }
 	
 private:
+	bool RequiresLocking() const override { return true; }
+
 	void CardUnlock() const override;
 
 	void CardLock() const override;

@@ -18,6 +18,8 @@ protected:
 
 	virtual void CardLock() const = 0;
 
+	virtual bool RequiresLocking() const = 0;
+
 	virtual const CompactFlash::CF_REGISTERS& GetCfRegisters() const = 0;
 
 	const SdReadPatchCode* CreateCommonCfReadPatchCode(

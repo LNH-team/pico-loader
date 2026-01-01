@@ -109,6 +109,8 @@ cf_readWriteFunctions_waitCardNextBlockReady:
 	.word 0
 
 .section "cf_read_write_functions_2", "ax"
+.global CF_PerformTransfer_unlock_label
+.global CF_PerformTransfer_lock_label
 @ CF_PerformTransfer(u32 numSectors, u32 sector, u8 command, void* srcAddr, void* dstAddr)
 CF_PerformTransfer:
     @ loads EXMEMCNT register address
@@ -124,6 +126,9 @@ CF_PerformTransfer:
 	
 	ldr r7, cf_readWriteFunctions2_lockUnlockCard
 	movs r0, #0
+
+	@ if the cart requires no lock/unlock sequence, this is replaced with a nop
+CF_PerformTransfer_unlock_label:
 	bl interwork
 
 	@ leave r2,r3,r4 untouched, r0-r1 are thrashed, only available regs are r5,r6,r7
@@ -145,6 +150,9 @@ readNextSectorBlock:
 lastRead:
 	movs r0, r5
 	movs r1, r6
+
+	@ if the cart requires no lock/unlock sequence, this is replaced with a nop
+CF_PerformTransfer_unlock_label:
 	bl interwork
 
 error:

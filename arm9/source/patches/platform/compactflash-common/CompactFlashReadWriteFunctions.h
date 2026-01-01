@@ -25,6 +25,9 @@ extern u32 cf_readWriteFunctions2_reg_data;
 extern u32 cf_readWriteFunctions2_performTransferSectors;
 extern u32 cf_readWriteFunctions2_lockUnlockCard;
 
+extern u16 CF_PerformTransfer_unlock_label;
+extern u16 CF_PerformTransfer_lock_label;
+
 class CompactFlashTransferSectorPatchCode : public PatchCode
 {
 public:

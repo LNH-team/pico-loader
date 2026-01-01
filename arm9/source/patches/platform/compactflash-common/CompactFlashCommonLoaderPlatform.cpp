@@ -1,5 +1,6 @@
 #include "common.h"
 #include <libtwl/mem/memExtern.h>
+#include "thumbInstructions.h"
 #include "CompactFlashCommonLoaderPlatform.h"
 
 static constexpr int CF_CARD_TIMEOUT = 10000000;
@@ -43,6 +44,12 @@ static bool waitAvailableForCommands(const auto& regs) {
 
 bool CompactFlashCommonLoaderPlatform::InitializeCFCard()
 {
+	if(!RequiresLocking())
+	{
+		const u16 noLockingOpcode = THUMB_MOVS_REG(THUMB_R0, THUMB_R0);
+		CF_PerformTransfer_unlock_label = noLockingOpcode;
+		CF_PerformTransfer_lock_label = noLockingOpcode;
+	}
 	const auto& regs = GetCfRegisters();
 	if(!waitAvailableForCommands(regs))
 	{
