@@ -32,7 +32,7 @@ class CompactFlashTransferSectorPatchCode : public PatchCode
 {
 public:
     CompactFlashTransferSectorPatchCode(PatchHeap& patchHeap,
-        const CompactFlash::cf_registers_t& registers,
+        const cf_registers_t& registers,
         const CompactFlashStatusFunctionsPatchCode* compactFlashStatusFunctionsPatchCode)
         : PatchCode(SECTION_START(cf_read_write_functions), SECTION_SIZE(cf_read_write_functions), patchHeap)
     {
@@ -56,7 +56,7 @@ class CompactFlashReadSectorPatchCode : public SdReadPatchCode
 {
 public:
     CompactFlashReadSectorPatchCode(PatchHeap& patchHeap,
-        const CompactFlash::cf_registers_t& registers,
+        const cf_registers_t& registers,
         const CompactFlashTransferSectorPatchCode* compactFlashTransferSectorPatchCode,
         const CompactFlashLockUnlockPatchCode* lockUnlockCard)
         : SdReadPatchCode(SECTION_START(cf_read_write_functions_2), SECTION_SIZE(cf_read_write_functions_2), patchHeap)
@@ -81,7 +81,7 @@ class CompactFlashWriteSectorPatchCode : public SdWritePatchCode
 {
 public:
     CompactFlashWriteSectorPatchCode(PatchHeap& patchHeap,
-        const CompactFlash::cf_registers_t& registers,
+        const cf_registers_t& registers,
         const CompactFlashTransferSectorPatchCode* compactFlashTransferSectorPatchCode,
         const CompactFlashLockUnlockPatchCode* lockUnlockCard)
         : SdWritePatchCode(SECTION_START(cf_read_write_functions_2), SECTION_SIZE(cf_read_write_functions_2), patchHeap)

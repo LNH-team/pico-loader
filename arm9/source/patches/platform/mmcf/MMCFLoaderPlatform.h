@@ -5,9 +5,9 @@
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class MMCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
-    const CompactFlash::cf_registers_t& GetCfRegisters() const override
+    const cf_registers_t& GetCfRegisters() const override
     {
-        static constexpr CompactFlash::cf_registers_t regs {
+        static constexpr cf_registers_t regs {
             .data           = 0x09000000,
             .status         = 0x080E0000, // dldi and official sf had it same as `command` register, but should it be 0x080C0000?
             .command        = 0x080E0000,
