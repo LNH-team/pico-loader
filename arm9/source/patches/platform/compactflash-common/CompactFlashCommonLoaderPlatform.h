@@ -15,9 +15,7 @@ public:
     bool InitializeSdCard() override;
 
 protected:
-    virtual void CardUnlock() const = 0;
-
-    virtual void CardLock() const = 0;
+    virtual void CardLockUnlock(bool lock) const = 0;
 
     virtual bool RequiresLocking() const = 0;
     

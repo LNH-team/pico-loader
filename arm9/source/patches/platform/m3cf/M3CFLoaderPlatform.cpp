@@ -32,12 +32,7 @@ static void M3_changeMode(u32 mode)
 	}
 }
 
-void M3CFLoaderPlatform::CardUnlock() const
+void M3CFLoaderPlatform::CardLockUnlock(bool lock) const
 {
-    M3_changeMode(M3_MODE_MEDIA);
-}
-
-void M3CFLoaderPlatform::CardLock() const
-{
-    M3_changeMode(M3_MODE_ROM);
+    M3_changeMode(lock ? M3_MODE_ROM : M3_MODE_MEDIA);
 }
