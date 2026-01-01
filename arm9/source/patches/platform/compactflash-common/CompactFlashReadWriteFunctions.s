@@ -38,7 +38,7 @@ CF_PerformTransferSectors:
 
 	lsls r7, r0, #8
 	lsrs r7, r7, #24
-	strh r1, [r4]
+	strh r7, [r4]
 
 	lsrs r7, r7, #24
 	movs r3, CF_CMD_LBA
