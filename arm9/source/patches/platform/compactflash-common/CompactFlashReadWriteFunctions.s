@@ -150,15 +150,15 @@ readNextSectorBlock:
 lastRead:
     movs r0, r5
     movs r1, r6
-
-    @ if the cart requires no lock/unlock sequence, this is replaced with a nop
-CF_PerformTransfer_lock_label:
     bl interwork
 
 error:
     
     ldr r7, cf_readWriteFunctions2_lockUnlockCard
     movs r0, #1
+
+    @ if the cart requires no lock/unlock sequence, this is replaced with a nop
+CF_PerformTransfer_lock_label:
     bl interwork
 
     @ waitstate 4,2 and arm7 slot2 access
