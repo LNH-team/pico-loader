@@ -46,9 +46,12 @@ bool CompactFlashCommonLoaderPlatform::InitializeCFCard()
 {
     if(!RequiresLocking())
     {
-        const u16 noLockingOpcode = THUMB_MOVS_REG(THUMB_R0, THUMB_R0);
-        CF_PerformTransfer_unlock_label = noLockingOpcode;
-        CF_PerformTransfer_lock_label = noLockingOpcode;
+		// what is getting replaced is a `bl`, taking 4 bytes
+        const u16 noLockingOpcode = THUMB_MOV_HIREG(THUMB_HI_R8, THUMB_HI_R8);
+        CF_PerformTransfer_unlock_label[0] = noLockingOpcode;
+        CF_PerformTransfer_unlock_label[1] = noLockingOpcode;
+        CF_PerformTransfer_lock_label[0] = noLockingOpcode;
+        CF_PerformTransfer_lock_label[1] = noLockingOpcode;
     }
     const auto& regs = GetCfRegisters();
     if(!waitAvailableForCommands(regs))
