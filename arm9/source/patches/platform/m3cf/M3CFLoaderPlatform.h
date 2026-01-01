@@ -14,7 +14,7 @@ public:
         {
             return new M3CFChangeModePatchCode(patchHeap);
         });
-        return CreateCommonCfReadPatchCode(patchCodeCollection, patchHeap, lockUnlock->GetScLockUnlockCardFunction());
+        return CreateCommonCfReadPatchCode(patchCodeCollection, patchHeap, lockUnlock->GetM3LockUnlockCardFunction());
     }
 
     const SdWritePatchCode* CreateSdWritePatchCode(
@@ -24,7 +24,7 @@ public:
         {
             return new M3CFChangeModePatchCode(patchHeap);
         });
-        return CreateCommonCfWritePatchCode(patchCodeCollection, patchHeap, lockUnlock->GetScLockUnlockCardFunction());
+        return CreateCommonCfWritePatchCode(patchCodeCollection, patchHeap, lockUnlock->GetM3LockUnlockCardFunction());
     }
     
 private:

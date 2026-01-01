@@ -3,7 +3,7 @@
 #include "../compactflash-common/CompactFlashCommonLoaderPlatform.h"
 
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
-class SuperCardCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
+class MPCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
 public:
     const SdReadPatchCode* CreateSdReadPatchCode(

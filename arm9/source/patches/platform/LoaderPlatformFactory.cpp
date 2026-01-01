@@ -16,8 +16,8 @@
 #include "patches/platform/datel/DatelLoaderPlatform.h"
 #include "patches/platform/stargate/StargateLoaderPlatform.h"
 #include "patches/platform/supercardcf/SuperCardCFLoaderPlatform.h"
-#include "patches/platform/mpcf/MPCFFLoaderPlatform.h"
-#include "patches/platform/m3cf/M3CFFLoaderPlatform.h"
+#include "patches/platform/mpcf/MPCFLoaderPlatform.h"
+#include "patches/platform/m3cf/M3CFLoaderPlatform.h"
 #include "LoaderPlatformFactory.h"
 
 LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
@@ -55,9 +55,9 @@ LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
 #elif defined(PICO_LOADER_TARGET_SUPERCARDCF)
     return new SuperCardCFLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_MPCF)
-    return new MPCFFLoaderPlatform();
+    return new MPCFLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_M3CF)
-    return new M3CFFLoaderPlatform();
+    return new M3CFLoaderPlatform();
 #else
 #error "No loader platform defined"
     return nullptr;
