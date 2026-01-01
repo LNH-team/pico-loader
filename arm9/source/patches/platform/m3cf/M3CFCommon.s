@@ -1,11 +1,12 @@
 .cpu arm7tdmi
 .syntax unified
 .thumb
+
 .section "m3cf_change_mode", "ax"
 
 .macro READ_REG regAddr
-	ldr r1, =\regAddr
-	ldrh r2, [r1]
+    ldr r1, =\regAddr
+    ldrh r1, [r1]
 .endm
 .equ M3_MODE_ROM, 8
 .equ M3_MODE_MEDIA, 6
@@ -15,31 +16,76 @@
 m3cf_lockUnlockCard:
     cmp r0, #1
     bne unlock
-	movs r0, #8
+    movs r0, #0x08
 M3_changeMode:
-    push {r1-r3, lr}
-	READ_REG #0x08e00002
-	READ_REG #0x0800000e
-	READ_REG #0x08801ffc
-	READ_REG #0x0800104a
-	READ_REG #0x08800612
-	READ_REG #0x08000000
-	READ_REG #0x08801b66
-	ldr r1, =#0x08800000
-	adds r1, r0
-	ldrh r2, [r1]
-	READ_REG #0x0800080e
-	READ_REG #0x08000000
-	cmp r0, M3_MODE_ROM
-	bne lastRomRead
-	READ_REG #0x09000000
-    pop {r1-r3, pc}
+    push {r1-r7, lr}
+    @ READ_REG #0x08e00002
+    ldr r1, =#0x08e00002
+    ldrh r1, [r1]
+    
+    adr r1, M3_regs
+    @ r2 has #0x08801ffc
+    @ r3 has #0x0800104a
+    @ r4 has #0x08800612
+    @ r5 has #0x08801b66
+    @ r6 has #0x08800000
+    @ r7 has #0x0800080e
+    ldm r1!, {r2-r7}
+
+    @ load 0x08000000
+    movs r1, #1
+    lsls r1, #27
+
+    @ READ_REG #0x0800000e
+    ldrh r1, [r1, #0x0E]
+
+    @ READ_REG #0x08801ffc
+    ldrh r1, [r2]
+    @ READ_REG #0x0800104a
+    ldrh r1, [r3]
+    @ READ_REG #0x08800612
+    ldrh r1, [r4]
+
+    @ READ_REG #0x08000000
+    @ load 0x08000000
+    movs r2, #1
+    lsls r2, #27
+    ldrh r1, [r2]
+
+    @ READ_REG #0x08801b66
+    ldrh r1, [r5]
+
+    @ READ_REG #0x08801b66 + r0
+    @ ldr r1, =#0x08800000
+    ldrh r1, [r6, r0]
+
+    @ READ_REG #0x0800080e
+    ldrh r1, [r7]
+
+    @ READ_REG #0x08000000
+    ldrh r1, [r2]
+
+    cmp r0, M3_MODE_ROM
+    bne lastRomRead
+    READ_REG #0x09000000
+    pop {r1-r7, pc}
 lastRomRead:
-	READ_REG #0x080001e4
-	READ_REG #0x080001e4
-	READ_REG #0x08000188
-	READ_REG #0x08000188
+    @ READ_REG #0x080001e4
+    ldr r1, =#0x080001e4
+    ldrh r3, [r1]
+    ldrh r3, [r1]
+    @ READ_REG #0x08000188
+    subs r1, #0x5C
+    ldrh r3, [r1]
+    ldrh r3, [r1]
 unlock:
-	movs r0, #6
+    movs r0, #0x06
     b M3_changeMode
 .pool
+M3_regs:
+    .word 0x08801ffc
+    .word 0x0800104a
+    .word 0x08800612
+    .word 0x08801b66
+    .word 0x08800000
+    .word 0x0800080e
