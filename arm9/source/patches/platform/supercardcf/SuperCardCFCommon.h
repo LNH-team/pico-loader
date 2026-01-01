@@ -1,18 +1,18 @@
 #pragma once
 #include "sections.h"
-#include "../SdReadPatchCode.h"
+#include "../compactflash-common/CompactFlashLockUnlockPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(sccf_change_mode);
 
 extern "C" void sccf_lockUnlockCard(bool lock);
 
-class SuperCardCFChangeModePatchCode : public PatchCode
+class SuperCardCFLockUnlockCardPatchCode : public CompactFlashLockUnlockPatchCode
 {
 public:
-    explicit SuperCardCFChangeModePatchCode(PatchHeap& patchHeap)
-        : PatchCode(SECTION_START(sccf_change_mode), SECTION_SIZE(sccf_change_mode), patchHeap) { }
+    explicit SuperCardCFLockUnlockCardPatchCode(PatchHeap& patchHeap)
+        : CompactFlashLockUnlockPatchCode(SECTION_START(sccf_change_mode), SECTION_SIZE(sccf_change_mode), patchHeap) { }
 
-    const void* GetScLockUnlockCardFunction() const
+    const void* GetLockUnlockFunction() const override
     {
         return GetAddressAtTarget((void*)sccf_lockUnlockCard);
     }

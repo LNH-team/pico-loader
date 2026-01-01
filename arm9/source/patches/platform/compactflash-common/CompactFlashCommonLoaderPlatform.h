@@ -2,10 +2,11 @@
 #include "common.h"
 #include "../LoaderPlatform.h"
 #include "CompactFlashRegisters.h"
+#include "CompactFlashLockUnlockPatchCode.h"
 #include "CompactFlashStatusFunctions.h"
 #include "CompactFlashReadWriteFunctions.h"
 
-/// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
+/// @brief Base implementation of LoaderPlatform for the Compact Flash slot 2 flashcarts
 class CompactFlashCommonLoaderPlatform : public LoaderPlatform
 {
 public:
@@ -19,11 +20,13 @@ protected:
     virtual void CardLock() const = 0;
 
     virtual bool RequiresLocking() const = 0;
+    
+    virtual CompactFlashLockUnlockPatchCode* NewCardLockUnlockPatchCode(PatchHeap& patchHeap) const    { return nullptr; }
 
     virtual const CompactFlash::CF_REGISTERS& GetCfRegisters() const = 0;
 
-    const SdReadPatchCode* CreateCommonCfReadPatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap, const void* cardLockUnlockPatchCode) const
+    const SdReadPatchCode* CreateSdReadPatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         const auto& regs = GetCfRegisters();
         auto statusFunctions = patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -35,15 +38,17 @@ protected:
         {
             return new CompactFlashTransferSectorPatchCode(patchHeap, regs, statusFunctions);
         });
+
+        auto lockUnlock = allocateLockUnlockPatchCode(patchCodeCollection, patchHeap);
         
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new CompactFlashReadSectorPatchCode(patchHeap, regs, transferSector, cardLockUnlockPatchCode);
+            return new CompactFlashReadSectorPatchCode(patchHeap, regs, transferSector, lockUnlock);
         });
     }
 
-    const SdWritePatchCode* CreateCommonCfWritePatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap, const void* cardLockUnlockPatchCode) const
+    const SdWritePatchCode* CreateSdWritePatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         const auto& regs = GetCfRegisters();
         auto statusFunctions = patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -56,12 +61,32 @@ protected:
             return new CompactFlashTransferSectorPatchCode(patchHeap, regs, statusFunctions);
         });
         
+        auto lockUnlock = allocateLockUnlockPatchCode(patchCodeCollection, patchHeap);
+        
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new CompactFlashWriteSectorPatchCode(patchHeap, regs, transferSector, cardLockUnlockPatchCode);
+            return new CompactFlashWriteSectorPatchCode(patchHeap, regs, transferSector, lockUnlock);
         });
     }
     
 private:
+
+    const CompactFlashLockUnlockPatchCode* allocateLockUnlockPatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const
+    {
+        if(RequiresLocking())
+        {
+            return patchCodeCollection.GetOrAddSharedPatchCode([&]
+            {
+                return NewCardLockUnlockPatchCode(patchHeap);
+            });
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
+
     bool InitializeCFCard();
 };

@@ -6,29 +6,12 @@
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class M3CFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
-public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
-    {
-        auto lockUnlock = patchCodeCollection.GetOrAddSharedPatchCode([&]
-        {
-            return new M3CFChangeModePatchCode(patchHeap);
-        });
-        return CreateCommonCfReadPatchCode(patchCodeCollection, patchHeap, lockUnlock->GetM3LockUnlockCardFunction());
-    }
-
-    const SdWritePatchCode* CreateSdWritePatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
-    {
-        auto lockUnlock = patchCodeCollection.GetOrAddSharedPatchCode([&]
-        {
-            return new M3CFChangeModePatchCode(patchHeap);
-        });
-        return CreateCommonCfWritePatchCode(patchCodeCollection, patchHeap, lockUnlock->GetM3LockUnlockCardFunction());
-    }
-    
-private:
     bool RequiresLocking() const override { return true; }
+    
+    CompactFlashLockUnlockPatchCode* NewCardLockUnlockPatchCode(PatchHeap& patchHeap) const    override
+    {
+        return new M3CFLockUnlockCardPatchCode(patchHeap);
+    }
 
     void CardUnlock() const override;
 

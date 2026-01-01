@@ -5,26 +5,6 @@
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class MPCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
-public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
-    {
-        return CreateCommonCfReadPatchCode(patchCodeCollection, patchHeap, nullptr);
-    }
-
-    const SdWritePatchCode* CreateSdWritePatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
-    {
-        return CreateCommonCfWritePatchCode(patchCodeCollection, patchHeap, nullptr);
-    }
-    
-private:
-    bool RequiresLocking() const override { return false; }
-
-    void CardUnlock() const override {}
-
-    void CardLock() const override {}
-
     const CompactFlash::CF_REGISTERS& GetCfRegisters() const override
     {
         static constexpr CompactFlash::CF_REGISTERS regs {

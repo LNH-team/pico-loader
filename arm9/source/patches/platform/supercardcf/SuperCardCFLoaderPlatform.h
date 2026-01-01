@@ -6,29 +6,12 @@
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class SuperCardCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
-public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
-    {
-        auto lockUnlock = patchCodeCollection.GetOrAddSharedPatchCode([&]
-        {
-            return new SuperCardCFChangeModePatchCode(patchHeap);
-        });
-        return CreateCommonCfReadPatchCode(patchCodeCollection, patchHeap, lockUnlock->GetScLockUnlockCardFunction());
-    }
-
-    const SdWritePatchCode* CreateSdWritePatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
-    {
-        auto lockUnlock = patchCodeCollection.GetOrAddSharedPatchCode([&]
-        {
-            return new SuperCardCFChangeModePatchCode(patchHeap);
-        });
-        return CreateCommonCfWritePatchCode(patchCodeCollection, patchHeap, lockUnlock->GetScLockUnlockCardFunction());
-    }
-    
-private:
     bool RequiresLocking() const override { return true; }
+    
+    CompactFlashLockUnlockPatchCode* NewCardLockUnlockPatchCode(PatchHeap& patchHeap) const    override
+    {
+        return new SuperCardCFLockUnlockCardPatchCode(patchHeap);
+    }
 
     void CardUnlock() const override;
 
