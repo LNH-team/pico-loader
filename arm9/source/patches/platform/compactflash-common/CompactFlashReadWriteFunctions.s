@@ -40,7 +40,9 @@ CF_PerformTransferSectors:
     lsrs r7, r7, #24
     strh r7, [r4]
 
-    lsrs r7, r7, #24
+    @ Only lower nibble is transferred
+    lsls r7, r0, #4
+    lsrs r7, r7, #28
     movs r3, CF_CMD_LBA
     orrs r7, r3
     strh r7, [r5]
