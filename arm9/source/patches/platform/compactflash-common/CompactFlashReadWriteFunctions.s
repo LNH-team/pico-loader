@@ -152,7 +152,7 @@ lastRead:
     movs r1, r6
 
     @ if the cart requires no lock/unlock sequence, this is replaced with a nop
-CF_PerformTransfer_unlock_label:
+CF_PerformTransfer_lock_label:
     bl interwork
 
 error:
