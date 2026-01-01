@@ -122,13 +122,13 @@ CF_PerformTransfer:
 	@ remaining sectors
 	movs r5, r0
 	
-	ldr r7, =cf_readWriteFunctions2_lockUnlockCard
+	ldr r7, cf_readWriteFunctions2_lockUnlockCard
 	movs r0, #0
 	bl interwork
 
 	@ leave r2,r3,r4 untouched, r0-r1 are thrashed, only available regs are r5,r6,r7
 	
-	ldr r7, =cf_readWriteFunctions2_performTransferSectors
+	ldr r7, cf_readWriteFunctions2_performTransferSectors
 
 readNextSectorBlock:
 	cmp r5, 0xFF
@@ -149,12 +149,13 @@ lastRead:
 
 error:
 	
-	ldr r7, =cf_readWriteFunctions2_lockUnlockCard
+	ldr r7, cf_readWriteFunctions2_lockUnlockCard
 	movs r0, #1
 	bl interwork
 
     @ waitstate 4,2 and arm7 slot2 access
     movs r2, #0x80
+    ldr r7,= 0x04000200
     strb r2, [r7, #4]
 	pop {r4-r7, pc}
 interwork:
@@ -166,7 +167,7 @@ interwork:
 CF_readSectors:
 	push {r4-r7, lr}
 
-	ldr r3, =cf_readWriteFunctions2_reg_data
+	ldr r3, cf_readWriteFunctions2_reg_data
 	movs r4, r1
 	movs r1, r0
 	movs r0, r2
@@ -182,7 +183,7 @@ CF_writeSectors:
 	push {r4-r7, lr}
 
 	movs r3, r1
-	ldr r4, =cf_readWriteFunctions2_reg_data
+	ldr r4, cf_readWriteFunctions2_reg_data
 	movs r1, r0
 	movs r0, r2
 

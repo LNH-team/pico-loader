@@ -51,7 +51,7 @@ no_longer_busy:
 .global cf_waitCardNextBlockReady
 .type cf_waitCardNextBlockReady, %function
 cf_waitCardNextBlockReady:
-	push {r0-r3, lr}
+	push {r0-r4, lr}
 	adr r2, data
 	@ r0 holds CF_CARD_TIMEOUT
 	@ r1 holds cf_waitFunctions_reg_cmd
@@ -67,11 +67,11 @@ cf_waitCardNextBlockReady:
 	bne 1b
 
 	@ timeout expired, return 0
-	pop {r0-r3, pc}
+	pop {r0-r4, pc}
 
 ready:
 	movs r0, #1
-	pop {r0-r3, pc}
+	pop {r0-r4, pc}
 
 .balign 4
 data:

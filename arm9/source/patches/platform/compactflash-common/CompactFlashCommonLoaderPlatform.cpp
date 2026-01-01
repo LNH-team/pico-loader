@@ -9,11 +9,13 @@ static constexpr int CF_STS_BUSY = 0x80;
 bool CompactFlashCommonLoaderPlatform::InitializeSdCard()
 {
     u32 oldMemCnt = REG_EXMEMCNT;
+	REG_EXMEMCNT = 0;
     mem_setGbaCartridgeRomWaits(EXMEMCNT_SLOT2_ROM_WAIT1_10, EXMEMCNT_SLOT2_ROM_WAIT2_6);
 	CardUnlock();
     auto res = InitializeCFCard();
 	CardLock();
     REG_EXMEMCNT = oldMemCnt;
+	REG_EXMEMCNT |= 0x80;
     return res;
 }
 
