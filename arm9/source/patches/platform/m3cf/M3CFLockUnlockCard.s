@@ -2,7 +2,7 @@
 .syntax unified
 .thumb
 
-.section "m3cf_change_mode", "ax"
+.section "m3cf_lock_unlock", "ax"
 
 .equ M3_MODE_ROM, 8
 .equ M3_MODE_MEDIA, 6
