@@ -18,8 +18,8 @@ public:
     CompactFlashStatusFunctionsPatchCode(PatchHeap& patchHeap, const CompactFlash::CF_REGISTERS& registers)
         : PatchCode(SECTION_START(cf_wait_functions), SECTION_SIZE(cf_wait_functions), patchHeap)
     {
-		cf_waitFunctions_reg_cmd = registers.command;
-		cf_waitFunctions_reg_status = registers.status;
+        cf_waitFunctions_reg_cmd = registers.command;
+        cf_waitFunctions_reg_status = registers.status;
     }
 
     const void* GetWaitAvailableForCommandsFunction() const

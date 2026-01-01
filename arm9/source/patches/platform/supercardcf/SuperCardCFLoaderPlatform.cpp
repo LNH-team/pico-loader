@@ -17,10 +17,10 @@ static void changeSupercardMode(u8 mode)
 
 void SuperCardCFLoaderPlatform::CardUnlock() const
 {
-	changeSupercardMode(SC_MODE_MEDIA);
+    changeSupercardMode(SC_MODE_MEDIA);
 }
 
 void SuperCardCFLoaderPlatform::CardLock() const
 {
-	changeSupercardMode(SC_MODE_RAM_RO);
+    changeSupercardMode(SC_MODE_RAM_RO);
 }

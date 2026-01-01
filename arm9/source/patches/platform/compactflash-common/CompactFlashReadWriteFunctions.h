@@ -32,18 +32,18 @@ class CompactFlashTransferSectorPatchCode : public PatchCode
 {
 public:
     CompactFlashTransferSectorPatchCode(PatchHeap& patchHeap,
-		const CompactFlash::CF_REGISTERS& registers,
+        const CompactFlash::CF_REGISTERS& registers,
         const CompactFlashStatusFunctionsPatchCode* compactFlashStatusFunctionsPatchCode)
         : PatchCode(SECTION_START(cf_read_write_functions), SECTION_SIZE(cf_read_write_functions), patchHeap)
     {
-		cf_readWriteFunctions_reg_sector_count = registers.sectorCount;
-		cf_readWriteFunctions_reg_lba1 = registers.lba1;
-		cf_readWriteFunctions_reg_lba2 = registers.lba2;
-		cf_readWriteFunctions_reg_lba3 = registers.lba3;
-		cf_readWriteFunctions_reg_lba4 = registers.lba4;
-		cf_readWriteFunctions_reg_command = registers.command;
-		cf_readWriteFunctions_available_for_command = (u32)compactFlashStatusFunctionsPatchCode->GetWaitAvailableForCommandsFunction();
-		cf_readWriteFunctions_waitCardNextBlockReady= (u32)compactFlashStatusFunctionsPatchCode->GetWaitCardNextBlockReadyFunction();
+        cf_readWriteFunctions_reg_sector_count = registers.sectorCount;
+        cf_readWriteFunctions_reg_lba1 = registers.lba1;
+        cf_readWriteFunctions_reg_lba2 = registers.lba2;
+        cf_readWriteFunctions_reg_lba3 = registers.lba3;
+        cf_readWriteFunctions_reg_lba4 = registers.lba4;
+        cf_readWriteFunctions_reg_command = registers.command;
+        cf_readWriteFunctions_available_for_command = (u32)compactFlashStatusFunctionsPatchCode->GetWaitAvailableForCommandsFunction();
+        cf_readWriteFunctions_waitCardNextBlockReady= (u32)compactFlashStatusFunctionsPatchCode->GetWaitCardNextBlockReadyFunction();
     }
 
     const void* GetPerformTransferSectorsFunction() const
@@ -56,16 +56,16 @@ class CompactFlashReadSectorPatchCode : public SdReadPatchCode
 {
 public:
     CompactFlashReadSectorPatchCode(PatchHeap& patchHeap,
-		const CompactFlash::CF_REGISTERS& registers,
+        const CompactFlash::CF_REGISTERS& registers,
         const CompactFlashTransferSectorPatchCode* compactFlashTransferSectorPatchCode,
-		const void* lockUnlockCard)
+        const void* lockUnlockCard)
         : SdReadPatchCode(SECTION_START(cf_read_write_functions_2), SECTION_SIZE(cf_read_write_functions_2), patchHeap)
-	{
-		cf_readWriteFunctions2_reg_data = registers.data;
-	
-		cf_readWriteFunctions2_performTransferSectors = (u32)compactFlashTransferSectorPatchCode->GetPerformTransferSectorsFunction();
-	
-		cf_readWriteFunctions2_lockUnlockCard = (u32)lockUnlockCard;
+    {
+        cf_readWriteFunctions2_reg_data = registers.data;
+    
+        cf_readWriteFunctions2_performTransferSectors = (u32)compactFlashTransferSectorPatchCode->GetPerformTransferSectorsFunction();
+    
+        cf_readWriteFunctions2_lockUnlockCard = (u32)lockUnlockCard;
     }
 
     const SdReadFunc GetSdReadFunction() const override
@@ -78,16 +78,16 @@ class CompactFlashWriteSectorPatchCode : public SdWritePatchCode
 {
 public:
     CompactFlashWriteSectorPatchCode(PatchHeap& patchHeap,
-		const CompactFlash::CF_REGISTERS& registers,
+        const CompactFlash::CF_REGISTERS& registers,
         const CompactFlashTransferSectorPatchCode* compactFlashTransferSectorPatchCode,
-		const void* lockUnlockCard)
+        const void* lockUnlockCard)
         : SdWritePatchCode(SECTION_START(cf_read_write_functions_2), SECTION_SIZE(cf_read_write_functions_2), patchHeap)
     {
-		cf_readWriteFunctions2_reg_data = registers.data;
-	
-		cf_readWriteFunctions2_performTransferSectors = (u32)compactFlashTransferSectorPatchCode->GetPerformTransferSectorsFunction();
-	
-		cf_readWriteFunctions2_lockUnlockCard = (u32)lockUnlockCard;
+        cf_readWriteFunctions2_reg_data = registers.data;
+    
+        cf_readWriteFunctions2_performTransferSectors = (u32)compactFlashTransferSectorPatchCode->GetPerformTransferSectorsFunction();
+    
+        cf_readWriteFunctions2_lockUnlockCard = (u32)lockUnlockCard;
     }
 
     const SdWriteFunc GetSdWriteFunction() const override

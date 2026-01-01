@@ -15,7 +15,7 @@ public:
         {
             return new SuperCardCFChangeModePatchCode(patchHeap);
         });
-		return CreateCommonCfReadPatchCode(patchCodeCollection, patchHeap, lockUnlock->GetScLockUnlockCardFunction());
+        return CreateCommonCfReadPatchCode(patchCodeCollection, patchHeap, lockUnlock->GetScLockUnlockCardFunction());
     }
 
     const SdWritePatchCode* CreateSdWritePatchCode(
@@ -25,29 +25,29 @@ public:
         {
             return new SuperCardCFChangeModePatchCode(patchHeap);
         });
-		return CreateCommonCfWritePatchCode(patchCodeCollection, patchHeap, lockUnlock->GetScLockUnlockCardFunction());
+        return CreateCommonCfWritePatchCode(patchCodeCollection, patchHeap, lockUnlock->GetScLockUnlockCardFunction());
     }
-	
+    
 private:
-	bool RequiresLocking() const override { return true; }
+    bool RequiresLocking() const override { return true; }
 
-	void CardUnlock() const override;
+    void CardUnlock() const override;
 
-	void CardLock() const override;
+    void CardLock() const override;
 
-	const CompactFlash::CF_REGISTERS& GetCfRegisters() const override
-	{
-		static constexpr CompactFlash::CF_REGISTERS regs {
-			.data			= 0x09000000,
-			.status			= 0x098C0000,
-			.command		= 0x090E0000,
-			.error			= 0x09020000,
-			.sectorCount	= 0x09040000,
-			.lba1 			= 0x09060000,
-			.lba2 			= 0x09080000,
-			.lba3 			= 0x090A0000,
-			.lba4 			= 0x090C0000,
-		};
-		return regs;
-	}
+    const CompactFlash::CF_REGISTERS& GetCfRegisters() const override
+    {
+        static constexpr CompactFlash::CF_REGISTERS regs {
+            .data            = 0x09000000,
+            .status            = 0x098C0000,
+            .command        = 0x090E0000,
+            .error            = 0x09020000,
+            .sectorCount    = 0x09040000,
+            .lba1             = 0x09060000,
+            .lba2             = 0x09080000,
+            .lba3             = 0x090A0000,
+            .lba4             = 0x090C0000,
+        };
+        return regs;
+    }
 };
