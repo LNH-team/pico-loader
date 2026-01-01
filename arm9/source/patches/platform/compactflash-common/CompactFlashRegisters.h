@@ -3,7 +3,7 @@
 
 namespace CompactFlash {
 
-    struct CF_REGISTERS {
+    struct cf_registers_t {
         u32 data;
         u32 status;
         u32 command;

@@ -21,7 +21,7 @@ protected:
     
     virtual CompactFlashLockUnlockPatchCode* NewCardLockUnlockPatchCode(PatchHeap& patchHeap) const    { return nullptr; }
 
-    virtual const CompactFlash::CF_REGISTERS& GetCfRegisters() const = 0;
+    virtual const CompactFlash::cf_registers_t& GetCfRegisters() const = 0;
 
     const SdReadPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override

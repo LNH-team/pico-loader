@@ -15,7 +15,7 @@ extern u32 cf_waitFunctions_reg_status;
 class CompactFlashStatusFunctionsPatchCode : public PatchCode
 {
 public:
-    CompactFlashStatusFunctionsPatchCode(PatchHeap& patchHeap, const CompactFlash::CF_REGISTERS& registers)
+    CompactFlashStatusFunctionsPatchCode(PatchHeap& patchHeap, const CompactFlash::cf_registers_t& registers)
         : PatchCode(SECTION_START(cf_wait_functions), SECTION_SIZE(cf_wait_functions), patchHeap)
     {
         cf_waitFunctions_reg_cmd = registers.command;

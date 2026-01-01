@@ -15,9 +15,9 @@ class M3CFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 
     void CardLockUnlock(bool lock) const override;
 
-    const CompactFlash::CF_REGISTERS& GetCfRegisters() const override
+    const CompactFlash::cf_registers_t& GetCfRegisters() const override
     {
-        static constexpr CompactFlash::CF_REGISTERS regs {
+        static constexpr CompactFlash::cf_registers_t regs {
             .data           = 0x08800000,
             .status         = 0x080C0000,
             .command        = 0x088E0000,

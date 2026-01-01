@@ -5,9 +5,9 @@
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class MPCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
-    const CompactFlash::CF_REGISTERS& GetCfRegisters() const override
+    const CompactFlash::cf_registers_t& GetCfRegisters() const override
     {
-        static constexpr CompactFlash::CF_REGISTERS regs {
+        static constexpr CompactFlash::cf_registers_t regs {
             .data           = 0x09000000,
             .status         = 0x098C0000,
             .command        = 0x090E0000,
