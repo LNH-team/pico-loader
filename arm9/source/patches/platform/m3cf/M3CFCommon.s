@@ -4,10 +4,6 @@
 
 .section "m3cf_change_mode", "ax"
 
-.macro READ_REG regAddr
-    ldr r1, =\regAddr
-    ldrh r1, [r1]
-.endm
 .equ M3_MODE_ROM, 8
 .equ M3_MODE_MEDIA, 6
 
