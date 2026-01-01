@@ -1,6 +1,5 @@
 #pragma once
 #include "sections.h"
-#include "thumbInstructions.h"
 #include "../SdReadPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(sccf_change_mode);
