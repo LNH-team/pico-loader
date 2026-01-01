@@ -73,7 +73,7 @@ public:
 
     const SdReadFunc GetSdReadFunction() const override
     {
-        return (const SdReadFunc)SdReadPatchCode::GetAddressAtTarget((void*)CF_readSectors);
+        return (const SdReadFunc)GetAddressAtTarget((void*)CF_readSectors);
     }
 };
 
@@ -98,6 +98,6 @@ public:
 
     const SdWriteFunc GetSdWriteFunction() const override
     {
-        return (const SdWriteFunc)SdWritePatchCode::GetAddressAtTarget((void*)CF_writeSectors);
+        return (const SdWriteFunc)GetAddressAtTarget((void*)CF_writeSectors);
     }
 };
