@@ -67,8 +67,10 @@ M3_changeMode:
 
     cmp r0, M3_MODE_ROM
     bne lastRomRead
-    READ_REG #0x09000000
+    ldr r1, =#0x09000000
+    ldrh r1, [r1]
     pop {r1-r7, pc}
+
 lastRomRead:
     @ READ_REG #0x080001e4
     ldr r1, =#0x080001e4
@@ -78,6 +80,7 @@ lastRomRead:
     subs r1, #0x5C
     ldrh r3, [r1]
     ldrh r3, [r1]
+    pop {r1-r7, pc}
 unlock:
     movs r0, #0x06
     b M3_changeMode
