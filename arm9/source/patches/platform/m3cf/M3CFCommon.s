@@ -12,7 +12,7 @@
 
 .global m3cf_lockUnlockCard
 .type m3cf_lockUnlockCard, %function
-m3cf_lockUnlockCard
+m3cf_lockUnlockCard:
     cmp r0, #1
     bne unlock
 	movs r0, #8
@@ -33,7 +33,7 @@ M3_changeMode:
 	cmp r0, M3_MODE_ROM
 	bne lastRomRead
 	READ_REG #0x09000000
-    push {r1-r3, pc}
+    pop {r1-r3, pc}
 lastRomRead:
 	READ_REG #0x080001e4
 	READ_REG #0x080001e4
