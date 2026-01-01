@@ -24,8 +24,8 @@ M3_changeMode:
     @ r3 has #0x0800104a
     @ r4 has #0x08800612
     @ r5 has #0x08801b66
-    @ r6 has #0x08800000
-    @ r7 has #0x0800080e
+    @ r6 has #0x0800080e
+    @ r7 has #0x09000000
     ldm r1!, {r2-r7}
 
     @ load 0x08000000
@@ -51,20 +51,21 @@ M3_changeMode:
     @ READ_REG #0x08801b66
     ldrh r1, [r5]
 
-    @ READ_REG #0x08801b66 + r0
+    @ READ_REG #0x08800000 + r0
     @ ldr r1, =#0x08800000
-    ldrh r1, [r6, r0]
+	movs r1, 0x88
+	lsls r1, #20
+    ldrh r1, [r1, r0]
 
     @ READ_REG #0x0800080e
-    ldrh r1, [r7]
+    ldrh r1, [r6]
 
     @ READ_REG #0x08000000
     ldrh r1, [r2]
 
     cmp r0, M3_MODE_ROM
     bne lastRomRead
-    ldr r1, =#0x09000000
-    ldrh r1, [r1]
+    ldrh r1, [r7]
     pop {r1-r7, pc}
 
 lastRomRead:
@@ -86,5 +87,5 @@ M3_regs:
     .word 0x0800104a
     .word 0x08800612
     .word 0x08801b66
-    .word 0x08800000
     .word 0x0800080e
+    .word 0x09000000
