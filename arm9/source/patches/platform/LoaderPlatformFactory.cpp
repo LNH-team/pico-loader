@@ -18,6 +18,7 @@
 #include "patches/platform/supercardcf/SuperCardCFLoaderPlatform.h"
 #include "patches/platform/mpcf/MPCFLoaderPlatform.h"
 #include "patches/platform/m3cf/M3CFLoaderPlatform.h"
+#include "patches/platform/mmcf/MMCFLoaderPlatform.h"
 #include "LoaderPlatformFactory.h"
 
 LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
@@ -58,6 +59,8 @@ LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
     return new MPCFLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_M3CF)
     return new M3CFLoaderPlatform();
+#elif defined(PICO_LOADER_TARGET_MMCF)
+    return new MMCFLoaderPlatform();
 #else
 #error "No loader platform defined"
     return nullptr;
