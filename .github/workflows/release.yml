@@ -25,7 +25,7 @@ jobs:
           "SUPERCARDCF"
           "M3CF"
           "MMCF"
-          "MpCF"
+          "MPCF"
         ]
     runs-on: ubuntu-latest
     container: skylyrac/blocksds:slim-v1.13.1
