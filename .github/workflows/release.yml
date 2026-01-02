@@ -21,10 +21,10 @@ jobs:
           "R4",
           "R4iDSN",
           "STARGATE",
-          "SUPERCARD"
-          "SUPERCARDCF"
-          "M3CF"
-          "MMCF"
+          "SUPERCARD",
+          "SUPERCARDCF",
+          "M3CF",
+          "MMCF",
           "MPCF"
         ]
     runs-on: ubuntu-latest
