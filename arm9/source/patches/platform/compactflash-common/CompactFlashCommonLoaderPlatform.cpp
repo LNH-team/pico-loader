@@ -5,6 +5,8 @@
 
 static constexpr int CF_CARD_TIMEOUT = 10000000;
 static constexpr int CF_STS_INSERTED = 0x50;
+static constexpr int CF_STS_READY = 0x40;
+static constexpr int CF_STS_DSC = 0x10;
 static constexpr int CF_STS_BUSY = 0x80;
 
 bool CompactFlashCommonLoaderPlatform::InitializeSdCard()
@@ -22,7 +24,6 @@ bool CompactFlashCommonLoaderPlatform::InitializeSdCard()
 
 static bool waitAvailableForCommands(const auto& regs) {
     auto commandReg = (vu16*)regs.command;
-    auto statusReg = (vu16*)regs.status;
     // wait for card to finish previous commands
     for (int i = 0; i < CF_CARD_TIMEOUT; i++)
     {
@@ -33,7 +34,7 @@ static bool waitAvailableForCommands(const auto& regs) {
     // wait for card to be ready for new commands
     for (int i = 0; i < CF_CARD_TIMEOUT; i++)
     {
-        if ((*statusReg & CF_STS_INSERTED) != 0)
+        if ((*commandReg & (CF_STS_READY | CF_STS_DSC)) != 0)
         {
             return true;
         }
@@ -58,6 +59,7 @@ bool CompactFlashCommonLoaderPlatform::InitializeCFCard()
     {
         return false;
     }
+	// Check that the registers are writable and hold the values we set
     auto lba1 = (vu16*)regs.lba1;
     u16 temp = *lba1;
     *lba1 = (~temp & 0xFF);

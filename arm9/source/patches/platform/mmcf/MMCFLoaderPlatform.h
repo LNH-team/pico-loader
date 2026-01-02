@@ -13,7 +13,7 @@ class MMCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
     {
         static constexpr cf_registers_t regs {
             .data           = 0x09000000,
-            .status         = 0x080E0000, // dldi and official sf had it same as `command` register, but should it be 0x080C0000?
+            .altStatus      = 0x088C0000, // should be this, untested, but unused
             .command        = 0x080E0000,
             .error          = 0x08020000,
             .sectorCount    = 0x08040000,

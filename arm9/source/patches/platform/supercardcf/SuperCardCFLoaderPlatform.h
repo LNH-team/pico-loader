@@ -19,7 +19,7 @@ class SuperCardCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
     {
         static constexpr cf_registers_t regs {
             .data           = 0x09000000,
-            .status         = 0x098C0000,
+            .altStatus      = 0x098C0000,
             .command        = 0x090E0000,
             .error          = 0x09020000,
             .sectorCount    = 0x09040000,

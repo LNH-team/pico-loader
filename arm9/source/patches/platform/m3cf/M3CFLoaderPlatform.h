@@ -19,7 +19,7 @@ class M3CFLoaderPlatform : public CompactFlashCommonLoaderPlatform
     {
         static constexpr cf_registers_t regs {
             .data           = 0x08800000,
-            .status         = 0x080C0000,
+            .altStatus      = 0x080C0000,
             .command        = 0x088E0000,
             .error          = 0x08820000,
             .sectorCount    = 0x08840000,
