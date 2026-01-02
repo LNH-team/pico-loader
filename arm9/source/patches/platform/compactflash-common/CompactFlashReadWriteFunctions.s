@@ -17,43 +17,49 @@
 .type CF_PerformTransferSectors, %function
 .global CF_PerformTransferSectors
 CF_PerformTransferSectors:
-    push {r0-r7,lr}
+    push {r5-r7,lr}
     ldr r7, cf_readWriteFunctions_available_for_command
     bl CF_PerformTransferSectors_error_interwork
     beq CF_PerformTransferSectors_error
-    
-    adr r7, cf_readWriteFunctions_reg_sector_count
-    ldm r7!, {r1,r2,r3,r4,r5,r6}
-    strh r0, [r1]
-    
-    @ r0 is sector
-    ldr r0, [sp, #4]
-    lsls r7, r0, #24
-    lsrs r7, r7, #24
-    strh r7, [r2]
 
-    lsls r7, r0, #16
-    lsrs r7, r7, #24
-    strh r7, [r3]
+    ldr r5, cf_readWriteFunctions_reg_sector_count
 
-    lsls r7, r0, #8
+    @ load 0x20000
+    movs r6, #0x01
+    lsls r6, #17
+
+	@ store sector count
+    strh r0, [r5]
+    adds r5, r6
+    
+    lsls r7, r1, #24
     lsrs r7, r7, #24
-    strh r7, [r4]
+	@ store lba1
+    strh r7, [r5]
+    adds r5, r6
+
+    lsls r7, r1, #16
+    lsrs r7, r7, #24
+	@ store lba2
+    strh r7, [r5]
+    adds r5, r6
+
+    lsls r7, r1, #8
+    lsrs r7, r7, #24
+	@ store lba3
+    strh r7, [r5]
+    adds r5, r6
 
     @ Only lower nibble is transferred
-    lsls r7, r0, #4
+    lsls r7, r1, #4
     lsrs r7, r7, #28
-    movs r3, CF_CMD_LBA
-    orrs r7, r3
+	@ store lba4
+    adds r7, CF_CMD_LBA
     strh r7, [r5]
 
-    @ r0 is numSectors
-    @ r1 is sector
-    @ r2 is command
-    @ r3 is srcAddr
-    @ r4 is dstAddr
-    pop {r0-r4}
-    strh r2, [r6]
+	@ store command
+    strh r2, [r5, r6]
+
     @ get total number of bytes to write
     lsls r0, #9
 
@@ -76,9 +82,8 @@ read_next_int:
 
     b read_next_block
 done:
-    pop {r5-r7, pc}
 CF_PerformTransferSectors_error:
-    pop {r0-r7, pc}
+    pop {r5-r7, pc}
 
 CF_PerformTransferSectors_error_interwork:
     bx r7
@@ -87,21 +92,6 @@ CF_PerformTransferSectors_error_interwork:
 .pool
 .global cf_readWriteFunctions_reg_sector_count
 cf_readWriteFunctions_reg_sector_count:
-    .word 0
-.global cf_readWriteFunctions_reg_lba1
-cf_readWriteFunctions_reg_lba1:
-    .word 0
-.global cf_readWriteFunctions_reg_lba2
-cf_readWriteFunctions_reg_lba2:
-    .word 0
-.global cf_readWriteFunctions_reg_lba3
-cf_readWriteFunctions_reg_lba3:
-    .word 0
-.global cf_readWriteFunctions_reg_lba4
-cf_readWriteFunctions_reg_lba4:
-    .word 0
-.global cf_readWriteFunctions_reg_command
-cf_readWriteFunctions_reg_command:
     .word 0
 .global cf_readWriteFunctions_available_for_command
 cf_readWriteFunctions_available_for_command:

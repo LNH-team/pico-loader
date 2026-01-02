@@ -13,11 +13,6 @@ extern "C" bool CF_readSectors(u32 sector, void* buffer, u32 numSectors);
 extern "C" bool CF_writeSectors(u32 sector, void* buffer, u32 numSectors);
 
 extern u32 cf_readWriteFunctions_reg_sector_count;
-extern u32 cf_readWriteFunctions_reg_lba1;
-extern u32 cf_readWriteFunctions_reg_lba2;
-extern u32 cf_readWriteFunctions_reg_lba3;
-extern u32 cf_readWriteFunctions_reg_lba4;
-extern u32 cf_readWriteFunctions_reg_command;
 extern u32 cf_readWriteFunctions_available_for_command;
 extern u32 cf_readWriteFunctions_waitCardNextBlockReady;
 
@@ -37,11 +32,6 @@ public:
         : PatchCode(SECTION_START(cf_read_write_functions), SECTION_SIZE(cf_read_write_functions), patchHeap)
     {
         cf_readWriteFunctions_reg_sector_count = registers.sectorCount;
-        cf_readWriteFunctions_reg_lba1 = registers.lba1;
-        cf_readWriteFunctions_reg_lba2 = registers.lba2;
-        cf_readWriteFunctions_reg_lba3 = registers.lba3;
-        cf_readWriteFunctions_reg_lba4 = registers.lba4;
-        cf_readWriteFunctions_reg_command = registers.command;
         cf_readWriteFunctions_available_for_command = (u32)compactFlashStatusFunctionsPatchCode->GetWaitAvailableForCommandsFunction();
         cf_readWriteFunctions_waitCardNextBlockReady = (u32)compactFlashStatusFunctionsPatchCode->GetWaitCardNextBlockReadyFunction();
     }
