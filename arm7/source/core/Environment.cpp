@@ -21,7 +21,7 @@ static bool detectIsNitroEmulator()
 static bool detectNocashPrintSupport()
 {
     u32 nocashIdentifier = *(vu32*)0x04FFFA00;
-    return (nocashIdentifier == NOCASH_ID || nocashIdentifier == NOCASH_ID_MELONDS);
+    return nocashIdentifier == NOCASH_ID || nocashIdentifier == NOCASH_ID_MELONDS;
 }
 
 static bool detectPicoAgbAdapter()
