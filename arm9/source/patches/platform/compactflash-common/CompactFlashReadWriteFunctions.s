@@ -28,36 +28,36 @@ CF_PerformTransferSectors:
     movs r6, #0x01
     lsls r6, #17
 
-	@ store sector count
+    @ store sector count
     strh r0, [r5]
     adds r5, r6
     
     lsls r7, r1, #24
     lsrs r7, r7, #24
-	@ store lba1
+    @ store lba1
     strh r7, [r5]
     adds r5, r6
 
     lsls r7, r1, #16
     lsrs r7, r7, #24
-	@ store lba2
+    @ store lba2
     strh r7, [r5]
     adds r5, r6
 
     lsls r7, r1, #8
     lsrs r7, r7, #24
-	@ store lba3
+    @ store lba3
     strh r7, [r5]
     adds r5, r6
 
     @ Only lower nibble is transferred
     lsls r7, r1, #4
     lsrs r7, r7, #28
-	@ store lba4
+    @ store lba4
     adds r7, CF_CMD_LBA
     strh r7, [r5]
 
-	@ store command
+    @ store command
     strh r2, [r5, r6]
 
     @ get total number of bytes to write
