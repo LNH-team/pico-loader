@@ -2,6 +2,9 @@
 #include "picoAgbAdapter.h"
 #include "Environment.h"
 
+#define NOCASH_ID         0x67246F6E
+#define NOCASH_ID_MELONDS 0x6F6C656D
+
 u32 Environment::_flags;
 
 static bool detectIsNitroEmulator()
@@ -15,10 +18,10 @@ static bool detectIsNitroEmulator()
     return true;
 }
 
-static bool detectNocashPrintSuppport()
+static bool detectNocashPrintSupport()
 {
     u32 nocashIdentifier = *(vu32*)0x04FFFA00;
-    return nocashIdentifier == 0x67246F6E; //no$g
+    return nocashIdentifier == NOCASH_ID || nocashIdentifier == NOCASH_ID_MELONDS;
 }
 
 static bool detectPicoAgbAdapter()
@@ -55,7 +58,7 @@ void Environment::Initialize(bool dsiMode)
     }
     if (!(_flags & ENVIRONMENT_FLAGS_IS_NITRO_EMULATOR))
     {
-        if (detectNocashPrintSuppport())
+        if (detectNocashPrintSupport())
             _flags |= ENVIRONMENT_FLAGS_NOCASH_PRINT;
     }
 }

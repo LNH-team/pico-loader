@@ -192,8 +192,8 @@ static void handleGetSdFunctionsCommand()
     {
         auto sdReadPatchCode = sLoaderPlatform->CreateSdReadPatchCode(patchCodeCollection, patchHeap);
         auto sdWritePatchCode = sLoaderPlatform->CreateSdWritePatchCode(patchCodeCollection, patchHeap);
-        *(vu32*)0x037F8000 = (u32)sdReadPatchCode->GetSdReadFunction();
-        *(vu32*)0x037F8004 = (u32)sdWritePatchCode->GetSdWriteFunction();
+        *(vu32*)0x037F8000 = (u32)sdReadPatchCode->GetReadSectorsFunction();
+        *(vu32*)0x037F8004 = (u32)sdWritePatchCode->GetWriteSectorFunction();
         patchCodeCollection.CopyAllToTarget();
     }
     dc_flushAll();

@@ -2,7 +2,7 @@
 #include "thumbInstructions.h"
 #include "../PatchContext.h"
 #include "../FunctionSignature.h"
-#include "CardiReadRomIdCorePatchAsm.h"
+#include "CardiReadRomIdCorePatchCode.h"
 #include "CardiReadRomIdCorePatch.h"
 
 static constexpr auto sSignaturesArm = std::to_array<const FunctionSignature>

@@ -1,16 +1,14 @@
 #pragma once
-#include "common.h"
-#include <libtwl/card/card.h>
 #include "../LoaderPlatform.h"
-#include "r4ReadRomAsm.h"
-#include "r4ReadSdAsm.h"
-#include "r4WriteSdAsm.h"
+#include "R4ReadRomPatchCode.h"
+#include "R4ReadSdPatchCode.h"
+#include "R4WriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the original R4 flashcard
 class R4LoaderPlatform : public LoaderPlatform
 {
 public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -19,7 +17,7 @@ public:
         });
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -28,7 +26,7 @@ public:
         });
     }
 
-    const SdReadPatchCode* CreateRomReadPatchCode(
+    const IReadSectorsPatchCode* CreateRomReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]

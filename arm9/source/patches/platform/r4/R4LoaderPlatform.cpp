@@ -1,4 +1,5 @@
 #include "common.h"
+#include <libtwl/card/card.h>
 #include "R4LoaderPlatform.h"
 
 #define R4_CMD_CARD_INFO    0xB000000000000000ull

@@ -1,15 +1,14 @@
 #pragma once
-#include "common.h"
 #include "../LoaderPlatform.h"
-#include "stargateReadSdAsm.h"
-#include "stargateReadSdDmaAsm.h"
-#include "stargateWriteSdAsm.h"
+#include "StargateReadSdPatchCode.h"
+#include "StargateReadSdDmaPatchCode.h"
+#include "StargateWriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the Stargate 3DS flashcard
 class StargateLoaderPlatform : public LoaderPlatform
 {
 public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -18,14 +17,14 @@ public:
         });
     }
 
-    const SdReadDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
+    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
         PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
     {
         return patchCodeCollection.AddUniquePatchCode<StargateReadSdDmaPatchCode>(
             patchHeap, miiCardDmaCopy32Ptr);
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]

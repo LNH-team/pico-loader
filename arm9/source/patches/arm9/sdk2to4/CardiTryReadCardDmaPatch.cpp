@@ -1,8 +1,9 @@
 #include "common.h"
 #include "patches/PatchContext.h"
 #include "thumbInstructions.h"
-#include "CardiSetCardDmaPatchAsm.h"
+#include "CardiSetCardDmaPatchCode.h"
 #include "patches/platform/LoaderPlatform.h"
+#include "patches/arm9/RomOffsetToSdSectorPatchCode.h"
 #include "CardiTryReadCardDmaPatch.h"
 
 static const u32 sCARDiTryReadCardDmaPatternPingPals[] = { 0xE92D47F0u, 0xE1A0A000u, 0xE59F9120u, 0xE3A08000u };

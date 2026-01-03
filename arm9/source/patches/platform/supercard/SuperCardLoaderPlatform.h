@@ -1,5 +1,4 @@
 #pragma once
-#include "common.h"
 #include "../LoaderPlatform.h"
 #include "SuperCardCommon.h"
 #include "sclite/SuperCardLiteImpl.h"
@@ -9,17 +8,17 @@
 class SuperCardLoaderPlatform : public LoaderPlatform
 {
 public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
-		auto common = patchCodeCollection.GetOrAddSharedPatchCode([&]
-		{
-			return new SuperCardCommonPatchCode(patchHeap);
-		});
-		auto changeMode = patchCodeCollection.GetOrAddSharedPatchCode([&]
-		{
-			return new SuperCardChangeModePatchCode(patchHeap);
-		});
+        auto common = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        {
+            return new SuperCardCommonPatchCode(patchHeap);
+        });
+        auto changeMode = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        {
+            return new SuperCardChangeModePatchCode(patchHeap);
+        });
         if (isScLite)
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -54,17 +53,17 @@ public:
         }
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
-		auto common = patchCodeCollection.GetOrAddSharedPatchCode([&]
-		{
-			return new SuperCardCommonPatchCode(patchHeap);
-		});
-		auto changeMode = patchCodeCollection.GetOrAddSharedPatchCode([&]
-		{
-			return new SuperCardChangeModePatchCode(patchHeap);
-		});
+        auto common = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        {
+            return new SuperCardCommonPatchCode(patchHeap);
+        });
+        auto changeMode = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        {
+            return new SuperCardChangeModePatchCode(patchHeap);
+        });
         if (isScLite)
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]

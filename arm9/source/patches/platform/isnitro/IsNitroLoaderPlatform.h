@@ -1,15 +1,14 @@
 #pragma once
-#include "common.h"
 #include "../LoaderPlatform.h"
-#include "IsNitroSdReadAsm.h"
-#include "IsNitroSdWriteAsm.h"
+#include "IsNitroSdReadPatchCode.h"
+#include "IsNitroSdWritePatchCode.h"
 #include "sharedMemory.h"
 
 /// @brief Implementation of LoaderPlatform for the IS-NITRO-EMULATOR with agb semihosting
 class IsNitroLoaderPlatform : public LoaderPlatform
 {
 public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -18,7 +17,7 @@ public:
         });
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]

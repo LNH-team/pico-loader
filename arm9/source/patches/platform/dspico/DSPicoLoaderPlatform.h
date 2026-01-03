@@ -1,15 +1,14 @@
 #pragma once
-#include "common.h"
 #include "../LoaderPlatform.h"
-#include "dspicoReadSectorsAsm.h"
-#include "dspicoReadSdSectorDmaAsm.h"
-#include "dspicoWriteSectorsAsm.h"
+#include "DSPicoReadSdSectorsPatchCode.h"
+#include "DSPicoReadSdSectorDmaPatchCode.h"
+#include "DSPicoWriteSdSectorsPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the DS pico flashcard
 class DSPicoLoaderPlatform : public LoaderPlatform
 {
 public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -22,7 +21,7 @@ public:
         });
     }
 
-    const SdReadDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
+    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
         PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
     {
         auto pollSdDataReadyPatchCode = patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -34,7 +33,7 @@ public:
             patchHeap, pollSdDataReadyPatchCode, miiCardDmaCopy32Ptr);
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]

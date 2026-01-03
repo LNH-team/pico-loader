@@ -1,8 +1,9 @@
 #pragma once
 #include "sections.h"
 #include "../SuperCardCommon.h"
-#include "../../SdReadPatchCode.h"
-#include "../../SdWritePatchCode.h"
+#include "patches/PatchCode.h"
+#include "../../IReadSectorsPatchCode.h"
+#include "../../IWriteSectorsPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(scsd_sd_command_drop);
 DEFINE_SECTION_SYMBOLS(scsd_write_sector);
@@ -68,7 +69,7 @@ public:
     }
 };
 
-class SuperCardWriteSectorPatchCode : public SdWritePatchCode
+class SuperCardWriteSectorPatchCode : public PatchCode, public IWriteSectorsPatchCode
 {
 public:
     SuperCardWriteSectorPatchCode(PatchHeap& patchHeap,
@@ -76,7 +77,7 @@ public:
         const SuperCardChangeModePatchCode* superCardChangeModePatchCode,
         const SuperCardSdCommandAndDropPatchCode* superCardSdCommandAndDropPatchCode,
         const SuperCardWriteDataPatchCode* superCardWriteDataPatchCode)
-        : SdWritePatchCode(SECTION_START(scsd_write_sector), SECTION_SIZE(scsd_write_sector), patchHeap)
+        : PatchCode(SECTION_START(scsd_write_sector), SECTION_SIZE(scsd_write_sector), patchHeap)
     {
         INTERWORK_LABEL(scsd_writeData, writeInterwork) = (u32)superCardWriteDataPatchCode->GetWriteDataFunction();
         INTERWORK_LABEL(sccmn_sdio4BitCrc16, writeInterwork) = (u32)superCardCommonPatchCode->GetCrc16ChecksumFunction();
@@ -86,13 +87,13 @@ public:
             = (u32)superCardSdCommandAndDropPatchCode->GetSdCommandAndDropResponse6Function();
     }
 
-    const SdWriteFunc GetSdWriteFunction() const override
+    const WriteSectorsFunc GetWriteSectorFunction() const override
     {
-        return (const SdWriteFunc)GetAddressAtTarget((void*)scsd_writeSector);
+        return (const WriteSectorsFunc)GetAddressAtTarget((void*)scsd_writeSector);
     }
 };
 
-class SuperCardReadSectorPatchCode : public SdReadPatchCode
+class SuperCardReadSectorPatchCode : public PatchCode, public IReadSectorsPatchCode
 {
 public:
     SuperCardReadSectorPatchCode(PatchHeap& patchHeap,
@@ -100,7 +101,7 @@ public:
         const SuperCardChangeModePatchCode* superCardChangeModePatchCode,
         const SuperCardSdCommandAndDropPatchCode* superCardSdCommandAndDropPatchCode,
         const SuperCardReadDataPatchCode* superCardReadDataPatchCode)
-        : SdReadPatchCode(SECTION_START(scsd_read_sector), SECTION_SIZE(scsd_read_sector), patchHeap)
+        : PatchCode(SECTION_START(scsd_read_sector), SECTION_SIZE(scsd_read_sector), patchHeap)
     {
         INTERWORK_LABEL(sccmn_changeMode, readInterwork) = (u32)superCardChangeModePatchCode->GetScChangeModeFunction();
         INTERWORK_LABEL(scsd_sdCommandAndDropResponse6, readInterwork)
@@ -109,9 +110,9 @@ public:
         INTERWORK_LABEL(sccmn_sdSendClock10, readInterwork) = (u32)superCardCommonPatchCode->GetSdSendClock10Function();
     }
 
-    const SdReadFunc GetSdReadFunction() const override
+    const ReadSectorsFunc GetReadSectorsFunction() const override
     {
-        return (const SdReadFunc)GetAddressAtTarget((void*)scsd_readSector);
+        return (const ReadSectorsFunc)GetAddressAtTarget((void*)scsd_readSector);
     }
 };
 

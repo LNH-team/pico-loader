@@ -1,8 +1,7 @@
 #pragma once
-#include <memory>
-#include "SdReadPatchCode.h"
-#include "SdReadDmaPatchCode.h"
-#include "SdWritePatchCode.h"
+#include "IReadSectorsPatchCode.h"
+#include "IReadSectorsDmaPatchCode.h"
+#include "IWriteSectorsPatchCode.h"
 #include "../PatchHeap.h"
 #include "../PatchCodeCollection.h"
 #include "LoaderPlatformType.h"
@@ -14,29 +13,29 @@ public:
     /// @brief Creates the SD read patch code for the platform.
     /// @param patchCodeCollection The patch code collection.
     /// @param patchHeap The patch heap.
-    /// @return A unique pointer to the created SD read patch code.
-    virtual const SdReadPatchCode* CreateSdReadPatchCode(
+    /// @return A pointer to the created SD read patch code.
+    virtual const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const = 0;
 
     /// @brief Creates the SD read dma patch code for the platform.
     /// @param patchCodeCollection The patch code collection.
     /// @param patchHeap The patch heap.
-    /// @return A unique pointer to the created SD read dma patch code.
-    virtual const SdReadDmaPatchCode* CreateSdReadDmaPatchCode(
+    /// @return A pointer to the created SD read dma patch code.
+    virtual const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const { return nullptr; }
 
     /// @brief Creates the SD write patch code for the platform.
     /// @param patchCodeCollection The patch code collection.
     /// @param patchHeap The patch heap.
-    /// @return A unique pointer to the created SD write patch code.
-    virtual const SdWritePatchCode* CreateSdWritePatchCode(
+    /// @return A pointer to the created SD write patch code.
+    virtual const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const = 0;
 
     /// @brief Creates the rom read patch code for the platform.
     /// @param patchCodeCollection The patch code collection.
     /// @param patchHeap The patch heap.
-    /// @return A unique pointer to the created rom read patch code.
-    virtual const SdReadPatchCode* CreateRomReadPatchCode(
+    /// @return A pointer to the created rom read patch code.
+    virtual const IReadSectorsPatchCode* CreateRomReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const { return nullptr; }
 
     /// @brief Returns the type of this loader platform.

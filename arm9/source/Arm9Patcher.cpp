@@ -22,6 +22,7 @@
 #include "patches/arm9/OverlayPatches/DSProtectPatches/DSProtectPuyoPuyo7Patch.h"
 #include "patches/arm9/OverlayPatches/PokemonIr/PokemonIrApPatch.h"
 #include "patches/arm9/OverlayPatches/KirbySuperStarUltra/KirbySuperStarUltraPatch.h"
+#include "patches/arm9/OverlayPatches/RabbidsGoHome/RabbidsGoHomePatch.h"
 #include "patches/arm9/OverlayPatches/GoldenSunDarkDawn/GoldenSunDarkDawnOverlayHookPatch.h"
 #include "SecureSysCallsUnusedSpaceLocator.h"
 #include "fastSearch.h"
@@ -403,6 +404,13 @@ void Arm9Patcher::AddGameSpecificPatches(
         case GAMECODE("UGDA"):
         {
             patchCollection.AddPatch(new NintendoDSGuideNandSavePatch());
+            break;
+        }
+        // Rabbids Go Home
+        case GAMECODE("VRGE"):
+        case GAMECODE("VRGV"):
+        {
+            overlayHookPatch->AddOverlayPatch(new RabbidsGoHomePatch());
             break;
         }
         // Kirby Super Star Ultra

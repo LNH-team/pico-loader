@@ -3,7 +3,7 @@
 #include "ndsHeader.h"
 #include "moduleParams.h"
 #include "patches/platform/LoaderPlatform.h"
-#include "Sdk5DsiSdCardRedirectPatchAsm.h"
+#include "Sdk5DsiSdCardRedirectPatchCode.h"
 #include "Sdk5DsiSdCardRedirectPatch.h"
 
 static const u32 sAttachFunctionPattern[] = { 0xE92D4018u, 0xE24DDF5Du, 0xE24DDB01u, 0xE59FE050u };

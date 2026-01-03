@@ -1,9 +1,9 @@
 #include "common.h"
 #include "gameCode.h"
 #include "patches/platform/LoaderPlatform.h"
-#include "patches/SaveOffsetToSdSectorAsm.h"
-#include "ReadNandSaveAsm.h"
-#include "WriteNandSaveAsm.h"
+#include "patches/SaveOffsetToSdSectorPatchCode.h"
+#include "ReadNandSavePatchCode.h"
+#include "WriteNandSavePatchCode.h"
 #include "FaceTrainingNandSavePatch.h"
 
 // This code was based on nds-bootstrap:

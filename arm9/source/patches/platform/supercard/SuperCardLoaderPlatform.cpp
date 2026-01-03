@@ -4,7 +4,7 @@
 #include "thumbInstructions.h"
 #include "SuperCardDefinitions.h"
 #include "SuperCardLoaderPlatform.h"
-#include "SuperCardSDCommands.h"
+#include "SuperCardSdCommands.h"
 
 enum SupercardType
 {

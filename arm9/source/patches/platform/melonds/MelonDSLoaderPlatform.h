@@ -1,14 +1,13 @@
 #pragma once
-#include "common.h"
 #include "../LoaderPlatform.h"
-#include "melondsReadSdAsm.h"
-#include "melondsWriteSdAsm.h"
+#include "MelonDSReadSdPatchCode.h"
+#include "MelonDSWriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for MelonDS
 class MelonDSLoaderPlatform : public LoaderPlatform
 {
 public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -17,7 +16,7 @@ public:
         });
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]

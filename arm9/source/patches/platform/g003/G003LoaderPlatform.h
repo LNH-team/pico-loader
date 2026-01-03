@@ -1,15 +1,14 @@
 #pragma once
-#include "common.h"
 #include "../LoaderPlatform.h"
-#include "g003ReadSdAsm.h"
-#include "g003ReadSdDmaAsm.h"
-#include "g003WriteSdAsm.h"
+#include "G003ReadSdPatchCode.h"
+#include "G003ReadSdDmaPatchCode.h"
+#include "G003WriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the GMP-Z003 flashcard
 class G003LoaderPlatform : public LoaderPlatform
 {
 public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -18,14 +17,14 @@ public:
         });
     }
 
-    const SdReadDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
+    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
         PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
     {
         return patchCodeCollection.AddUniquePatchCode<G003ReadSdDmaPatchCode>(
             patchHeap, miiCardDmaCopy32Ptr);
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]

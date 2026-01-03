@@ -1,14 +1,13 @@
 #pragma once
-#include "common.h"
 #include "../LoaderPlatform.h"
-#include "m3dsReadSectorsAsm.h"
-#include "m3dsWriteSectorsAsm.h"
+#include "M3DSReadSdSectorsPatchCode.h"
+#include "M3DSWriteSdSectorsPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the M3 DS Real flashcard
 class M3DSLoaderPlatform : public LoaderPlatform
 {
 public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -21,7 +20,7 @@ public:
         });
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]

@@ -20,15 +20,6 @@ public:
         while (1);
     }
 
-    /// @brief Converts a pointer inside the original code block
-    ///        to a pointer at the target location in the patch heap.
-    /// @param ptr The pointer to convert.
-    /// @return The converted pointer.
-    const void* GetAddressAtTarget(const void* ptr) const
-    {
-        return (const void*)((u32)ptr - (u32)_code + (u32)_targetAddress);
-    }
-
     /// @brief Copies the patch code to the target address.
     void CopyToTarget() const
     {
@@ -44,4 +35,13 @@ protected:
 
     /// @brief The target address for the code block in the patch heap.
     void* const _targetAddress;
+
+    /// @brief Converts a pointer inside the original code block
+    ///        to a pointer at the target location in the patch heap.
+    /// @param ptr The pointer to convert.
+    /// @return The converted pointer.
+    const void* GetAddressAtTarget(const void* ptr) const
+    {
+        return (const void*)((u32)ptr - (u32)_code + (u32)_targetAddress);
+    }
 };

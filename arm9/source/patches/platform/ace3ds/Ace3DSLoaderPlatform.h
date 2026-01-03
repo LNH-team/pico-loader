@@ -1,15 +1,14 @@
 #pragma once
-#include "common.h"
 #include "../LoaderPlatform.h"
-#include "ace3dsReadSdAsm.h"
-#include "ace3dsReadSdDmaAsm.h"
-#include "ace3dsWriteSdAsm.h"
+#include "Ace3DSReadSdPatchCode.h"
+#include "Ace3DSReadSdDmaPatchCode.h"
+#include "Ace3DSWriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the Ace3DS+ flashcard
 class Ace3DSLoaderPlatform : public LoaderPlatform
 {
 public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -18,14 +17,14 @@ public:
         });
     }
 
-    const SdReadDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
+    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
         PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
     {
         return patchCodeCollection.AddUniquePatchCode<Ace3DSReadSdDmaPatchCode>(
             patchHeap, miiCardDmaCopy32Ptr);
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]

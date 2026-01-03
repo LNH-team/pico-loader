@@ -1,8 +1,8 @@
 #include "common.h"
-#include "../PatchContext.h"
+#include "patches/PatchContext.h"
 #include "thumbInstructions.h"
-#include "../platform/LoaderPlatform.h"
-#include "OSResetSystemPatchAsm.h"
+#include "patches/platform/LoaderPlatform.h"
+#include "OSResetSystemPatchCode.h"
 #include "OSResetSystemPatch.h"
 
 static const u32 sOSResetSystemPatternSdk2Old[] = { 0xE59F101Cu, 0xE3A00010u, 0xE5815000u, 0xEB000005u };

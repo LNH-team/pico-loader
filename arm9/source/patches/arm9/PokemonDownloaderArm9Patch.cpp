@@ -1,7 +1,7 @@
 #include "common.h"
 #include "../PatchContext.h"
 #include "../platform/LoaderPlatform.h"
-#include "PokemonDownloaderArm9PatchAsm.h"
+#include "PokemonDownloaderArm9PatchCode.h"
 #include "PokemonDownloaderArm9Patch.h"
 
 static const u32 sBootFunctionPattern[] = { 0xE92D4010u, 0xE59F003Cu, 0xE5904000u, 0xE3540000u };

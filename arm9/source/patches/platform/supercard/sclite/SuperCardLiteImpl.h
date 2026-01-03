@@ -1,8 +1,9 @@
 #pragma once
 #include "sections.h"
 #include "../SuperCardCommon.h"
-#include "../../SdReadPatchCode.h"
-#include "../../SdWritePatchCode.h"
+#include "patches/PatchCode.h"
+#include "../../IReadSectorsPatchCode.h"
+#include "../../IWriteSectorsPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(sclite_sd_command_drop);
 DEFINE_SECTION_SYMBOLS(sclite_write_sector);
@@ -68,7 +69,7 @@ public:
     }
 };
 
-class SuperCardReadSectorLitePatchCode : public SdReadPatchCode
+class SuperCardReadSectorLitePatchCode : public PatchCode, public IReadSectorsPatchCode
 {
 public:
     SuperCardReadSectorLitePatchCode(PatchHeap& patchHeap,
@@ -76,7 +77,7 @@ public:
         const SuperCardChangeModePatchCode* superCardChangeModePatchCode,
         const SuperCardSDCommandAndDropLitePatchCode* superCardSdCommandAndDropLitePatchCode,
         const SuperCardReadDataLitePatchCode* superCardReadDataLitePatchCode)
-        : SdReadPatchCode(SECTION_START(sclite_read_sector), SECTION_SIZE(sclite_read_sector), patchHeap)
+        : PatchCode(SECTION_START(sclite_read_sector), SECTION_SIZE(sclite_read_sector), patchHeap)
     {
         INTERWORK_LABEL(sccmn_changeMode, readInterwork) = (u32)superCardChangeModePatchCode->GetScChangeModeFunction();
         INTERWORK_LABEL(sclite_sdCommandAndDropResponse6, readInterwork)
@@ -85,13 +86,13 @@ public:
         INTERWORK_LABEL(sccmn_sdSendClock10, readInterwork) = (u32)superCardCommonPatchCode->GetSdSendClock10Function();
     }
 
-    const SdReadFunc GetSdReadFunction() const override
+    const ReadSectorsFunc GetReadSectorsFunction() const override
     {
-        return (const SdReadFunc)GetAddressAtTarget((void*)sclite_readSector);
+        return (const ReadSectorsFunc)GetAddressAtTarget((void*)sclite_readSector);
     }
 };
 
-class SuperCardWriteSectorLitePatchCode : public SdWritePatchCode
+class SuperCardWriteSectorLitePatchCode : public PatchCode, public IWriteSectorsPatchCode
 {
 public:
     SuperCardWriteSectorLitePatchCode(PatchHeap& patchHeap,
@@ -99,7 +100,7 @@ public:
         const SuperCardChangeModePatchCode* superCardChangeModePatchCode,
         const SuperCardSDCommandAndDropLitePatchCode* superCardSdCommandAndDropLitePatchCode,
         const SuperCardWriteDataLitePatchCode* superCardWriteDataLitePatchCode)
-        : SdWritePatchCode(SECTION_START(sclite_write_sector), SECTION_SIZE(sclite_write_sector), patchHeap)
+        : PatchCode(SECTION_START(sclite_write_sector), SECTION_SIZE(sclite_write_sector), patchHeap)
     {
         INTERWORK_LABEL(sclite_writeData, writeInterwork) = (u32)superCardWriteDataLitePatchCode->GetWriteDataLiteFunction();
         INTERWORK_LABEL(sccmn_sdio4BitCrc16, writeInterwork) = (u32)superCardCommonPatchCode->GetCrc16ChecksumFunction();
@@ -109,9 +110,9 @@ public:
             = (u32)superCardSdCommandAndDropLitePatchCode->GetSdCommandAndDropResponse6Function();
     }
 
-    const SdWriteFunc GetSdWriteFunction() const override
+    const WriteSectorsFunc GetWriteSectorFunction() const override
     {
-        return (const SdWriteFunc)GetAddressAtTarget((void*)sclite_writeSector);
+        return (const WriteSectorsFunc)GetAddressAtTarget((void*)sclite_writeSector);
     }
 };
 

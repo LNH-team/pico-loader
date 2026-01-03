@@ -7,12 +7,12 @@
 #include "patches/platform/ace3ds/Ace3DSLoaderPlatform.h"
 #include "patches/platform/g003/G003LoaderPlatform.h"
 #include "patches/platform/melonds/MelonDSLoaderPlatform.h"
-#include "patches/platform/dstt/DSTTLoaderPlatform.h"
-#include "patches/platform/ak2/AK2LoaderPlatform.h"
-#include "patches/platform/akrpg/AKRPGLoaderPlatform.h"
-#include "patches/platform/r4idsn/R4iDSNLoaderPlatform.h"
+#include "patches/platform/dstt/DsttLoaderPlatform.h"
+#include "patches/platform/ak2/Ak2LoaderPlatform.h"
+#include "patches/platform/akrpg/AkRpgLoaderPlatform.h"
+#include "patches/platform/r4idsn/R4iDsnLoaderPlatform.h"
 #include "patches/platform/supercard/SuperCardLoaderPlatform.h"
-#include "patches/platform/ezp/EZPLoaderPlatform.h"
+#include "patches/platform/ezp/EzpLoaderPlatform.h"
 #include "patches/platform/datel/DatelLoaderPlatform.h"
 #include "patches/platform/stargate/StargateLoaderPlatform.h"
 #include "patches/platform/supercardcf/SuperCardCFLoaderPlatform.h"
@@ -38,17 +38,17 @@ LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
 #elif defined(PICO_LOADER_TARGET_MELONDS)
     return new MelonDSLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_DSTT)
-    return new DSTTLoaderPlatform();
+    return new DsttLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_AK2)
-    return new AK2LoaderPlatform();
+    return new Ak2LoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_AKRPG)
-    return new AKRPGLoaderPlatform();
+    return new AkRpgLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_R4iDSN)
-    return new R4iDSNLoaderPlatform();
+    return new R4iDsnLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_SUPERCARD)
     return new SuperCardLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_EZP)
-    return new EZPLoaderPlatform();
+    return new EzpLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_DATEL)
     return new DatelLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_STARGATE)

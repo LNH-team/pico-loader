@@ -3,8 +3,8 @@
 #include "fileInfo.h"
 #include "thumbInstructions.h"
 #include "patches/platform/LoaderPlatform.h"
-#include "patches/arm9/RomOffsetToSdSectorAsm.h"
-#include "patches/OffsetToSectorRemapAsm.h"
+#include "patches/arm9/RomOffsetToSdSectorPatchCode.h"
+#include "patches/OffsetToSectorRemapPatchCode.h"
 #include "CardiReadRomWithCpuPatchAsm.h"
 #include "patches/arm9/FixCp15Asm.h"
 #include "CardiReadRomWithCpuPatch.h"
@@ -88,7 +88,7 @@ void CardiReadRomWithCpuPatch::ApplyPatch(PatchContext& patchContext)
             return new OffsetToSectorRemapPatchCode(patchContext.GetPatchHeap());
         });
         __patch_cardireadromwithcpu_rom_offset_to_sd_sector_asm_address = (u32)offsetToSectorRemapPatchCode->GetRemapFunction();
-        __patch_cardireadromwithcpu_sdread_asm_address = (u32)romReadPatchCode->GetSdReadFunction();
+        __patch_cardireadromwithcpu_sdread_asm_address = (u32)romReadPatchCode->GetReadSectorsFunction();
     }
     else
     {
@@ -99,7 +99,7 @@ void CardiReadRomWithCpuPatch::ApplyPatch(PatchContext& patchContext)
             return new RomOffsetToSdSectorPatchCode(patchContext.GetPatchHeap(), SHARED_ROM_FILE_INFO);
         });
         __patch_cardireadromwithcpu_rom_offset_to_sd_sector_asm_address = (u32)romOffsetToSdSectorPatchCode->GetRemapFunction();
-        __patch_cardireadromwithcpu_sdread_asm_address = (u32)sdReadPatchCode->GetSdReadFunction();
+        __patch_cardireadromwithcpu_sdread_asm_address = (u32)sdReadPatchCode->GetReadSectorsFunction();
     }
 
     u32 patch1Size = SECTION_SIZE(patch_cardireadromwithcpu);

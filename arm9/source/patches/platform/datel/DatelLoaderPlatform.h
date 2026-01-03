@@ -1,15 +1,14 @@
 #pragma once
-#include "common.h"
 #include "../LoaderPlatform.h"
-#include "DatelSpiCommandsAsm.h"
-#include "DatelReadSectorsAsm.h"
-#include "DatelWriteSectorsAsm.h"
+#include "DatelSendSdioCommandPatchCode.h"
+#include "DatelReadSdPatchCode.h"
+#include "DatelWriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class DatelLoaderPlatform : public LoaderPlatform
 {
 public:
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -18,7 +17,7 @@ public:
         });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new DatelSendSDIOCommandPatchCode(patchHeap, spi);
+            return new DatelSendSdioCommandPatchCode(patchHeap, spi);
         });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
@@ -26,7 +25,7 @@ public:
         });
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         auto spi = patchCodeCollection.GetOrAddSharedPatchCode([&]
@@ -35,7 +34,7 @@ public:
         });
         auto sendSdio = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new DatelSendSDIOCommandPatchCode(patchHeap, spi);
+            return new DatelSendSdioCommandPatchCode(patchHeap, spi);
         });
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
