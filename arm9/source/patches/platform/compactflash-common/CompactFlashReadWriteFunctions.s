@@ -82,6 +82,7 @@ read_next_int:
 
     b read_next_block
 done:
+	movs r0, #1
 CF_PerformTransferSectors_error:
     pop {r0-r2,r5-r7, pc}
 
