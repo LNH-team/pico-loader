@@ -15,14 +15,14 @@ bool CompactFlashCommonLoaderPlatform::InitializeSdCard()
     mem_setGbaCartridgeCpu(EXMEMCNT_SLOT2_CPU_ARM9);
     mem_setGbaCartridgeRomWaits(EXMEMCNT_SLOT2_ROM_WAIT1_10, EXMEMCNT_SLOT2_ROM_WAIT2_6);
     CardLockUnlock(false);
-    auto res = InitializeCFCard();
+    auto res = InitializeCfCard();
     CardLockUnlock(true);
     REG_EXMEMCNT = oldMemCnt;
     mem_setGbaCartridgeCpu(EXMEMCNT_SLOT2_CPU_ARM7);
     return res;
 }
 
-static bool waitAvailableForCommands(const auto& regs) {
+static bool waitAvailableForCommands(const cf_registers_t& regs) {
     auto commandReg = (vu16*)regs.command;
     // wait for card to finish previous commands
     for (int i = 0; i < CF_CARD_TIMEOUT; i++)
@@ -43,11 +43,11 @@ static bool waitAvailableForCommands(const auto& regs) {
     return false;
 }
 
-bool CompactFlashCommonLoaderPlatform::InitializeCFCard()
+bool CompactFlashCommonLoaderPlatform::InitializeCfCard()
 {
     if(!RequiresLocking())
     {
-		// what is getting replaced is a `bl`, taking 4 bytes
+        // what is getting replaced is a `bl`, taking 4 bytes
         const u16 noLockingOpcode = THUMB_MOV_HIREG(THUMB_HI_R8, THUMB_HI_R8);
         CF_PerformTransfer_unlock_label[0] = noLockingOpcode;
         CF_PerformTransfer_unlock_label[1] = noLockingOpcode;
@@ -59,7 +59,7 @@ bool CompactFlashCommonLoaderPlatform::InitializeCFCard()
     {
         return false;
     }
-	// Check that the registers are writable and hold the values we set
+    // Check that the registers are writable and hold the values we set
     auto lba1 = (vu16*)regs.lba1;
     u16 temp = *lba1;
     *lba1 = (~temp & 0xFF);
