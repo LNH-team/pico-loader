@@ -19,6 +19,8 @@
 cf_performTransferSectors:
     push {r0,r1,r4-r7,lr}
     ldr r7, cf_performTransferSectors_waitCardAvailableForCommands
+    @ calls waitCardAvailableForCommands
+    @ this function doesn't alter r0, but sets the zero flag on failure and clears it on error
     bl cf_performTransferSectors_interwork
     beq cf_performTransferSectors_error
 
@@ -66,6 +68,7 @@ cf_performTransferSectors:
     ldr r7, cf_performTransferSectors_waitNextBlockReady
 read_next_block:
     @ calls waitCardNextBlockReady
+    @ this function doesn't alter r0, but sets the zero flag on failure and clears it on error
     bl cf_performTransferSectors_interwork
     beq cf_performTransferSectors_error
 
@@ -139,6 +142,7 @@ readNextSectorBlock:
     ble lastRead
 
     @ calls performTransferSectors
+    @ this function doesn't alter r0, but sets the zero flag on failure and clears it on error
     bl cf_performTransfer_interwork
     beq error
     @ increment sector
@@ -148,6 +152,7 @@ readNextSectorBlock:
 lastRead:
     adds r0, r5
     @ calls performTransferSectors
+    @ this function doesn't alter r0, but sets the zero flag on failure and clears it on error
     bl cf_performTransfer_interwork
 
 error:    
