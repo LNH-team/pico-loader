@@ -17,7 +17,7 @@
 .type cf_performTransferSectors, %function
 .global cf_performTransferSectors
 cf_performTransferSectors:
-    push {r0-r2,r5-r7,lr}
+    push {r0,r1,r4-r7,lr}
     ldr r7, cf_performTransferSectors_waitCardAvailableForCommands
     bl cf_performTransferSectors_interwork
     beq cf_performTransferSectors_error
@@ -85,7 +85,7 @@ read_next_int:
 done:
     movs r0, #1
 cf_performTransferSectors_error:
-    pop {r0,r1,r3,r5-r7, pc}
+    pop {r0,r1,r4-r7, pc}
 
 cf_performTransferSectors_interwork:
     bx r7
@@ -133,7 +133,7 @@ cf_performTransfer_unlock_label:
     @ r1 holds startSector
     @ r5 holds remainingSectors
     pop {r1,r5}
-    movs r0, 0xFF
+    movs r0, #0xFF
 readNextSectorBlock:
     subs r5, r0
     ble lastRead
