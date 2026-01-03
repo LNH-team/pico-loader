@@ -2,9 +2,9 @@
 #include "common.h"
 #include "../LoaderPlatform.h"
 #include "CompactFlashRegisters.h"
-#include "CompactFlashLockUnlockPatchCode.h"
 #include "CompactFlashStatusFunctions.h"
 #include "CompactFlashReadWriteFunctions.h"
+#include "ICompactFlashLockUnlockPatchCode.h"
 
 /// @brief Base implementation of LoaderPlatform for the Compact Flash slot 2 flashcarts
 class CompactFlashCommonLoaderPlatform : public LoaderPlatform
@@ -66,8 +66,8 @@ protected:
     /// @brief Generates the patch code containing the lock/unlock routines equivalent to \see SetCardLocked
     ///        If a card requires no locking, this doesn't have to be implemented.
     /// @note  The returned routine, is only allowed to modify r0, other registers should be left untouched
-    /// @return A pointer to the allocated \see CompactFlashLockUnlockPatchCode
-    virtual const CompactFlashLockUnlockPatchCode* CreateLockingPatchCode(
+    /// @return A pointer to the allocated \see ICompactFlashLockUnlockPatchCode
+    virtual const ICompactFlashLockUnlockPatchCode* CreateLockingPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const { return nullptr; }
 
     /// @brief Returns the exposed address associated to the Compact Flash registers

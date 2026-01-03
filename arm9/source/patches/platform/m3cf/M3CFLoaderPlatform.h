@@ -6,7 +6,7 @@
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class M3CFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
-    const CompactFlashLockUnlockPatchCode* CreateLockingPatchCode(
+    const ICompactFlashLockUnlockPatchCode* CreateLockingPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]

@@ -6,6 +6,7 @@
 #include "../IReadSectorsPatchCode.h"
 #include "../IWriteSectorsPatchCode.h"
 #include "CompactFlashRegisters.h"
+#include "ICompactFlashLockUnlockPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(cf_read_write_functions);
 DEFINE_SECTION_SYMBOLS(cf_read_write_functions_2);
@@ -51,7 +52,7 @@ public:
     CompactFlashReadWriteSectorPatchCode(PatchHeap& patchHeap,
         const cf_registers_t& registers,
         const CompactFlashTransferSectorPatchCode* compactFlashTransferSectorPatchCode,
-        const CompactFlashLockUnlockPatchCode* lockUnlockCard)
+        const ICompactFlashLockUnlockPatchCode* lockUnlockCard)
         : PatchCode(SECTION_START(cf_read_write_functions_2), SECTION_SIZE(cf_read_write_functions_2), patchHeap)
     {
         cf_readWriteFunctions2_reg_data = registers.data;
