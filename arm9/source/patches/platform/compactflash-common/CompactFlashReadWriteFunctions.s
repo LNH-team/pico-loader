@@ -17,7 +17,7 @@
 .type CF_PerformTransferSectors, %function
 .global CF_PerformTransferSectors
 CF_PerformTransferSectors:
-    push {r5-r7,lr}
+    push {r0-r2,r5-r7,lr}
     ldr r7, cf_readWriteFunctions_available_for_command
     bl CF_PerformTransferSectors_error_interwork
     beq CF_PerformTransferSectors_error
@@ -63,14 +63,14 @@ CF_PerformTransferSectors:
     @ get total number of bytes to write
     lsls r0, #9
 
-read_next_block:
     ldr r7, cf_readWriteFunctions_waitCardNextBlockReady
+read_next_block:
     bl CF_PerformTransferSectors_error_interwork
     beq CF_PerformTransferSectors_error
 
 read_next_int:
-    ldm r3!, {r1,r5,r6,r7}
-    stm r4!, {r1,r5,r6,r7}
+    ldm r3!, {r1,r2,r5,r6}
+    stm r4!, {r1,r2,r5,r6}
 
     subs r0, #16
     beq done
@@ -83,7 +83,7 @@ read_next_int:
     b read_next_block
 done:
 CF_PerformTransferSectors_error:
-    pop {r5-r7, pc}
+    pop {r0-r2,r5-r7, pc}
 
 CF_PerformTransferSectors_error_interwork:
     bx r7
@@ -123,7 +123,7 @@ CF_PerformTransfer:
 CF_PerformTransfer_unlock_label:
     bl interwork
 
-    @ leave r2,r3,r4 untouched, r0-r1 are thrashed, only available regs are r5,r6,r7
+    @ r2,r3,r4 hold variables not to be touched
     
     ldr r7, cf_readWriteFunctions2_performTransferSectors
 
