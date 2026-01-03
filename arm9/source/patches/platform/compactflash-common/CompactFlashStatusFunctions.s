@@ -4,8 +4,10 @@
 
 .section "cf_wait_functions", "ax"
 
+.equ CF_STS_DRQ, 0x08
+.equ CF_STS_DSC, 0x10
+.equ CF_STS_READY, 0x40
 .equ CF_STS_INSERTED, 0x50
-.equ CF_STS_READY, 0x58
 .equ CF_STS_BUSY, 0x80
 
 .equ CF_CARD_TIMEOUT, 10000000
@@ -30,7 +32,7 @@ still_busy:
 
 no_longer_busy:
     @ wait for card to be ready for commands
-    movs r3, CF_STS_INSERTED
+    movs r3, (CF_STS_READY | CF_STS_DSC)
 1:
     ldrh r1, [r2]
     tst r1, r3
@@ -53,7 +55,7 @@ cf_waitCardNextBlockReady:
     ldr r1, cf_waitFunctions_reg_cmd
 1:
     ldrb r2, [r1]
-    cmp r2, CF_STS_READY
+    cmp r2, (CF_STS_READY | CF_STS_DSC | CF_STS_DRQ)
     @ timeout expired
     beq ready
     subs r0, #1

@@ -3,7 +3,6 @@
 #include "CompactFlashCommonLoaderPlatform.h"
 
 static constexpr int CF_CARD_TIMEOUT = 10000000;
-static constexpr int CF_STS_INSERTED = 0x50;
 static constexpr int CF_STS_READY = 0x40;
 static constexpr int CF_STS_DSC = 0x10;
 static constexpr int CF_STS_BUSY = 0x80;
