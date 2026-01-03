@@ -1,7 +1,7 @@
 .cpu arm7tdmi
 .syntax unified
 .thumb
-.section "cf_read_write_functions", "ax"
+.section "cf_perform_transfer", "ax"
 
 .equ CF_STS_INSERTED, 0x50
 .equ CF_STS_READY, 0x58
@@ -13,16 +13,16 @@
 
 .equ CF_CARD_TIMEOUT, 10000000
 
-@ bool CF_PerformTransferSectors(u32 numSectors, u32 sector, void* srcAddr, void* dstAddr, u8 command)
-.type CF_PerformTransferSectors, %function
-.global CF_PerformTransferSectors
-CF_PerformTransferSectors:
+@ bool cf_performTransferSectors(u32 numSectors, u32 sector, void* srcAddr, void* dstAddr, u8 command)
+.type cf_performTransferSectors, %function
+.global cf_performTransferSectors
+cf_performTransferSectors:
     push {r0-r2,r5-r7,lr}
-    ldr r7, cf_readWriteFunctions_available_for_command
-    bl CF_PerformTransferSectors_error_interwork
-    beq CF_PerformTransferSectors_error
+    ldr r7, cf_performTransferSectors_waitCardAvailableForCommands
+    bl cf_performTransferSectors_interwork
+    beq cf_performTransferSectors_error
 
-    ldr r5, cf_readWriteFunctions_reg_sector_count
+    ldr r5, cf_performTransferSectors_reg_sector_count
 
     @ load 0x20000
     movs r6, #0x01
@@ -63,11 +63,11 @@ CF_PerformTransferSectors:
     @ get total number of bytes to write
     lsls r0, #9
 
-    ldr r7, cf_readWriteFunctions_waitCardNextBlockReady
+    ldr r7, cf_performTransferSectors_waitNextBlockReady
 read_next_block:
     @ calls waitCardNextBlockReady
-    bl CF_PerformTransferSectors_error_interwork
-    beq CF_PerformTransferSectors_error
+    bl cf_performTransferSectors_interwork
+    beq cf_performTransferSectors_error
 
 read_next_int:
     ldm r2!, {r1,r4,r5,r6}
@@ -84,51 +84,51 @@ read_next_int:
     b read_next_block
 done:
     movs r0, #1
-CF_PerformTransferSectors_error:
+cf_performTransferSectors_error:
     pop {r0,r1,r3,r5-r7, pc}
 
-CF_PerformTransferSectors_error_interwork:
+cf_performTransferSectors_interwork:
     bx r7
 
 .balign 4
 .pool
-.global cf_readWriteFunctions_reg_sector_count
-cf_readWriteFunctions_reg_sector_count:
+.global cf_performTransferSectors_reg_sector_count
+cf_performTransferSectors_reg_sector_count:
     .word 0
-.global cf_readWriteFunctions_available_for_command
-cf_readWriteFunctions_available_for_command:
+.global cf_performTransferSectors_waitCardAvailableForCommands
+cf_performTransferSectors_waitCardAvailableForCommands:
     .word 0
-.global cf_readWriteFunctions_waitCardNextBlockReady
-cf_readWriteFunctions_waitCardNextBlockReady:
+.global cf_performTransferSectors_waitNextBlockReady
+cf_performTransferSectors_waitNextBlockReady:
     .word 0
 
-.section "cf_read_write_functions_2", "ax"
-.global CF_PerformTransfer_unlock_label
-.global CF_PerformTransfer_lock_label
+.section "cf_read_write_functions", "ax"
+.global cf_performTransfer_unlock_label
+.global cf_performTransfer_lock_label
 @ r2 srcAddr
 @ r3 dstAddr
 @ r4 command
 @ top of stack startSector
 @ below it numSectors
-@ CF_PerformTransfer(dstAddr, srcAddr, command, startSector, numSectors)
-CF_PerformTransfer:
+@ cf_performTransfer(dstAddr, srcAddr, command, startSector, numSectors)
+cf_performTransfer:
     @ loads EXMEMCNT register address
     ldr r6, =0x04000200
     @ waitstate 4,2 and arm9 slot2 access
     @ r6 + 4 is EXMEMCNT, use lower 8 bits as 0
     strb r6, [r6, #4]
     
-    ldr r7, cf_readWriteFunctions2_lockUnlockCard
+    ldr r7, cf_performTransfer_lockUnlockCard
     movs r0, #0
 
     @ if the cart requires no lock/unlock sequence, this is replaced with a nop
-CF_PerformTransfer_unlock_label:
+cf_performTransfer_unlock_label:
     @ calls lockUnlockCard
-    bl CF_PerformTransfer_interwork
+    bl cf_performTransfer_interwork
 
     @ r2,r3,r4 hold variables not to be touched
     
-    ldr r7, cf_readWriteFunctions2_performTransferSectors
+    ldr r7, cf_performTransfer_performTransferSectors
 
     @ r1 holds startSector
     @ r5 holds remainingSectors
@@ -139,7 +139,7 @@ readNextSectorBlock:
     ble lastRead
 
     @ calls performTransferSectors
-    bl CF_PerformTransfer_interwork
+    bl cf_performTransfer_interwork
     beq error
     @ increment sector
     adds r1, r0
@@ -148,55 +148,55 @@ readNextSectorBlock:
 lastRead:
     adds r0, r5
     @ calls performTransferSectors
-    bl CF_PerformTransfer_interwork
+    bl cf_performTransfer_interwork
 
 error:    
-    ldr r7, cf_readWriteFunctions2_lockUnlockCard
+    ldr r7, cf_performTransfer_lockUnlockCard
     movs r0, #1
 
     @ if the cart requires no lock/unlock sequence, this is replaced with a nop
-CF_PerformTransfer_lock_label:
+cf_performTransfer_lock_label:
     @ calls lockUnlockCard
-    bl CF_PerformTransfer_interwork
+    bl cf_performTransfer_interwork
 
     @ waitstate 4,2 and arm7 slot2 access
     movs r2, #0x80
     @ r6 + 4 is EXMEMCNT
     strb r2, [r6, #4]
     pop {r4-r7, pc}
-CF_PerformTransfer_interwork:
+cf_performTransfer_interwork:
     bx r7
 
-@ CF_readSectors(u32 sector, void* buffer, u32 numSectors)
-.type CF_readSectors, %function
-.global CF_readSectors
-CF_readSectors:
+@ cf_readSectors(u32 sector, void* buffer, u32 numSectors)
+.type cf_readSectors, %function
+.global cf_readSectors
+cf_readSectors:
     push {r0,r2,r4-r7, lr}
     movs r4, CF_CMD_READ
     movs r3, r1
-    ldr r2, cf_readWriteFunctions2_reg_data
+    ldr r2, cf_performTransfer_reg_data
 
-    b CF_PerformTransfer
+    b cf_performTransfer
 
-@ CF_writeSectors(u32 sector, void* buffer, u32 numSectors)
-.type CF_writeSectors, %function
-.global CF_writeSectors
-CF_writeSectors:
+@ cf_writeSectors(u32 sector, void* buffer, u32 numSectors)
+.type cf_writeSectors, %function
+.global cf_writeSectors
+cf_writeSectors:
     push {r0,r2,r4-r7, lr}
     movs r4, CF_CMD_WRITE
-    ldr r3, cf_readWriteFunctions2_reg_data
+    ldr r3, cf_performTransfer_reg_data
     movs r2, r1
 
-    b CF_PerformTransfer
+    b cf_performTransfer
 
 .balign 4
 .pool
-.global cf_readWriteFunctions2_reg_data
-cf_readWriteFunctions2_reg_data:
+.global cf_performTransfer_reg_data
+cf_performTransfer_reg_data:
     .word 0
-.global cf_readWriteFunctions2_performTransferSectors
-cf_readWriteFunctions2_performTransferSectors:
+.global cf_performTransfer_performTransferSectors
+cf_performTransfer_performTransferSectors:
     .word 0
-.global cf_readWriteFunctions2_lockUnlockCard
-cf_readWriteFunctions2_lockUnlockCard:
+.global cf_performTransfer_lockUnlockCard
+cf_performTransfer_lockUnlockCard:
     .word 0

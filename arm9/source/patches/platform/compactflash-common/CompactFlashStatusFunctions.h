@@ -6,8 +6,8 @@
 
 DEFINE_SECTION_SYMBOLS(cf_wait_functions);
 
-extern "C" bool cf_waitAvailableForCommands();
-extern "C" bool cf_waitCardNextBlockReady();
+extern "C" bool cf_waitCardAvailableForCommands();
+extern "C" bool cf_waitNextBlockReady();
 
 extern u32 cf_waitFunctions_reg_cmd;
 
@@ -20,13 +20,13 @@ public:
         cf_waitFunctions_reg_cmd = registers.command;
     }
 
-    const void* GetWaitAvailableForCommandsFunction() const
+    const void* GetWaitCardAvailableForCommandsFunction() const
     {
-        return GetAddressAtTarget((void*)cf_waitAvailableForCommands);
+        return GetAddressAtTarget((void*)cf_waitCardAvailableForCommands);
     }
 
-    const void* GetWaitCardNextBlockReadyFunction() const
+    const void* GetWaitNextBlockReadyFunction() const
     {
-        return GetAddressAtTarget((void*)cf_waitCardNextBlockReady);
+        return GetAddressAtTarget((void*)cf_waitNextBlockReady);
     }
 };

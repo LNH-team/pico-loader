@@ -13,10 +13,10 @@
 .equ CF_CARD_TIMEOUT, 10000000
 
 @ Waits until the card is ready to receive commands
-@ bool cf_waitAvailableForCommands()
-.global cf_waitAvailableForCommands
-.type cf_waitAvailableForCommands, %function
-cf_waitAvailableForCommands:
+@ bool cf_waitCardAvailableForCommands()
+.global cf_waitCardAvailableForCommands
+.type cf_waitCardAvailableForCommands, %function
+cf_waitCardAvailableForCommands:
     push {r0-r4, lr}
     @ wait for card to finish previous commands
     ldr r1, =CF_CARD_TIMEOUT
@@ -46,10 +46,10 @@ no_longer_busy:
     pop {r0-r4, pc}
 
 @ Waits until the card is ready to write/return the next block
-@ bool cf_waitCardNextBlockReady()
-.global cf_waitCardNextBlockReady
-.type cf_waitCardNextBlockReady, %function
-cf_waitCardNextBlockReady:
+@ bool cf_waitNextBlockReady()
+.global cf_waitNextBlockReady
+.type cf_waitNextBlockReady, %function
+cf_waitNextBlockReady:
     push {r0-r4, lr}
     ldr r0, =CF_CARD_TIMEOUT
     ldr r1, cf_waitFunctions_reg_cmd
