@@ -43,7 +43,7 @@ static bool waitAvailableForCommands(const cf_registers_t& regs) {
 bool CompactFlashCommonLoaderPlatform::InitializeCfCard()
 {
     const auto& regs = GetCfRegisters();
-    if(!waitAvailableForCommands(regs))
+    if (!waitAvailableForCommands(regs))
     {
         return false;
     }
