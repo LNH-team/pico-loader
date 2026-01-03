@@ -14,9 +14,9 @@ bool CompactFlashCommonLoaderPlatform::InitializeSdCard()
     u32 oldMemCnt = REG_EXMEMCNT;
     mem_setGbaCartridgeCpu(EXMEMCNT_SLOT2_CPU_ARM9);
     mem_setGbaCartridgeRomWaits(EXMEMCNT_SLOT2_ROM_WAIT1_10, EXMEMCNT_SLOT2_ROM_WAIT2_6);
-    CardLockUnlock(false);
+    SetCardLocked(false);
     auto res = InitializeCfCard();
-    CardLockUnlock(true);
+    SetCardLocked(true);
     REG_EXMEMCNT = oldMemCnt;
     mem_setGbaCartridgeCpu(EXMEMCNT_SLOT2_CPU_ARM7);
     return res;

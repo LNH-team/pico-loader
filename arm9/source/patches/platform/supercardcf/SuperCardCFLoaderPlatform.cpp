@@ -15,7 +15,7 @@ static void changeSupercardMode(u8 mode)
     SC_MODE_REG = mode;
 }
 
-void SuperCardCFLoaderPlatform::CardLockUnlock(bool lock) const
+void SuperCardCFLoaderPlatform::SetCardLocked(bool locked) const
 {
-    changeSupercardMode(lock ? SC_MODE_RAM_RO : SC_MODE_MEDIA);
+    changeSupercardMode(locked ? SC_MODE_RAM_RO : SC_MODE_MEDIA);
 }

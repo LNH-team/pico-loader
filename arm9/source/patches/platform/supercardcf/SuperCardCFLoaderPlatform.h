@@ -13,7 +13,7 @@ class SuperCardCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
         return new SuperCardCFLockUnlockCardPatchCode(patchHeap);
     }
 
-    void CardLockUnlock(bool lock) const override;
+    void SetCardLocked(bool locked) const override;
 
     const cf_registers_t& GetCfRegisters() const override
     {

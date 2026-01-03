@@ -5,7 +5,7 @@
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class MPCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
-    void CardLockUnlock(bool lock) const override { return; }
+    void SetCardLocked(bool locked) const override { return; }
 
     bool RequiresLocking() const override { return false; }
 

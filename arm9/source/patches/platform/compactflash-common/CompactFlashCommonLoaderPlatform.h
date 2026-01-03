@@ -61,7 +61,7 @@ public:
 protected:
     /// @brief Locks/Unlocks the cart to operate on the inserted CF card
     /// @param Whether the card sould be locked (prevent R/W operations) or unlocked (allows R/W operations)
-    virtual void CardLockUnlock(bool lock) const = 0;
+    virtual void SetCardLocked(bool locked) const = 0;
 
     /// @brief Checks if the implementation requires specific lock/unlock commands before using the CF Card
     ///        If a card requires locking, it should implement \see NewCardLockUnlockPatchCode returning the patch
@@ -79,7 +79,6 @@ protected:
     virtual const cf_registers_t& GetCfRegisters() const = 0;
 
 private:
-
     const CompactFlashLockUnlockPatchCode* allocateLockUnlockPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const
     {

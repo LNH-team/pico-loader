@@ -13,7 +13,7 @@ class M3CFLoaderPlatform : public CompactFlashCommonLoaderPlatform
         return new M3CFLockUnlockCardPatchCode(patchHeap);
     }
 
-    void CardLockUnlock(bool lock) const override;
+    void SetCardLocked(bool locked) const override;
 
     const cf_registers_t& GetCfRegisters() const override
     {
