@@ -65,6 +65,7 @@ CF_PerformTransferSectors:
 
     ldr r7, cf_readWriteFunctions_waitCardNextBlockReady
 read_next_block:
+    @ calls waitCardNextBlockReady
     bl CF_PerformTransferSectors_error_interwork
     beq CF_PerformTransferSectors_error
 
@@ -122,7 +123,8 @@ CF_PerformTransfer:
 
     @ if the cart requires no lock/unlock sequence, this is replaced with a nop
 CF_PerformTransfer_unlock_label:
-    bl interwork
+    @ calls lockUnlockCard
+    bl CF_PerformTransfer_interwork
 
     @ r2,r3,r4 hold variables not to be touched
     
@@ -136,7 +138,8 @@ readNextSectorBlock:
     subs r5, r0
     ble lastRead
 
-    bl interwork
+    @ calls performTransferSectors
+    bl CF_PerformTransfer_interwork
     beq error
     @ increment sector
     adds r1, r0
@@ -144,7 +147,8 @@ readNextSectorBlock:
     
 lastRead:
     adds r0, r5
-    bl interwork
+    @ calls performTransferSectors
+    bl CF_PerformTransfer_interwork
 
 error:    
     ldr r7, cf_readWriteFunctions2_lockUnlockCard
@@ -152,14 +156,15 @@ error:
 
     @ if the cart requires no lock/unlock sequence, this is replaced with a nop
 CF_PerformTransfer_lock_label:
-    bl interwork
+    @ calls lockUnlockCard
+    bl CF_PerformTransfer_interwork
 
     @ waitstate 4,2 and arm7 slot2 access
     movs r2, #0x80
     @ r6 + 4 is EXMEMCNT
     strb r2, [r6, #4]
     pop {r4-r7, pc}
-interwork:
+CF_PerformTransfer_interwork:
     bx r7
 
 @ CF_readSectors(u32 sector, void* buffer, u32 numSectors)
