@@ -166,8 +166,7 @@ interwork:
 .type CF_readSectors, %function
 .global CF_readSectors
 CF_readSectors:
-    push {r4-r7, lr}
-    push {r0,r2}
+    push {r0,r2,r4-r7, lr}
     movs r4, CF_CMD_READ
     movs r3, r1
     ldr r2, cf_readWriteFunctions2_reg_data
@@ -178,8 +177,7 @@ CF_readSectors:
 .type CF_writeSectors, %function
 .global CF_writeSectors
 CF_writeSectors:
-    push {r4-r7, lr}
-    push {r0,r2}
+    push {r0,r2,r4-r7, lr}
     movs r4, CF_CMD_WRITE
     ldr r3, cf_readWriteFunctions2_reg_data
     movs r2, r1
