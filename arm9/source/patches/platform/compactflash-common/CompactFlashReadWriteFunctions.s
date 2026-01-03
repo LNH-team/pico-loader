@@ -13,7 +13,7 @@
 
 .equ CF_CARD_TIMEOUT, 10000000
 
-@ bool CF_PerformTransferSectors(u32 numSectors, u32 sector, u8 command, void* srcAddr, void* dstAddr)
+@ bool CF_PerformTransferSectors(u32 numSectors, u32 sector, void* srcAddr, void* dstAddr, u8 command)
 .type CF_PerformTransferSectors, %function
 .global CF_PerformTransferSectors
 CF_PerformTransferSectors:
@@ -58,7 +58,7 @@ CF_PerformTransferSectors:
     strh r7, [r5]
 
     @ store command
-    strh r2, [r5, r6]
+    strh r4, [r5, r6]
 
     @ get total number of bytes to write
     lsls r0, #9
@@ -69,8 +69,8 @@ read_next_block:
     beq CF_PerformTransferSectors_error
 
 read_next_int:
-    ldm r3!, {r1,r2,r5,r6}
-    stm r4!, {r1,r2,r5,r6}
+    ldm r2!, {r1,r4,r5,r6}
+    stm r3!, {r1,r4,r5,r6}
 
     subs r0, #16
     beq done
@@ -82,9 +82,9 @@ read_next_int:
 
     b read_next_block
 done:
-	movs r0, #1
+    movs r0, #1
 CF_PerformTransferSectors_error:
-    pop {r0-r2,r5-r7, pc}
+    pop {r0,r1,r3,r5-r7, pc}
 
 CF_PerformTransferSectors_error_interwork:
     bx r7
@@ -104,16 +104,18 @@ cf_readWriteFunctions_waitCardNextBlockReady:
 .section "cf_read_write_functions_2", "ax"
 .global CF_PerformTransfer_unlock_label
 .global CF_PerformTransfer_lock_label
-@ CF_PerformTransfer(u32 numSectors, u32 sector, u8 command, void* srcAddr, void* dstAddr)
+@ r2 srcAddr
+@ r3 dstAddr
+@ r4 command
+@ top of stack startSector
+@ below it numSectors
+@ CF_PerformTransfer(dstAddr, srcAddr, command, startSector, numSectors)
 CF_PerformTransfer:
     @ loads EXMEMCNT register address
     ldr r6, =0x04000200
     @ waitstate 4,2 and arm9 slot2 access
     @ r6 + 4 is EXMEMCNT, use lower 8 bits as 0
     strb r6, [r6, #4]
-
-    @ remaining sectors
-    movs r5, r0
     
     ldr r7, cf_readWriteFunctions2_lockUnlockCard
     movs r0, #0
@@ -126,6 +128,9 @@ CF_PerformTransfer_unlock_label:
     
     ldr r7, cf_readWriteFunctions2_performTransferSectors
 
+    @ r1 holds startSector
+    @ r5 holds remainingSectors
+    pop {r1,r5}
     movs r0, 0xFF
 readNextSectorBlock:
     subs r5, r0
@@ -133,6 +138,7 @@ readNextSectorBlock:
 
     bl interwork
     beq error
+    @ increment sector
     adds r1, r0
     b readNextSectorBlock
     
@@ -150,7 +156,7 @@ CF_PerformTransfer_lock_label:
 
     @ waitstate 4,2 and arm7 slot2 access
     movs r2, #0x80
-	@ r6 + 4 is EXMEMCNT
+    @ r6 + 4 is EXMEMCNT
     strb r2, [r6, #4]
     pop {r4-r7, pc}
 interwork:
@@ -161,13 +167,10 @@ interwork:
 .global CF_readSectors
 CF_readSectors:
     push {r4-r7, lr}
-
-    ldr r3, cf_readWriteFunctions2_reg_data
-    movs r4, r1
-    movs r1, r0
-    movs r0, r2
-
-    movs r2, CF_CMD_READ
+    push {r0,r2}
+    movs r4, CF_CMD_READ
+    movs r3, r1
+    ldr r2, cf_readWriteFunctions2_reg_data
 
     b CF_PerformTransfer
 
@@ -176,13 +179,10 @@ CF_readSectors:
 .global CF_writeSectors
 CF_writeSectors:
     push {r4-r7, lr}
-
-    movs r3, r1
-    ldr r4, cf_readWriteFunctions2_reg_data
-    movs r1, r0
-    movs r0, r2
-
-    movs r2, CF_CMD_WRITE
+    push {r0,r2}
+    movs r4, CF_CMD_WRITE
+    ldr r3, cf_readWriteFunctions2_reg_data
+    movs r2, r1
 
     b CF_PerformTransfer
 
