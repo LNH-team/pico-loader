@@ -1,7 +1,9 @@
 #pragma once
 #include "common.h"
 #include "sections.h"
-#include "../LoaderPlatform.h"
+#include "patches/PatchCode.h"
+#include "../IReadSectorsPatchCode.h"
+#include "../IWriteSectorsPatchCode.h"
 #include "CompactFlashRegisters.h"
 
 DEFINE_SECTION_SYMBOLS(cf_read_write_functions);
@@ -42,14 +44,14 @@ public:
     }
 };
 
-class CompactFlashReadSectorPatchCode : public SdReadPatchCode
+class CompactFlashReadWriteSectorPatchCode : public PatchCode, public IReadSectorsPatchCode, public IWriteSectorsPatchCode
 {
 public:
-    CompactFlashReadSectorPatchCode(PatchHeap& patchHeap,
+    CompactFlashReadWriteSectorPatchCode(PatchHeap& patchHeap,
         const cf_registers_t& registers,
         const CompactFlashTransferSectorPatchCode* compactFlashTransferSectorPatchCode,
         const CompactFlashLockUnlockPatchCode* lockUnlockCard)
-        : SdReadPatchCode(SECTION_START(cf_read_write_functions_2), SECTION_SIZE(cf_read_write_functions_2), patchHeap)
+        : PatchCode(SECTION_START(cf_read_write_functions_2), SECTION_SIZE(cf_read_write_functions_2), patchHeap)
     {
         cf_readWriteFunctions2_reg_data = registers.data;
     
@@ -61,33 +63,13 @@ public:
         }
     }
 
-    const SdReadFunc GetSdReadFunction() const override
+    const ReadSectorsFunc GetReadSectorsFunction() const override
     {
-        return (const SdReadFunc)GetAddressAtTarget((void*)CF_readSectors);
-    }
-};
-
-class CompactFlashWriteSectorPatchCode : public SdWritePatchCode
-{
-public:
-    CompactFlashWriteSectorPatchCode(PatchHeap& patchHeap,
-        const cf_registers_t& registers,
-        const CompactFlashTransferSectorPatchCode* compactFlashTransferSectorPatchCode,
-        const CompactFlashLockUnlockPatchCode* lockUnlockCard)
-        : SdWritePatchCode(SECTION_START(cf_read_write_functions_2), SECTION_SIZE(cf_read_write_functions_2), patchHeap)
-    {
-        cf_readWriteFunctions2_reg_data = registers.data;
-    
-        cf_readWriteFunctions2_performTransferSectors = (u32)compactFlashTransferSectorPatchCode->GetPerformTransferSectorsFunction();
-    
-        if (lockUnlockCard)
-        {
-            cf_readWriteFunctions2_lockUnlockCard = (u32)lockUnlockCard->GetLockUnlockFunction();
-        }
+        return (const ReadSectorsFunc)GetAddressAtTarget((void*)CF_readSectors);
     }
 
-    const SdWriteFunc GetSdWriteFunction() const override
+    const WriteSectorsFunc GetWriteSectorFunction() const override
     {
-        return (const SdWriteFunc)GetAddressAtTarget((void*)CF_writeSectors);
+        return (const WriteSectorsFunc)GetAddressAtTarget((void*)CF_writeSectors);
     }
 };

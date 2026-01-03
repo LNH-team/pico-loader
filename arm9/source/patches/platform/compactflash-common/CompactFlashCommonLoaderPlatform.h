@@ -34,7 +34,7 @@ protected:
     /// @return the \see cf_registers_t struct containing the registers
     virtual const cf_registers_t& GetCfRegisters() const = 0;
 
-    const SdReadPatchCode* CreateSdReadPatchCode(
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         const auto& regs = GetCfRegisters();
@@ -52,11 +52,11 @@ protected:
 
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new CompactFlashReadSectorPatchCode(patchHeap, regs, transferSector, lockUnlock);
+            return new CompactFlashReadWriteSectorPatchCode(patchHeap, regs, transferSector, lockUnlock);
         });
     }
 
-    const SdWritePatchCode* CreateSdWritePatchCode(
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
         const auto& regs = GetCfRegisters();
@@ -74,7 +74,7 @@ protected:
 
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new CompactFlashWriteSectorPatchCode(patchHeap, regs, transferSector, lockUnlock);
+            return new CompactFlashReadWriteSectorPatchCode(patchHeap, regs, transferSector, lockUnlock);
         });
     }
 
