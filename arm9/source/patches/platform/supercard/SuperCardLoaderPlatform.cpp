@@ -64,12 +64,10 @@ static SupercardType detectSupercardType()
 
 bool SuperCardLoaderPlatform::InitializeSdCard()
 {
-	REG_EXMEMCNT &= ~EXMEMCNT_SLOT2_CPU_ARM7;
     u32 oldMemCnt = REG_EXMEMCNT;
     mem_setGbaCartridgeRomWaits(EXMEMCNT_SLOT2_ROM_WAIT1_10, EXMEMCNT_SLOT2_ROM_WAIT2_6);
     bool result = InitializeSdCardIntern();
     REG_EXMEMCNT = oldMemCnt;
-	REG_EXMEMCNT |= EXMEMCNT_SLOT2_CPU_ARM7;
     return result;
 }
 
