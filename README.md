@@ -32,11 +32,15 @@ Note that there can be some game compatibility differences between different pla
 | G003          | M3i Zero (GMP-Z003)                                                                            | ✅ |
 | ISNITRO       | Supports the IS-NITRO-EMULATOR through agb semihosting.                                        | ❌ |
 | M3DS          | M3 DS Real, M3i Zero, iTouchDS, r4rts.com, r4isdhc.com RTS (black)                             | ❌ |
+| M3CF          | M3 Compact Flash (Slot-2 flashcart)                                                            | ❌ |
 | MELONDS       | Melon DS support for testing purposes only.                                                    | ❌ |
+| MMCF          | DATEL Max Media Dock Compact Flash (Slot-2 flashcart)                                          | ❌ |
+| MPCF          | GBA Media Player Compact Flash (Slot-2 cart)                                                   | ❌ |
 | R4            | Original R4DS (non-SDHC), M3 DS Simply                                                         | ❌ |
 | R4iDSN        | r4idsn.com                                                                                     | ❌ |
 | STARGATE      | Stargate 3DS DS-mode                                                                           | ✅ |
-| SUPERCARD     | SuperCard (Slot-2 flashcart)                                                                   | ❌ |
+| SUPERCARD     | SuperCard SD, Lite and Rumble (Slot-2 flashcart)                                               | ❌ |
+| SUPERCARDCF   | SuperCard CF (Slot-2 flashcart)                                                                | ❌ |
 
 The DMA column indicates whether DMA card reads are implemented for the platform . Without DMA card reads, some games can have cache related issues.<br>
 Note that there are still SDK versions and variants for which Pico Loader does not yet support DMA card reads.
