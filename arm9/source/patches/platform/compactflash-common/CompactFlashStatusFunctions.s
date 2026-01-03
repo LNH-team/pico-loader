@@ -13,7 +13,7 @@
 .equ CF_CARD_TIMEOUT, 10000000
 
 @ Waits until the card is ready to receive commands
-@ this function doesn't alter r0, but sets the zero flag on failure and clears it on error
+@ this function doesn't alter r0, but sets the zero flag on failure and clears it on success
 @ bool cf_waitCardAvailableForCommands()
 .global cf_waitCardAvailableForCommands
 .type cf_waitCardAvailableForCommands, %function
@@ -47,7 +47,7 @@ no_longer_busy:
     pop {r0-r4, pc}
 
 @ Waits until the card is ready to write/return the next block
-@ this function doesn't alter r0, but sets the zero flag on failure and clears it on error
+@ this function doesn't alter r0, but sets the zero flag on failure and clears it on success
 @ bool cf_waitNextBlockReady()
 .global cf_waitNextBlockReady
 .type cf_waitNextBlockReady, %function
