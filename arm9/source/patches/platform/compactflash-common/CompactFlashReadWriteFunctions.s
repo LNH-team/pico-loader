@@ -1,17 +1,12 @@
 .cpu arm7tdmi
 .syntax unified
 .thumb
-.section "cf_perform_transfer", "ax"
 
-.equ CF_STS_INSERTED, 0x50
-.equ CF_STS_READY, 0x58
-.equ CF_STS_BUSY, 0x80
+.section "cf_perform_transfer", "ax"
 
 .equ CF_CMD_LBA, 0xE0
 .equ CF_CMD_READ, 0x20
 .equ CF_CMD_WRITE, 0x30
-
-.equ CF_CARD_TIMEOUT, 10000000
 
 @ bool cf_performTransferSectors(u32 numSectors, u32 sector, void* srcAddr, void* dstAddr, u8 command)
 .type cf_performTransferSectors, %function
