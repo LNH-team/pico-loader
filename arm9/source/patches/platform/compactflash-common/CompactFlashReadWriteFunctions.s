@@ -107,12 +107,10 @@ cf_readWriteFunctions_waitCardNextBlockReady:
 @ CF_PerformTransfer(u32 numSectors, u32 sector, u8 command, void* srcAddr, void* dstAddr)
 CF_PerformTransfer:
     @ loads EXMEMCNT register address
-    ldr r7, =0x04000200
+    ldr r6, =0x04000200
     @ waitstate 4,2 and arm9 slot2 access
-    @ r7 holds the EXMEMCNT address, use lower 8 bits as 0
-    strb r7, [r7, #4]
-    @ sector counter
-    movs r6, r1
+    @ r6 + 4 is EXMEMCNT, use lower 8 bits as 0
+    strb r6, [r6, #4]
 
     @ remaining sectors
     movs r5, r0
@@ -128,25 +126,21 @@ CF_PerformTransfer_unlock_label:
     
     ldr r7, cf_readWriteFunctions2_performTransferSectors
 
-readNextSectorBlock:
-    cmp r5, 0xFF
-    blt lastRead
-
     movs r0, 0xFF
-    movs r1, r6
-    adds r6, r0
+readNextSectorBlock:
     subs r5, r0
+    ble lastRead
+
     bl interwork
     beq error
+    adds r1, r0
     b readNextSectorBlock
     
 lastRead:
-    movs r0, r5
-    movs r1, r6
+    adds r0, r5
     bl interwork
 
-error:
-    
+error:    
     ldr r7, cf_readWriteFunctions2_lockUnlockCard
     movs r0, #1
 
@@ -156,8 +150,8 @@ CF_PerformTransfer_lock_label:
 
     @ waitstate 4,2 and arm7 slot2 access
     movs r2, #0x80
-    ldr r7,= 0x04000200
-    strb r2, [r7, #4]
+	@ r6 + 4 is EXMEMCNT
+    strb r2, [r6, #4]
     pop {r4-r7, pc}
 interwork:
     bx r7
