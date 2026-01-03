@@ -45,7 +45,7 @@ static bool waitAvailableForCommands(const cf_registers_t& regs) {
 
 bool CompactFlashCommonLoaderPlatform::InitializeCfCard()
 {
-    if(!RequiresLocking())
+    if (!IsLockingRequired())
     {
         // what is getting replaced is a `bl`, taking 4 bytes
         const u16 noLockingOpcode = THUMB_MOV_HIREG(THUMB_HI_R8, THUMB_HI_R8);

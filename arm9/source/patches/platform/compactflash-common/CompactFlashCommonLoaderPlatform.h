@@ -28,7 +28,7 @@ public:
             return new CompactFlashTransferSectorPatchCode(patchHeap, regs, statusFunctions);
         });
 
-        auto lockUnlock = allocateLockUnlockPatchCode(patchCodeCollection, patchHeap);
+        auto lockUnlock = CreateLockingPatchCode(patchCodeCollection, patchHeap);
 
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
@@ -50,7 +50,7 @@ public:
             return new CompactFlashTransferSectorPatchCode(patchHeap, regs, statusFunctions);
         });
 
-        auto lockUnlock = allocateLockUnlockPatchCode(patchCodeCollection, patchHeap);
+        auto lockUnlock = CreateLockingPatchCode(patchCodeCollection, patchHeap);
 
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
@@ -67,7 +67,7 @@ protected:
     ///        If a card requires locking, it should implement \see NewCardLockUnlockPatchCode returning the patch
     ///        code performing the lock/unlock sequences, and also repeat the same logic in SetCardLocked.
     /// @return \c true if the platform requires the sequence, or \c false otherwise.
-    virtual bool RequiresLocking() const = 0;
+    virtual bool IsLockingRequired() const = 0;
 
     /// @brief Generates the patch code containing the lock/unlock routines equivalent to \see SetCardLocked
     /// @note  The returned routine, is only allowed to modify r0, other registers should be left untouched
@@ -79,10 +79,10 @@ protected:
     virtual const cf_registers_t& GetCfRegisters() const = 0;
 
 private:
-    const CompactFlashLockUnlockPatchCode* allocateLockUnlockPatchCode(
+    const CompactFlashLockUnlockPatchCode* CreateLockingPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const
     {
-        if(RequiresLocking())
+        if (IsLockingRequired())
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
