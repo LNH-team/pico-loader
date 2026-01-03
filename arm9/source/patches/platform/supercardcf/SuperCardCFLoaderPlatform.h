@@ -6,11 +6,13 @@
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class SuperCardCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
-    bool IsLockingRequired() const override { return true; }
-    
-    CompactFlashLockUnlockPatchCode* NewCardLockUnlockPatchCode(PatchHeap& patchHeap) const override
+    const CompactFlashLockUnlockPatchCode* CreateLockingPatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
-        return new SuperCardCFLockUnlockCardPatchCode(patchHeap);
+        return patchCodeCollection.GetOrAddSharedPatchCode([&]
+        {
+            return new SuperCardCFLockUnlockCardPatchCode(patchHeap);
+        });
     }
 
     void SetCardLocked(bool locked) const override;

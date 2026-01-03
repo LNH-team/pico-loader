@@ -7,8 +7,6 @@ class MMCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
     void SetCardLocked(bool locked) const override { return; }
 
-    bool IsLockingRequired() const override { return false; }
-
     const cf_registers_t& GetCfRegisters() const override
     {
         static constexpr cf_registers_t regs {

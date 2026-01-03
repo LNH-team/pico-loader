@@ -6,11 +6,13 @@
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class M3CFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
-    bool IsLockingRequired() const override { return true; }
-    
-    CompactFlashLockUnlockPatchCode* NewCardLockUnlockPatchCode(PatchHeap& patchHeap) const override
+    const CompactFlashLockUnlockPatchCode* CreateLockingPatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
-        return new M3CFLockUnlockCardPatchCode(patchHeap);
+        return patchCodeCollection.GetOrAddSharedPatchCode([&]
+        {
+            return new M3CFLockUnlockCardPatchCode(patchHeap);
+        });
     }
 
     void SetCardLocked(bool locked) const override;

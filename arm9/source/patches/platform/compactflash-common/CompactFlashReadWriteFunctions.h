@@ -2,6 +2,7 @@
 #include "common.h"
 #include "sections.h"
 #include "patches/PatchCode.h"
+#include "thumbInstructions.h"
 #include "../IReadSectorsPatchCode.h"
 #include "../IWriteSectorsPatchCode.h"
 #include "CompactFlashRegisters.h"
@@ -60,6 +61,15 @@ public:
         if (lockUnlockCard)
         {
             cf_readWriteFunctions2_lockUnlockCard = (u32)lockUnlockCard->GetLockUnlockFunction();
+        }
+        else
+        {
+            // what is getting replaced is a `bl`, taking 4 bytes
+            const u16 noLockingOpcode = THUMB_MOV_HIREG(THUMB_HI_R8, THUMB_HI_R8);
+            CF_PerformTransfer_unlock_label[0] = noLockingOpcode;
+            CF_PerformTransfer_unlock_label[1] = noLockingOpcode;
+            CF_PerformTransfer_lock_label[0] = noLockingOpcode;
+            CF_PerformTransfer_lock_label[1] = noLockingOpcode;
         }
     }
 
