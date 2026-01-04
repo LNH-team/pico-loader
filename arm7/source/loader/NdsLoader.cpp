@@ -504,8 +504,11 @@ void NdsLoader::SetupSharedMemory(u32 cardId, u32 agbMem, u32 resetParam, u32 ro
     }
     else
     {
-        strcpy(TWL_SHARED_MEMORY->sysMenuVersionInfoContentId, "00000009");
-        TWL_SHARED_MEMORY->sysMenuVersionInfoContentLastInitialCode = 'P'; // europe
+        if (!TryFindDsiVerData())
+        {
+            strcpy(TWL_SHARED_MEMORY->sysMenuVersionInfoContentId, "00000009");
+            TWL_SHARED_MEMORY->sysMenuVersionInfoContentLastInitialCode = 'P'; // europe
+        }
 
         memcpy(TWL_SHARED_MEMORY->twlCardRomHeader, &_romHeader, sizeof(nds_header_twl_t));
         memcpy(TWL_SHARED_MEMORY->twlRomHeader, &_romHeader, sizeof(nds_header_twl_t));
@@ -1060,4 +1063,68 @@ bool NdsLoader::TryDecryptSecureArea()
 
     LOG_DEBUG("Decrypted secure area\n");
     return true;
+}
+
+bool NdsLoader::TryFindDsiVerData()
+{
+    if (!_romHeader.HasNandAccess())
+    {
+        return false;
+    }
+
+    char romRegion = (_romHeader.gameCode >> 24) & 0xFF;
+    const char* sysDataPath = "/_pico/twln/title/0003000f";
+    if (romRegion == 'C')
+    {
+        sysDataPath = "/_pico/twlc/title/0003000f";
+    }
+    else if (romRegion == 'K')
+    {
+        sysDataPath = "/_pico/twlk/title/0003000f";
+    }
+
+    FILINFO fno;
+    if (f_stat(sysDataPath, &fno) != FR_OK)
+    {
+        LOG_WARNING("DSi verdata not found\n");
+        return false;
+    }
+
+    char verDataRegion = 0;
+    auto verDataMetaFile = std::make_unique<FIL>();
+    static const char regionChars[] = { 'J', 'E', 'P', 'U', 'C', 'K' };
+    for (char region : regionChars)
+    {
+        char verDataMetaPath[64];
+        snprintf(verDataMetaPath, sizeof(verDataMetaPath), "%s/484e4c%02x/content/title.tmd", sysDataPath, region);
+        if (f_open(verDataMetaFile.get(), verDataMetaPath, FA_OPEN_EXISTING | FA_READ) == FR_OK)
+        {
+            verDataRegion = region;
+            break;
+        }
+    }
+
+    if (verDataRegion != 0)
+    {
+        u32 contentId = 0;
+        UINT bytesRead = 0;
+        if (f_lseek(verDataMetaFile.get(), 0x1E4) == FR_OK &&
+            f_read(verDataMetaFile.get(), &contentId, 4, &bytesRead) == FR_OK && bytesRead == 4)
+        {
+            char verDataContentId[9];
+            char verDataFilePath[64];
+            snprintf(verDataContentId, sizeof(verDataContentId), "%08x", static_cast<unsigned int>(__builtin_bswap32(contentId)));
+            snprintf(verDataFilePath, sizeof(verDataFilePath), "%s/484e4c%02x/content/%s.app",
+                     sysDataPath, verDataRegion, verDataContentId);
+            if (f_stat(verDataFilePath, &fno) == FR_OK)
+            {
+                strcpy(TWL_SHARED_MEMORY->sysMenuVersionInfoContentId, verDataContentId);
+                TWL_SHARED_MEMORY->sysMenuVersionInfoContentLastInitialCode = verDataRegion;
+                return true;
+            }
+        }
+    }
+
+    LOG_WARNING("DSi verdata not found\n");
+    return false;
 }

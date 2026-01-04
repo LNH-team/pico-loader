@@ -73,4 +73,5 @@ private:
     bool TrySetupSSLCertKey();
     bool TrySetupDsiWareSave();
     bool TryDecryptSecureArea();
+    bool TryFindDsiVerData();
 };
