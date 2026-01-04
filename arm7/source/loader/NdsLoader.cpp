@@ -220,7 +220,7 @@ void NdsLoader::Load(BootMode bootMode)
     if (bootMode == BootMode::Normal)
     {
         bootType = _romHeader.IsDsiWare() ? BOOT_TYPE_NAND : BOOT_TYPE_CARD;
-        HandleiQueRegionFreePatching();
+        HandleIQueRegionFreePatching();
     }
     else if (bootMode == BootMode::Multiboot)
     {
