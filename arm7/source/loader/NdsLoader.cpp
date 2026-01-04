@@ -1021,50 +1021,6 @@ bool NdsLoader::TrySetupDsiWareSave()
     return DsiWareSaveArranger().SetupDsiWareSave(_romPath, _romHeader, _dsiwareSaveResult);
 }
 
-bool NdsLoader::TryDecryptSecureArea()
-{
-    if (_romHeader.arm9RomOffset < 0x4000 || _romHeader.arm9RomOffset >= 0x8000)
-    {
-        return true;
-    }
-
-    if (((u32*)_romHeader.arm9LoadAddress)[0] == 0xE7FFDEFF &&
-        ((u32*)_romHeader.arm9LoadAddress)[1] == 0xE7FFDEFF)
-    {
-        return true;
-    }
-
-    u16 secureAreaCrc = swi_getCrc16(0xFFFF,
-        (const void*)_romHeader.arm9LoadAddress, 0x8000 - _romHeader.arm9RomOffset);
-    if (secureAreaCrc != _romHeader.secureAreaCrc)
-    {
-        return true;
-    }
-
-    auto bios7File = std::make_unique<FIL>();
-    auto keyTable = std::make_unique_for_overwrite<Blowfish::KeyTable>();
-    UINT bytesRead = 0;
-    if (f_open(bios7File.get(), BIOS_NDS7_PATH, FA_OPEN_EXISTING | FA_READ) != FR_OK ||
-        f_lseek(bios7File.get(), 0x30) != FR_OK ||
-        f_read(bios7File.get(), keyTable.get(), sizeof(Blowfish::KeyTable), &bytesRead) != FR_OK ||
-        bytesRead != sizeof(Blowfish::KeyTable))
-    {
-        return false;
-    }
-
-    auto blowfish = std::make_unique<Blowfish>(keyTable.get());
-    blowfish->TransformTable(_romHeader.gameCode, 3, 8);
-    blowfish->Decrypt(
-        (const void*)_romHeader.arm9LoadAddress,
-        (void*)_romHeader.arm9LoadAddress,
-        0x4800 - _romHeader.arm9RomOffset);
-    ((u32*)_romHeader.arm9LoadAddress)[0] = 0xE7FFDEFF;
-    ((u32*)_romHeader.arm9LoadAddress)[1] = 0xE7FFDEFF;
-
-    LOG_DEBUG("Decrypted secure area\n");
-    return true;
-}
-
 bool NdsLoader::TryFindDsiVerData()
 {
     if (!_romHeader.HasNandAccess())
@@ -1127,4 +1083,48 @@ bool NdsLoader::TryFindDsiVerData()
 
     LOG_WARNING("DSi verdata not found\n");
     return false;
+}
+
+bool NdsLoader::TryDecryptSecureArea()
+{
+    if (_romHeader.arm9RomOffset < 0x4000 || _romHeader.arm9RomOffset >= 0x8000)
+    {
+        return true;
+    }
+
+    if (((u32*)_romHeader.arm9LoadAddress)[0] == 0xE7FFDEFF &&
+        ((u32*)_romHeader.arm9LoadAddress)[1] == 0xE7FFDEFF)
+    {
+        return true;
+    }
+
+    u16 secureAreaCrc = swi_getCrc16(0xFFFF,
+        (const void*)_romHeader.arm9LoadAddress, 0x8000 - _romHeader.arm9RomOffset);
+    if (secureAreaCrc != _romHeader.secureAreaCrc)
+    {
+        return true;
+    }
+
+    auto bios7File = std::make_unique<FIL>();
+    auto keyTable = std::make_unique_for_overwrite<Blowfish::KeyTable>();
+    UINT bytesRead = 0;
+    if (f_open(bios7File.get(), BIOS_NDS7_PATH, FA_OPEN_EXISTING | FA_READ) != FR_OK ||
+        f_lseek(bios7File.get(), 0x30) != FR_OK ||
+        f_read(bios7File.get(), keyTable.get(), sizeof(Blowfish::KeyTable), &bytesRead) != FR_OK ||
+        bytesRead != sizeof(Blowfish::KeyTable))
+    {
+        return false;
+    }
+
+    auto blowfish = std::make_unique<Blowfish>(keyTable.get());
+    blowfish->TransformTable(_romHeader.gameCode, 3, 8);
+    blowfish->Decrypt(
+        (const void*)_romHeader.arm9LoadAddress,
+        (void*)_romHeader.arm9LoadAddress,
+        0x4800 - _romHeader.arm9RomOffset);
+    ((u32*)_romHeader.arm9LoadAddress)[0] = 0xE7FFDEFF;
+    ((u32*)_romHeader.arm9LoadAddress)[1] = 0xE7FFDEFF;
+
+    LOG_DEBUG("Decrypted secure area\n");
+    return true;
 }

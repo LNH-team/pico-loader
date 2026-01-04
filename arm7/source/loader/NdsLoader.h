@@ -72,6 +72,6 @@ private:
     void InsertArgv();
     bool TrySetupSSLCertKey();
     bool TrySetupDsiWareSave();
-    bool TryDecryptSecureArea();
     bool TryFindDsiVerData();
+    bool TryDecryptSecureArea();
 };
