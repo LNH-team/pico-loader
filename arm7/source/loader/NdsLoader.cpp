@@ -27,6 +27,7 @@
 #include "DSMode.h"
 #include "Arm7IoRegisterClearer.h"
 #include "NdsLoader.h"
+#include "core/mini-printf.h"
 
 #define AP_LIST_PATH      "/_pico/aplist.bin"
 #define BIOS_NDS7_PATH    "/_pico/biosnds7.rom"
