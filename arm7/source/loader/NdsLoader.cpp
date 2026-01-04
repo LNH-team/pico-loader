@@ -1014,11 +1014,11 @@ bool NdsLoader::TryDecryptSecureArea()
     return true;
 }
 
-void NdsLoader::HandleiQueRegionFreePatching()
+void NdsLoader::HandleIQueRegionFreePatching()
 {
-    if ((_romHeader.ndsRegion & 0x80) == 0x80)
+    if ((_romHeader.flags & 0x80) == 0x80)
     {
-        _romHeader.ndsRegion = 0;
+        _romHeader.flags &= ~0x80;
         _romHeader.headerCrc = swi_getCrc16(0xFFFF, (void*)&_romHeader, 0x15E);
     }
 }

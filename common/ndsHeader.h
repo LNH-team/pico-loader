@@ -11,9 +11,9 @@ struct nds_header_ntr_t
     u8 deviceCapacity;
     u8 gap15[7];
     u8 twlFlags;
-    u8 ndsRegion;
+    u8 flags;
     u8 softwareVersion;
-    u8 autoBootFlags;
+    u8 flags2;
     u32 arm9RomOffset;
     u32 arm9EntryAddress;
     u32 arm9LoadAddress;

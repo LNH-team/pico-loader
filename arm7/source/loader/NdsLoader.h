@@ -73,7 +73,7 @@ private:
     void InsertArgv();
     bool TrySetupDsiWareSave();
     bool TryDecryptSecureArea();
-    void HandleiQueRegionFreePatching();
+    void HandleIQueRegionFreePatching();
     ConsoleRegion GetRomRegion(u32 gameCode);
     UserLanguage GetLanguageByRomRegion(ConsoleRegion romRegion);
     u32 GetSupportedLanguagesByRegion(ConsoleRegion region);
