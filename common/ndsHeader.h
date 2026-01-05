@@ -63,8 +63,10 @@ struct nds_header_ntr_t
 
 static_assert(sizeof(nds_header_ntr_t) == 0x170, "Invalid size for nds_header_ntr_t");
 
-#define NDS_HEADER_TWL_ACCESS_CONTROL_SD_ACCESS     (1 << 3)
-#define NDS_HEADER_TWL_ACCESS_CONTROL_NAND_ACCESS   (1 << 4)
+#define NDS_HEADER_TWL_ACCESS_CONTROL_SD_ACCESS      (1 << 3)
+#define NDS_HEADER_TWL_ACCESS_CONTROL_NAND_ACCESS    (1 << 4)
+#define NDS_HEADER_TWL_ACCESS_CONTROL_SHARED2_ACCESS (1 << 6)
+#define NDS_HEADER_TWL_ACCESS_CONTROL_SSLCERT_ACCESS (1 << 9)
 
 struct nds_header_twl_t : public nds_header_ntr_t
 {
@@ -77,7 +79,7 @@ struct nds_header_twl_t : public nds_header_ntr_t
     u32 regionFlags;
     u32 accessControl;
     u32 arm7ScfgExt7;
-    u8 gap1B8[3];
+    u8 gap1BC[3];
     u8 twlFlags2;
     u32 arm9iRomOffset;
     u8 gap1C4[4];
@@ -145,6 +147,16 @@ struct nds_header_twl_t : public nds_header_ntr_t
     constexpr bool HasNandAccess() const
     {
         return IsTwlRom() && (accessControl & NDS_HEADER_TWL_ACCESS_CONTROL_NAND_ACCESS) != 0;
+    }
+
+    constexpr bool HasShared2Access() const
+    {
+        return IsTwlRom() && (accessControl & NDS_HEADER_TWL_ACCESS_CONTROL_SHARED2_ACCESS) != 0;
+    }
+
+    constexpr bool HasSSLCertAccess() const
+    {
+        return IsTwlRom() && (accessControl & NDS_HEADER_TWL_ACCESS_CONTROL_SSLCERT_ACCESS) != 0;
     }
 };
 
