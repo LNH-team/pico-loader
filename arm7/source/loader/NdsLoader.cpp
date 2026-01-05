@@ -297,6 +297,9 @@ void NdsLoader::Load(BootMode bootMode)
     {
         SetupDsiDeviceList();
 
+        // restore MBK9 settings from rom header
+        REG_MBK9 = _romHeader.mbk9Setting[0] | (_romHeader.mbk9Setting[1] << 8) | (_romHeader.mbk9Setting[2] << 16);
+
         u32 scfgExt7 = 0x93FBFB00 | (_romHeader.arm7ScfgExt7 & 0x40407);
         REG_SCFG_EXT = scfgExt7;
         REG_SCFG_CLK = 0x187;
