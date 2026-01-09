@@ -60,7 +60,7 @@ public:
 
 protected:
     /// @brief Locks/Unlocks the cart to operate on the inserted CF card
-    /// @param Whether the card sould be locked (prevent R/W operations) or unlocked (allows R/W operations)
+    /// @param locked Whether the card should be locked (prevent R/W operations) or unlocked (allows R/W operations)
     virtual void SetCardLocked(bool locked) const = 0;
 
     /// @brief Generates the patch code containing the lock/unlock routines equivalent to \see SetCardLocked

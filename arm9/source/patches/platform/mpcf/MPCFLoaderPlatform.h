@@ -5,11 +5,13 @@
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts
 class MPCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
 {
-    void SetCardLocked(bool locked) const override { return; }
+protected:
+    void SetCardLocked(bool locked) const override { }
 
     const cf_registers_t& GetCfRegisters() const override
     {
-        static constexpr cf_registers_t regs {
+        static constexpr cf_registers_t registers
+        {
             .data           = 0x09000000,
             .altStatus      = 0x098C0000,
             .command        = 0x090E0000,
@@ -20,6 +22,6 @@ class MPCFLoaderPlatform : public CompactFlashCommonLoaderPlatform
             .lba3           = 0x090A0000,
             .lba4           = 0x090C0000,
         };
-        return regs;
+        return registers;
     }
 };
