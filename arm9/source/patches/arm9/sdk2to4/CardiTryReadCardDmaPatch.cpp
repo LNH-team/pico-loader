@@ -167,7 +167,7 @@ bool CardiTryReadCardDmaPatch::FindPatchTarget(PatchContext& patchContext)
 static u32 getArmBlAddress(const u32* instructionPointer)
 {
     u32 blInstruction = *instructionPointer;
-    return (u32)instructionPointer + 8 + ((int)((blInstruction & 0xFFFFFF) << 8) >> 6);
+    return (u32)instructionPointer + 8 + ((int)((blInstruction & 0xFFFFFF) << 8) >> 6) + ((blInstruction >> 24) == 0xFA ? 1 : 0);
 }
 
 void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
