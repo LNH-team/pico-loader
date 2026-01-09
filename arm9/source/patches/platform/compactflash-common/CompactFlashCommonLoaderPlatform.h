@@ -17,44 +17,44 @@ public:
     const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
-        const auto& regs = GetCfRegisters();
+        const auto& registers = GetCfRegisters();
         auto statusFunctions = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new CompactFlashStatusFunctionsPatchCode(patchHeap, regs);
+            return new CompactFlashStatusFunctionsPatchCode(patchHeap, registers);
         });
 
         auto transferSector = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new CompactFlashTransferSectorPatchCode(patchHeap, regs, statusFunctions);
+            return new CompactFlashTransferSectorPatchCode(patchHeap, registers, statusFunctions);
         });
 
         auto lockUnlock = CreateLockingPatchCode(patchCodeCollection, patchHeap);
 
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new CompactFlashReadWriteSectorPatchCode(patchHeap, regs, transferSector, lockUnlock);
+            return new CompactFlashReadWriteSectorPatchCode(patchHeap, registers, transferSector, lockUnlock);
         });
     }
 
     const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
-        const auto& regs = GetCfRegisters();
+        const auto& registers = GetCfRegisters();
         auto statusFunctions = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new CompactFlashStatusFunctionsPatchCode(patchHeap, regs);
+            return new CompactFlashStatusFunctionsPatchCode(patchHeap, registers);
         });
 
         auto transferSector = patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new CompactFlashTransferSectorPatchCode(patchHeap, regs, statusFunctions);
+            return new CompactFlashTransferSectorPatchCode(patchHeap, registers, statusFunctions);
         });
 
         auto lockUnlock = CreateLockingPatchCode(patchCodeCollection, patchHeap);
 
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            return new CompactFlashReadWriteSectorPatchCode(patchHeap, regs, transferSector, lockUnlock);
+            return new CompactFlashReadWriteSectorPatchCode(patchHeap, registers, transferSector, lockUnlock);
         });
     }
 
