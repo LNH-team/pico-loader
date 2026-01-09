@@ -1,6 +1,6 @@
 #pragma once
 #include "common.h"
-#include "SuperCardCFLockUnlockCard.h"
+#include "SuperCardCFLockUnlockCardPatchCode.h"
 #include "../compactflash-common/CompactFlashCommonLoaderPlatform.h"
 
 /// @brief Implementation of LoaderPlatform for the DATEL line of flashcarts

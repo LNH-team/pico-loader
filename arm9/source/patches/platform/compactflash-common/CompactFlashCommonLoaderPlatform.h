@@ -2,8 +2,8 @@
 #include "common.h"
 #include "../LoaderPlatform.h"
 #include "CompactFlashRegisters.h"
-#include "CompactFlashStatusFunctions.h"
-#include "CompactFlashReadWriteFunctions.h"
+#include "CompactFlashStatusFunctionsPatchCode.h"
+#include "CompactFlashReadWriteSectorPatchCode.h"
 #include "ICompactFlashLockUnlockPatchCode.h"
 
 /// @brief Base implementation of LoaderPlatform for the Compact Flash slot 2 flashcarts
