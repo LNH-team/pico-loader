@@ -228,7 +228,14 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             {
                 cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x15C) + 4;
                 cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x16C);
-                cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x148));
+                if (*(u32*)((u8*)_cardiTryReadCardDma + 0x158) == 0xE12FFF1E)
+                {
+                    cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x148));
+                }
+                else
+                {
+                    cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x14C));
+                }
                 miiCardDmaCopy32 = getArmBlAddress((u32*)(cardiSetCardDma + 0x18));
                 cardiOnReadCardOffset = 0x40;
             }
