@@ -20,11 +20,10 @@ bool CompactFlashCommonLoaderPlatform::InitializeSdCard()
 
 static bool waitAvailableForCommands(const cf_registers_t& registers)
 {
-    auto commandReg = (vu16*)registers.command;
     // wait for card to finish previous commands
     for (int i = 0; i < CF_CARD_TIMEOUT; i++)
     {
-        if ((*commandReg & CF_STS_BUSY) == 0)
+        if ((*registers.command & CF_STS_BUSY) == 0)
         {
             break;
         }
@@ -33,7 +32,7 @@ static bool waitAvailableForCommands(const cf_registers_t& registers)
     // wait for card to be ready for new commands
     for (int i = 0; i < CF_CARD_TIMEOUT; i++)
     {
-        if ((*commandReg & (CF_STS_READY | CF_STS_DSC)) != 0)
+        if ((*registers.command & (CF_STS_READY | CF_STS_DSC)) != 0)
         {
             return true;
         }
@@ -50,17 +49,16 @@ bool CompactFlashCommonLoaderPlatform::InitializeCfCard()
         return false;
     }
     // Check that the registers are writable and hold the values we set
-    auto lba1 = (vu16*)registers.lba1;
-    u16 temp = *lba1;
-    *lba1 = (~temp & 0xFF);
+    u16 temp = *registers.lba1;
+    *registers.lba1 = (~temp & 0xFF);
     temp = (~temp & 0xFF);
-    if (*lba1 != temp)
+    if (*registers.lba1 != temp)
     {
         return false;
     }
 
-    *lba1 = 0xAA55;
-    if (*lba1 == 0xAA55)
+    *registers.lba1 = 0xAA55;
+    if (*registers.lba1 == 0xAA55)
     {
         return false;
     }

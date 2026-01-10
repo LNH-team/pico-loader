@@ -20,17 +20,17 @@ protected:
 
     const cf_registers_t& GetCfRegisters() const override
     {
-        static constexpr cf_registers_t registers
+        static const cf_registers_t registers
         {
-            .data           = 0x08800000,
-            .altStatus      = 0x080C0000,
-            .command        = 0x088E0000,
-            .error          = 0x08820000,
-            .sectorCount    = 0x08840000,
-            .lba1           = 0x08860000,
-            .lba2           = 0x08880000,
-            .lba3           = 0x088A0000,
-            .lba4           = 0x088C0000,
+            .data           = (vu16*)0x08800000,
+            .altStatus      = (vu16*)0x080C0000,
+            .command        = (vu16*)0x088E0000,
+            .error          = (vu16*)0x08820000,
+            .sectorCount    = (vu16*)0x08840000,
+            .lba1           = (vu16*)0x08860000,
+            .lba2           = (vu16*)0x08880000,
+            .lba3           = (vu16*)0x088A0000,
+            .lba4           = (vu16*)0x088C0000,
         };
         return registers;
     }

@@ -3,13 +3,13 @@
 
 struct cf_registers_t
 {
-    u32 data;
-    u32 altStatus;
-    u32 command;
-    u32 error;
-    u32 sectorCount;
-    u32 lba1;
-    u32 lba2;
-    u32 lba3;
-    u32 lba4;
+    vu16* data;
+    vu16* altStatus;
+    vu16* command;
+    vu16* error;
+    vu16* sectorCount;
+    vu16* lba1;
+    vu16* lba2;
+    vu16* lba3;
+    vu16* lba4;
 };

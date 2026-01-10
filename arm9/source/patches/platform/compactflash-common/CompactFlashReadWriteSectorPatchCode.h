@@ -16,11 +16,11 @@ extern "C" bool cf_performTransferSectors(u32 numSectors, u32 sector, u8 command
 extern "C" bool cf_readSectors(u32 sector, void* buffer, u32 numSectors);
 extern "C" bool cf_writeSectors(u32 sector, void* buffer, u32 numSectors);
 
-extern u32 cf_performTransferSectors_reg_sector_count;
+extern vu16* cf_performTransferSectors_reg_sector_count;
 extern u32 cf_performTransferSectors_waitCardAvailableForCommands;
 extern u32 cf_performTransferSectors_waitNextBlockReady;
 
-extern u32 cf_performTransfer_reg_data;
+extern vu16* cf_performTransfer_reg_data;
 extern u32 cf_performTransfer_performTransferSectors;
 extern u32 cf_performTransfer_lockUnlockCard;
 

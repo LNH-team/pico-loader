@@ -9,7 +9,7 @@ DEFINE_SECTION_SYMBOLS(cf_wait_functions);
 extern "C" bool cf_waitCardAvailableForCommands();
 extern "C" bool cf_waitNextBlockReady();
 
-extern u32 cf_waitFunctions_reg_cmd;
+extern vu16* cf_waitFunctions_reg_cmd;
 
 class CompactFlashStatusFunctionsPatchCode : public PatchCode
 {
