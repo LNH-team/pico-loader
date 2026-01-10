@@ -154,7 +154,7 @@ struct nds_header_twl_t : public nds_header_ntr_t
         return IsTwlRom() && (accessControl & NDS_HEADER_TWL_ACCESS_CONTROL_SHARED2_ACCESS) != 0;
     }
 
-    constexpr bool HasSSLCertAccess() const
+    constexpr bool HasSslCertAccess() const
     {
         return IsTwlRom() && (accessControl & NDS_HEADER_TWL_ACCESS_CONTROL_SSLCERT_ACCESS) != 0;
     }
