@@ -1,7 +1,7 @@
 #pragma once
 #include "../Patch.h"
 
-/// @brief Arm9 patch for intercepting calls SVC_GetCRC16 in The Last Window: The Secret of Cape West
+/// @brief Arm9 patch for intercepting calls to SVC_GetCRC16 in The Last Window: The Secret of Cape West
 /// @details
 /// This game has DS Protect 1.27, which is patched by the regular DS Protect patches, but also has
 /// an extra layer of CRC checks that must match or the game will fail to boot.
