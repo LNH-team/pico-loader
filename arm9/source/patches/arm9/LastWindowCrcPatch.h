@@ -33,7 +33,7 @@ public:
 private:
     u32* _getCrc16 = nullptr;
 
-    u32 MakeBlxCall(u32 patchAddr)
+    u32 MakeBlxCall(u32 patchAddr) const
     {
         return 0xFA000000 | (((patchAddr - (u32)_getCrc16 - 8) >> 2) & 0xFFFFFF);
     }
