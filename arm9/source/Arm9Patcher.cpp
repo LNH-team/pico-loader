@@ -13,6 +13,7 @@
 #include "patches/arm9/OSResetSystemPatch.h"
 #include "patches/arm9/PokemonDownloaderArm9Patch.h"
 #include "patches/arm9/DSProtectArm9Patch.h"
+#include "patches/arm9/LastWindowCrcPatch.h"
 #include "patches/arm9/NandSave/FaceTrainingNandSavePatch.h"
 #include "patches/arm9/NandSave/JamWithTheBandNandSavePatch.h"
 #include "patches/arm9/NandSave/NintendoDSGuideNandSavePatch.h"
@@ -405,6 +406,12 @@ void Arm9Patcher::AddGameSpecificPatches(
         case GAMECODE("UGDA"):
         {
             patchCollection.AddPatch(new NintendoDSGuideNandSavePatch());
+            break;
+        }
+        // Last Window: The Secret of Cape West
+        case GAMECODE("YLUP"):
+        {
+            patchCollection.AddPatch(new LastWindowCrcPatch());
             break;
         }
         // Rabbids Go Home
