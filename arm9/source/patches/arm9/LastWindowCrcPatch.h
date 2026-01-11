@@ -18,7 +18,9 @@
 /// contain any commonly modified functions such as AP or card reading.
 ///
 /// To make things more annoying, the memory location of the correct CRC is randomized, and the code
-/// that checks the CRC resides in a compressed overlay which is loaded into ITCM.
+/// that checks the CRC resides in a compressed overlay which is loaded into ITCM. This same function
+/// also receives several dummy checks that are expected to fail, and so cannot be patched to always
+/// report the CRC matches.
 ///
 /// Instead, the function call that calculates the CRC is shimmed and if its arguments match
 /// a problematic CRC calculation, the expected answer is returned instead.

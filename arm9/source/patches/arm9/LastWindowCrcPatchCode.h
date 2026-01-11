@@ -13,9 +13,9 @@ public:
         : PatchCode(SECTION_START(patch_lastwindowcrc), SECTION_SIZE(patch_lastwindowcrc), patchHeap)
     { }
 
-    const u32 MakeLastWindowCrcBlx(u32 calleeAddr) const
+    const u32 MakeLastWindowCrcBlx(u32 callerAddr) const
     {
         u32 addr = (u32)GetAddressAtTarget((void*)patch_lastwindowcrc_entry);
-        return 0xFA000000 | (((addr - calleeAddr - 8) >> 2) & 0xFFFFFF);
+        return 0xFA000000 | (((addr - callerAddr - 8) >> 2) & 0xFFFFFF);
     }
 };
