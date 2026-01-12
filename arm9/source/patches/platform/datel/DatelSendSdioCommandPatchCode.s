@@ -58,7 +58,7 @@ BEGIN_ASM_FUNC datel_readSpiByteTimeout
 @bool datel_waitSpiByteTimeout();
 BEGIN_ASM_FUNC datel_waitSpiByteTimeout
     push {r1-r4, lr}
-    @ use a timeout of 0x1000 instead of 0xFFFF, easier to setup
+    @ use a timeout of 0x10000 instead of 0xFFFF, easier to setup
     @ ldr r2, =DATEL_SD_WRITE_TIMEOUT_LEN
     movs r2, #1
     lsls r2, #16
@@ -75,9 +75,9 @@ BEGIN_ASM_FUNC datel_waitSpiByteTimeout
     movs r0, #1
     pop {r1-r4, pc}
 
-.section "datel_spi_send", "ax"
+.section "datel_cycle_spi", "ax"
 @void datel_cycleSpi();
-datel_cycleSpi:
+BEGIN_ASM_FUNC datel_cycleSpi
     push {r0-r5, lr}
     adr r0, datel_cycleSpi_data
     ldm r0!, {r1,r3,r4}
@@ -106,7 +106,14 @@ datel_sendNtrCommandF2:
     beq datel_sendNtrCommandF2
 
     pop {r0-r5, pc}
+.balign 4
+.pool
+datel_cycleSpi_data:
+    .word REG_MCCNT0
+    .word 0x00FFA040 @ MCCNT0_MODE_SPI | MCCNT0_SPI_HOLD_CS | MCCNT0_ENABLE in lower 16 bit, 0xFF in upper 16
+    .word 0xA07F6000 @ MCCNT1_RESET_OFF | MCCNT1_CMD_SCRAMBLE | MCCNT1_READ_DATA_DESCRAMBLE | MCCNT1_CLOCK_SCRAMBLER | MCCNT1_LATENCY2(0x3F)
 
+.section "datel_spi_send", "ax"
 @ NOTE!!!: This function needs to set r0 last with mov or something similar so that it updates the zero flags
 @u8 datel_spiSendSDIOCommandR0(u32 arg, u8 cmd);
 BEGIN_ASM_FUNC datel_spiSendSDIOCommandR0
@@ -115,12 +122,14 @@ BEGIN_ASM_FUNC datel_spiSendSDIOCommandR0
 BEGIN_ASM_FUNC datel_spiSendSDIOCommand
     push {r0-r7, lr}
 
-    bl datel_cycleSpi
+	ldr r3, datel_spiSendSDIOCommandR0_CycleSpi
+    @ branch to datel_cycleSpi
+    bl datel_spiSendSDIOCommandR0_InterworkR3
 
-    adr r4, datel_spiSendSDIOCommandR0_ReadSpiByteTimeout
+    adr r3, datel_spiSendSDIOCommandR0_ReadSpiByteTimeout
     @ r3 contains ReadSpiByteTimeout
     @ r7 contains ReadWriteSpiByte
-    ldm r4!, {r3,r7}
+    ldm r3, {r3,r7}
 
     @ we use the cmd and arg directly from the stack
     @ r0 is on top, r1 is right below, we read the command id as the last byte pushed of r1,
@@ -165,10 +174,9 @@ datel_spiSendSDIOCommandR0_InterworkR3:
     bx r3
 .balign 4
 .pool
-datel_cycleSpi_data:
-    .word REG_MCCNT0
-    .word 0x00FFA040 @ MCCNT0_MODE_SPI | MCCNT0_SPI_HOLD_CS | MCCNT0_ENABLE in lower 16 bit, 0xFF in upper 16
-    .word 0xA07F6000 @ MCCNT1_RESET_OFF | MCCNT1_CMD_SCRAMBLE | MCCNT1_READ_DATA_DESCRAMBLE | MCCNT1_CLOCK_SCRAMBLER | MCCNT1_LATENCY2(0x3F)
+.global datel_spiSendSDIOCommandR0_CycleSpi
+datel_spiSendSDIOCommandR0_CycleSpi:
+    .word 0
 .global datel_spiSendSDIOCommandR0_ReadSpiByteTimeout
 datel_spiSendSDIOCommandR0_ReadSpiByteTimeout:
     .word 0

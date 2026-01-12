@@ -3,6 +3,7 @@
 #include "patches/PatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(datel_read_spi);
+DEFINE_SECTION_SYMBOLS(datel_cycle_spi);
 DEFINE_SECTION_SYMBOLS(datel_spi_send);
 
 extern "C" u8 datel_readSpiByte();
@@ -11,11 +12,14 @@ extern "C" u16 datel_readSpiShort();
 extern "C" u8 datel_readSpiByteTimeout();
 extern "C" bool datel_waitSpiByteTimeout();
 
+extern "C" void datel_cycleSpi();
+
 extern "C" u8 datel_spiSendSDIOCommandR0(u32 arg, u8 cmd);
 extern "C" u8 datel_spiSendSDIOCommand(u32 arg, u8 cmd, int extraBytes);
 
-extern u32 datel_spiSendSDIOCommandR0_ReadWriteSpiByte;
+extern u32 datel_spiSendSDIOCommandR0_CycleSpi;
 extern u32 datel_spiSendSDIOCommandR0_ReadSpiByteTimeout;
+extern u32 datel_spiSendSDIOCommandR0_ReadWriteSpiByte;
 
 class DatelReadSpiBytePatchCode : public PatchCode
 {
@@ -49,14 +53,29 @@ public:
     }
 };
 
+class DatelCycleSpiPatchCode : public PatchCode
+{
+public:
+    explicit DatelCycleSpiPatchCode(PatchHeap& patchHeap)
+        : PatchCode(SECTION_START(datel_cycle_spi), SECTION_SIZE(datel_cycle_spi), patchHeap) { }
+
+    const void* GetCycleSpiFunction() const
+    {
+        return GetAddressAtTarget((void*)datel_cycleSpi);
+    }
+};
+
 class DatelSendSdioCommandPatchCode : public PatchCode
 {
 public:
-    DatelSendSdioCommandPatchCode(PatchHeap& patchHeap, const DatelReadSpiBytePatchCode* datelReadSpiBytePatchCode)
+    DatelSendSdioCommandPatchCode(PatchHeap& patchHeap,
+		const DatelReadSpiBytePatchCode* datelReadSpiBytePatchCode,
+		const DatelCycleSpiPatchCode* datelCycleSpiPatchCode)
         : PatchCode(SECTION_START(datel_spi_send), SECTION_SIZE(datel_spi_send), patchHeap)
     {
-        datel_spiSendSDIOCommandR0_ReadWriteSpiByte = (u32)datelReadSpiBytePatchCode->GetReadWriteSpiByteFunction();
+        datel_spiSendSDIOCommandR0_CycleSpi = (u32)datelCycleSpiPatchCode->GetCycleSpiFunction();
         datel_spiSendSDIOCommandR0_ReadSpiByteTimeout = (u32)datelReadSpiBytePatchCode->GetReadSpiByteTimeoutFunction();
+        datel_spiSendSDIOCommandR0_ReadWriteSpiByte = (u32)datelReadSpiBytePatchCode->GetReadWriteSpiByteFunction();
     }
 
     const void* GetSpiSendSDIOCommandR0Function() const
