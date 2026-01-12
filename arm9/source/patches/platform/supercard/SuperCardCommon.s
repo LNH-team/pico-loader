@@ -8,6 +8,7 @@
 
 @ void sc_change_mode(uint16_t mode);
 BEGIN_THUMB_FUNCTION sccmn_changeMode
+	push {r0-r3,lr}
     ldr r2,= 0x09FFFFFE
     ldr r3,= 0xA55A
     strh r3, [r2]
@@ -19,24 +20,24 @@ BEGIN_THUMB_FUNCTION sccmn_changeMode
 	@ if mode is 3 (sd enable), reset the sd card
     @ SDResetCard
     @ write 0
-    ldr r2,= sd_resetaddr
+    ldr r2, =sd_resetaddr
     strh r2, [r2]
 1:
-    mov pc, lr
+    pop {r0-r3,pc}
 
 .section "scsd_common", "ax"
-@ this function will trash r4 but leave r0 and r1 untouched
 @ void SDSendClock10(void)
 BEGIN_THUMB_FUNCTION sccmn_sdSendClock10
+	push {r0-r3,lr}
     movs r3, #0x10
     @ loads reg_scsd_cmd
     movs r2, #0x98
     lsls r2, r2, #20
 1:
-    ldrh r4, [r2]
+    ldrh r0, [r2]
     subs r3, r3, #1
     bne 1b
-    mov pc, lr
+    pop {r0-r3,pc}
 
 @ static uint64_t inline calSingleCRC16(uint64_t crc, uint32_t data_in){
 @ 	// Shift out 8 bits for each line
