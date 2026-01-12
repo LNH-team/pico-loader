@@ -25,7 +25,6 @@ BEGIN_THUMB_FUNCTION sccmn_changeMode
 1:
     pop {r0-r3,pc}
 
-.section "scsd_common", "ax"
 @ void SDSendClock10(void)
 BEGIN_THUMB_FUNCTION sccmn_sdSendClock10
 	@ here we get lr from the caller
@@ -39,6 +38,8 @@ BEGIN_THUMB_FUNCTION sccmn_sdSendClock10
     subs r3, r3, #1
     bne 1b
     pop {r0-r3,pc}
+
+.section "scsd_common", "ax"
 
 @ static uint64_t inline calSingleCRC16(uint64_t crc, uint32_t data_in){
 @ 	// Shift out 8 bits for each line
@@ -120,7 +121,7 @@ byteSwap32:
     push {r0,r1,r4-r5,lr}
 byteSwap32_nopush:
     movs r5, #16
-    ldr r4,= 0xFF00FF
+    ldr r4, =0xFF00FF
     rors r2, r5 // ror 16
     ands r4, r2
     bics r2, r4

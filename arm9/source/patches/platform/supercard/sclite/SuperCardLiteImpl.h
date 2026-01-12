@@ -83,7 +83,7 @@ public:
         INTERWORK_LABEL(sclite_sdCommandAndDropResponse6, readInterwork)
             = (u32)superCardSdCommandAndDropLitePatchCode->GetSdCommandAndDropResponse6Function();
         INTERWORK_LABEL(sclite_readData, readInterwork) = (u32)superCardReadDataLitePatchCode->GetReadDataLiteFunction();
-        INTERWORK_LABEL(sccmn_sdSendClock10, readInterwork) = (u32)superCardCommonPatchCode->GetSdSendClock10Function();
+        INTERWORK_LABEL(sccmn_sdSendClock10, readInterwork) = (u32)superCardChangeModePatchCode->GetSdSendClock10Function();
     }
 
     const ReadSectorsFunc GetReadSectorsFunction() const override
@@ -104,7 +104,7 @@ public:
     {
         INTERWORK_LABEL(sclite_writeData, writeInterwork) = (u32)superCardWriteDataLitePatchCode->GetWriteDataLiteFunction();
         INTERWORK_LABEL(sccmn_sdio4BitCrc16, writeInterwork) = (u32)superCardCommonPatchCode->GetCrc16ChecksumFunction();
-        INTERWORK_LABEL(sccmn_sdSendClock10, writeInterwork) = (u32)superCardCommonPatchCode->GetSdSendClock10Function();
+        INTERWORK_LABEL(sccmn_sdSendClock10, writeInterwork) = (u32)superCardChangeModePatchCode->GetSdSendClock10Function();
         INTERWORK_LABEL(sccmn_changeMode, writeInterwork) = (u32)superCardChangeModePatchCode->GetScChangeModeFunction();
         INTERWORK_LABEL(sclite_sdCommandAndDropResponse6, writeInterwork)
             = (u32)superCardSdCommandAndDropLitePatchCode->GetSdCommandAndDropResponse6Function();
