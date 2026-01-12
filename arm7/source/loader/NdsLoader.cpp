@@ -961,14 +961,31 @@ void NdsLoader::SetupDsiDeviceList()
     auto deviceList = (dsi_devicelist_t*)_romHeader.arm7DeviceListAddress;
     memset(deviceList, 0, sizeof(dsi_devicelist_t));
 
+    char romRegion = (_romHeader.gameCode >> 24) & 0xFF;
+    const char* nandPath = "sd:/_pico/twln";
+    const char* sharedPath = "sd:/_pico/twln/shared1";
+    if (romRegion == 'C')
+    {
+        nandPath = "sd:/_pico/twlc";
+        sharedPath = "sd:/_pico/twlc/shared1";
+    }
+    else if (romRegion == 'K')
+    {
+        nandPath = "sd:/_pico/twlk";
+        sharedPath = "sd:/_pico/twlk/shared1";
+    }
+
     int listEntry = 0;
-    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'A', "nand", "/",
-        DSI_DEVICELIST_ENTRY_FLAGS_DRIVE_SDMC | DSI_DEVICELIST_ENTRY_FLAGS_TYPE_PHYSICAL,
-        DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
-    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'D', "shared1", "nand:/shared1",
+    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'A', "nand", nandPath,
         DSI_DEVICELIST_ENTRY_FLAGS_DRIVE_SDMC | DSI_DEVICELIST_ENTRY_FLAGS_TYPE_FOLDER,
         DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
-    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'F', "photo", "nand:/photo",
+    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'B', "sd", "/",
+        DSI_DEVICELIST_ENTRY_FLAGS_DRIVE_SDMC | DSI_DEVICELIST_ENTRY_FLAGS_TYPE_PHYSICAL,
+        DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
+    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'D', "shared1", sharedPath,
+        DSI_DEVICELIST_ENTRY_FLAGS_DRIVE_SDMC | DSI_DEVICELIST_ENTRY_FLAGS_TYPE_FOLDER,
+        DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
+    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'F', "photo", "sd:/_pico/photo",
         DSI_DEVICELIST_ENTRY_FLAGS_DRIVE_SDMC | DSI_DEVICELIST_ENTRY_FLAGS_TYPE_FOLDER,
         DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
 
@@ -986,7 +1003,7 @@ void NdsLoader::SetupDsiDeviceList()
             DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
     }
 
-    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'I', "sdmc", "nand:/.",
+    SetDeviceListEntry(deviceList->deviceList[listEntry++], 'I', "sdmc", "sd:/.",
         DSI_DEVICELIST_ENTRY_FLAGS_DRIVE_SDMC | DSI_DEVICELIST_ENTRY_FLAGS_TYPE_FOLDER,
         DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_READ | DSI_DEVICELIST_ENTRY_ACCESS_RIGHTS_WRITE);
 

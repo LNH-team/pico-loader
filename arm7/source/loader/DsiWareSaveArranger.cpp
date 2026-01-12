@@ -194,7 +194,7 @@ std::unique_ptr<DsiWareSaveArranger::fat_header_t> DsiWareSaveArranger::CreateFa
 bool DsiWareSaveArranger::CreateDeviceListPath(TCHAR* savePath, char* deviceListPath) const
 {
     auto fileInfo = std::make_unique<FILINFO>();
-    strcpy(deviceListPath, "nand:/");
+    strcpy(deviceListPath, "sdmc:/");
     char* shortPath = deviceListPath + 6;
     char* currentPathSegment = strchr(savePath, '/');
     do

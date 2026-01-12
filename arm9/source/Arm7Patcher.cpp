@@ -15,6 +15,7 @@
 #include "patches/arm7/DisableArm7WramClearPatch.h"
 #include "patches/arm7/sdk5/Sdk5DsiSdCardRedirectPatch.h"
 #include "patches/arm7/PokemonDownloaderArm7Patch.h"
+#include "patches/arm7/RedirectSoundFolderArm7Patch.h"
 #include "Arm7Patcher.h"
 
 void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform) const
@@ -59,6 +60,11 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform) const
             if (gIsDsiMode && (twlRomHeader->HasNandAccess() || twlRomHeader->HasSdAccess()))
             {
                 patchCollection.AddPatch(new Sdk5DsiSdCardRedirectPatch());
+            }
+
+            if (gIsDsiMode && twlRomHeader->HasShared2Access())
+            {
+                patchCollection.AddPatch(new RedirectSoundFolderArm7Patch());
             }
 
             if (!twlRomHeader->IsDsiWare())
