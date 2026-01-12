@@ -107,14 +107,10 @@ SDCommand_drop_resp:
     subs r6, r6, #1
     bne SDCommand_drop_resp
 
-    @ restore stack space
-    pop {r1-r7}
-
-	@ the stack either has r6 and then lr, or only lr, if it has r6, we "return" to that function,
-	@ and when that function returns lr is set accordingly to then call the pop again
-	bl 1f
-1:
-	pop {pc}
+	@ we pop from the stack r6 as pc, which corresponds to sccmn_sdSendClock10 or lr, if it is sccmn_sdSendClock10 that function
+	@ is called, and that function doesn't push a new lr but pops a preexisting one from the stack, which in our case is the
+	@ lr provided to this function
+    pop {r1-r7,pc}
 
 .balign 4
 .pool
@@ -423,11 +419,11 @@ waitOnWriteTrue_WriteData:
     str r3, [r4]
     str r3, [r4]
 
-    pop {r4-r7}
-	@ we first pop r6, and jump to it, then we pop lr and go back
-	bl 1f
-1:
-	pop {pc}
+
+	@ we pop from the stack r6 as pc, which corresponds to sccmn_sdSendClock10 so we jump to it
+	@ sccmn_sdSendClock10 doesn't push a new lr but pops a preexisting one from the stack, which in our case is the
+	@ lr provided to this function
+    pop {r4-r7,pc}
 
 .balign 4
 .pool

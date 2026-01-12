@@ -28,7 +28,8 @@ BEGIN_THUMB_FUNCTION sccmn_changeMode
 .section "scsd_common", "ax"
 @ void SDSendClock10(void)
 BEGIN_THUMB_FUNCTION sccmn_sdSendClock10
-	push {r0-r3,lr}
+	@ here we get lr from the caller
+	push {r0-r3}
     movs r3, #0x10
     @ loads reg_scsd_cmd
     movs r2, #0x98
