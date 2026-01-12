@@ -29,7 +29,10 @@ datel_writeSectorSdhcLabel:
     movs r1, DATEL_SDIO_CMD25_WRITE_MULTIPLE_BLOCK
     movs r2, #1
     ldr r7, datel_SDWriteMultipleSector_SpiSendSDIOCommand
-    bl datel_SDWriteMultipleSector_Interwork
+    
+    @ call datel_readSpiByte
+    mov lr,pc
+    mov pc,r7
     bne CMD25_not_ok
 
     @ r6 contains datel_SDWriteMultipleSector_WaitSpiByteTimeout
@@ -49,11 +52,15 @@ write_next_sector:
     @ Send start token
     movs r0, DATEL_SPI_MULTI_BLOCK_WRITE_TOKEN
 
-    bl datel_SDWriteMultipleSector_InterworkR1 @ call datel_readWriteSpiByte
+    @ call datel_readWriteSpiByte
+    mov lr,pc
+    mov pc,r1
 
 write_next_byte:
     ldrb r0, [r4, r5]
-    bl datel_SDWriteMultipleSector_InterworkR1 @ call datel_readWriteSpiByte
+    @ call datel_readWriteSpiByte
+    mov lr,pc
+    mov pc,r1
 
     adds r5, #1
     @ Shifting left by 0x17 will set the Zero flag if the number that was shifted is a multiple
@@ -61,11 +68,17 @@ write_next_byte:
     lsls r0, r5, #0x17
     bne write_next_byte
 
-    @ write dummy crc
-    bl datel_SDWriteMultipleSector_Interwork @ call datel_readSpiByte
-    bl datel_SDWriteMultipleSector_Interwork @ call datel_readSpiByte
+    @ write dummy crc (ignore result)
+    @ call datel_readSpiByte
+    mov lr,pc
+    mov pc,r7
+    @ call datel_readSpiByte
+    mov lr,pc
+    mov pc,r7
 
-    bl datel_SDWriteMultipleSector_Interwork @ call datel_readSpiByte
+    @ call datel_readSpiByte
+    mov lr,pc
+    mov pc,r7
 
     @ we check if the lower nibble is equal to DATEL_SD_WRITE_OK
     subs r0, DATEL_SD_WRITE_OK
@@ -73,7 +86,9 @@ write_next_byte:
     bne write_command_failed
 
     @ Wait for card to write data
-    bl datel_SDWriteMultipleSector_InterworkR6 @ call datel_waitSpiByteTimeout
+    @ call datel_waitSpiByteTimeout
+    mov lr,pc
+    mov pc,r6
     beq sector_write_timeout_expired
 
     @ r3 holds the total number of bytes to write
@@ -82,13 +97,21 @@ write_next_byte:
 
     @ send stop token
     movs r0, DATEL_SPI_END_MULTI_BLOCK_WRITE
-    bl datel_SDWriteMultipleSector_InterworkR1 @ call datel_readWriteSpiByte
+    
+    @ call datel_readWriteSpiByte
+    mov lr,pc
+    mov pc,r1
 
     @ send 1 byte clock
-    bl datel_SDWriteMultipleSector_Interwork @ call datel_readSpiByte
+    
+    @ call datel_readSpiByte
+    mov lr,pc
+    mov pc,r7
 
-    bl datel_SDWriteMultipleSector_InterworkR6 @ call datel_waitSpiByteTimeout
-
+    @ call datel_waitSpiByteTimeout
+    mov lr,pc
+    mov pc,r6
+    
     @ pop {r1-r7, pc}
 
 CMD25_not_ok:
@@ -97,12 +120,6 @@ sector_write_timeout_expired:
     @ movs r0, #0
     pop {r1-r7, pc}
 
-datel_SDWriteMultipleSector_Interwork:
-    bx r7
-datel_SDWriteMultipleSector_InterworkR6:
-    bx r6
-datel_SDWriteMultipleSector_InterworkR1:
-    bx r1
 .balign 4
 .pool
 

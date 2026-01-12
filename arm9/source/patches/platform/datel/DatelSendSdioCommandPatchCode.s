@@ -10,7 +10,7 @@ BEGIN_ASM_FUNC datel_readSpiByte
     movs r0, 0xFF
 @u8 datel_readWriteSpiByte(u8);
 BEGIN_ASM_FUNC datel_readWriteSpiByte
-    push {r1-r3, lr}
+    push {r1-r3}
     ldr r3, =REG_MCCNT0
     @ Wait if there's a transfer in progress (can happen if the random byte sent by the cycle spi function is still on its way)
 1:
@@ -27,7 +27,8 @@ BEGIN_ASM_FUNC datel_readWriteSpiByte
     @uppper half always 0
     ldrh r0, [r3, #2]
     cmp r0, #0
-    pop {r1-r3, pc}
+    pop {r1-r3}
+    mov pc,lr
 
 @u16 datel_readWriteSpiShort();
 BEGIN_ASM_FUNC datel_readSpiShort
@@ -53,11 +54,12 @@ BEGIN_ASM_FUNC datel_readSpiByteTimeout
     subs r4, r4, #1
     bne 1b
 1:
-    pop {r1-r4, pc}
+    pop {r1-r4,pc}
 
 @bool datel_waitSpiByteTimeout();
 BEGIN_ASM_FUNC datel_waitSpiByteTimeout
-    push {r1-r4, lr}
+    push {r1-r4}
+    push {lr}
     @ use a timeout of 0x10000 instead of 0xFFFF, easier to setup
     @ ldr r2, =DATEL_SD_WRITE_TIMEOUT_LEN
     movs r2, #1
@@ -69,11 +71,15 @@ BEGIN_ASM_FUNC datel_waitSpiByteTimeout
     bne 1b
 
     movs r0, #0
-    pop {r1-r4, pc}
+    b end
 
 1:
     movs r0, #1
-    pop {r1-r4, pc}
+end:
+    pop {r1}
+    mov lr,r1
+    pop {r1-r4}
+    mov pc,lr
 
 .section "datel_cycle_spi", "ax"
 @void datel_cycleSpi();
@@ -122,7 +128,7 @@ BEGIN_ASM_FUNC datel_spiSendSDIOCommandR0
 BEGIN_ASM_FUNC datel_spiSendSDIOCommand
     push {r0-r7, lr}
 
-	ldr r3, datel_spiSendSDIOCommandR0_CycleSpi
+    ldr r3, datel_spiSendSDIOCommandR0_CycleSpi
     @ branch to datel_cycleSpi
     bl datel_spiSendSDIOCommandR0_InterworkR3
 
@@ -166,7 +172,9 @@ BEGIN_ASM_FUNC datel_spiSendSDIOCommand
     bcc datel_spiSendSDIOCommandR0_Interwork
     movs r0, r6
     pop {r1}
-    pop {r1-r7, pc}
+    pop {r1-r7}
+    pop {r2}
+    mov pc,r2
 
 datel_spiSendSDIOCommandR0_Interwork:
     bx r7
