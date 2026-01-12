@@ -80,6 +80,7 @@ private:
     void SetupDsiDeviceList();
     void InsertArgv();
     void HandleHomebrewPatching();
+    bool TrySetupSslCertKey();
     bool TrySetupDsiWareSave();
     bool TryDecryptSecureArea();
     void HandleIQueRegionFreePatching();
