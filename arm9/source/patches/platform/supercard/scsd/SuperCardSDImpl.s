@@ -23,9 +23,9 @@
 
 .macro LOAD_FAST_EXMEMCNT
     @ loads EXMEMCNT register address
-    movs r6, #0x18
+    movs r0, #0x18
     @ waitstate 2,1 and arm9 slot2 access
-    strb r6, [r7, #4]
+    strb r0, [r7, #4]
 .endm
 
 .macro RESTORE_EXMEMCNT
@@ -43,11 +43,18 @@
 @ void scsd_sdCommandAndDropResponse6(uint32_t dummy, uint32_t argument, SD_COMMANDS command)
 @ argument is passed in r1
 BEGIN_THUMB_FUNCTION scsd_sdCommandAndDropResponse6
+	push {lr}
+	cmp r2, #0x52
+	@ if command is READ_MULTIPLE_BLOCK, don't send extra clock cycles
+	beq 1f
+	@ we need to call sccmn_sdSendClock10 after the command is sent, push sccmn_sdSendClock10 and the lr to the stack
+	push {r6}
+1:
     @ among the pushed registers there are the command and
     @ argument one, which are then used by the crc7 function
     @ and in the loop at the bottom
     @ also allocate an extra 4 bytes for the SD_CRC7 function to put the crc byte
-    push {r0-r7,lr}
+    push {r0-r7}
 
     @ pass the buffer incremented by 4, so that the crc function
     @ can use a proper indexing method
@@ -99,7 +106,9 @@ SDCommand_drop_resp:
     subs r6, r6, #1
     bne SDCommand_drop_resp
 
-    @ restore stack space
+	@ we pop from the stack r6 as pc, which corresponds to sccmn_sdSendClock10 or lr, if it is sccmn_sdSendClock10 that function
+	@ is called, and that function doesn't push a new lr but pops a preexisting one from the stack, which in our case is the
+	@ lr provided to this function
     pop {r0-r7,pc}
 
 @ inline uint8_t CRC7_one(uint8_t crcIn, uint8_t data) {
@@ -169,7 +178,7 @@ skip_xor:
 BEGIN_THUMB_FUNCTION scsd_writeSector
     push {r1,r2,r4-r7,lr}
 
-    @ load EXMEMCNT register
+    @ load EXMEMCNT register into r7
     LOAD_SLOW_EXMEMCNT
 
     @ r1 for now holds the sector
@@ -179,23 +188,34 @@ scsd_writeSectorSdhcLabel:
     lsls r1, r0, #9
     @ movs r1, r0
 
+	@ r4 sccmn_changeMode
+	@ r5 scsd_sdCommandAndDropResponse6
+	@ r6 sccmn_sdSendClock10
+
+	adr r3, sccmn_changeMode_writeInterwork_address
+	ldmia r3!, {r4-r6}
+
     @ enable sd access
-    @ this function won't touch r1
+    @ this function won't touch anything
     movs r0, #3
-    bl scsd_sccmn_changeMode_call
+    @ call sccmn_changeMode
+	bl interwork_r4
 
     @ WRITE_MULTIPLE_BLOCK
     SD_COMMAND_ARGUMENT #25
     @ 2nd parameter is in r1 from above
 
-    bl scsd_sdCommandAndDropResponse6_call
-
-    @ this function will trash r4 but leave r0 and r1 untouched
-    bl scsd_sccmn_sdSendClock10_call
+    @ call scsd_sdCommandAndDropResponse6
+	bl interwork_r5
 
     LOAD_FAST_EXMEMCNT
 
-    @ loads the saved r0 and r2 (readnum)
+	@ load the rest of the functions
+	@ r4 scsd_writeData
+	@ r5 sccmn_sdio4BitCrc16
+	ldmia r3!, {r4-r5}
+
+    @ loads the saved r1 (buff) and r2 (writenum)
     @ into r0 and r1
     pop {r0,r1}
 
@@ -203,17 +223,21 @@ write_sector_loop:
     @ all the functions called in this loop don't change the value of r0 and r1
     @ except scsd_writeData, which will increase r0 by 512
     @ sccmn_sdio4BitCrc16 will write the checksum to r2-r3
-    CALL sccmn_sdio4BitCrc16 writeInterwork
+    @ call sccmn_sdio4BitCrc16
+	bl interwork_r5
 
     @ first argument is buffer
     @ regs r2 and r3 hold the crc
-    CALL scsd_writeData writeInterwork
-
-    @ this function will trash r4 but leave r0 and r1 untouched
-    bl scsd_sccmn_sdSendClock10_call
+	@ call scsd_writeData
+	bl interwork_r4
 
     subs r1, #1
     bne write_sector_loop
+
+	adr r3, sccmn_changeMode_writeInterwork_address
+	@ r4 sccmn_changeMode
+	@ r5 scsd_sdCommandAndDropResponse6
+	ldmia r3!, {r4-r5}
 
     RELOAD_SLOW_EXMEMCNT
 
@@ -222,39 +246,38 @@ write_sector_loop:
     @ 2nd parameter is passed in r1
     @ and from the loop above r1 is already 0
 
-    bl scsd_sdCommandAndDropResponse6_call
+	@ call scsd_sdCommandAndDropResponse6
+	bl interwork_r5
 
-    @ this function will trash r4 but leave r0 and r1 untouched
-    bl scsd_sccmn_sdSendClock10_call
+    @ loads sd_dataadd
+    movs r0, #0x90
+    lsls r0, r0, #20
 
-    @ SD_DATAADD is loaded by scsd_writeData into r5
-    @ while(*r5 &0x100) == 0
+    @ while(*r0 &0x100) == 0
 beginwhile_WriteSector:
-    ldrh r1, [r5]
+    ldrh r1, [r0]
     lsrs r1, #9
     bcc beginwhile_WriteSector
 
     movs r0, #1
-    bl scsd_sccmn_changeMode_call
+    @ call sccmn_changeMode writeInterwork
+	bl interwork_r4
 
     @ restore EXMEMCNT register
     RESTORE_EXMEMCNT
 
     pop {r4-r7,pc}
-scsd_sccmn_sdSendClock10_call:
-	LOAD_INTERWORK_FUNCTION sccmn_sdSendClock10 writeInterwork r4
+interwork_r4:
 	bx r4
-scsd_sdCommandAndDropResponse6_call:
-	LOAD_INTERWORK_FUNCTION scsd_sdCommandAndDropResponse6 writeInterwork r4
-	bx r4
-scsd_sccmn_changeMode_call:
-	LOAD_INTERWORK_FUNCTION sccmn_changeMode writeInterwork r4
-INTERWORK writeInterwork
-INTERWORK_FUNCTION scsd_writeData writeInterwork
-INTERWORK_FUNCTION sccmn_sdio4BitCrc16 writeInterwork
-INTERWORK_FUNCTION sccmn_sdSendClock10 writeInterwork
+interwork_r5:
+	bx r5
+.balign 4
+.pool
 INTERWORK_FUNCTION sccmn_changeMode writeInterwork
 INTERWORK_FUNCTION scsd_sdCommandAndDropResponse6 writeInterwork
+INTERWORK_FUNCTION sccmn_sdSendClock10 writeInterwork
+INTERWORK_FUNCTION scsd_writeData writeInterwork
+INTERWORK_FUNCTION sccmn_sdio4BitCrc16 writeInterwork
 
 
 .section "scsd_read_sector", "ax"
@@ -283,7 +306,7 @@ scsd_readSectorSdhcLabel:
 
     LOAD_FAST_EXMEMCNT
 
-    @ loads the saved r0 and r2 (writenum)
+    @ loads the saved r1 (buff) and r2 (readnum)
     @ into r0 and r1
     pop {r0,r1}
 read_sector_loop:
@@ -300,12 +323,8 @@ read_sector_loop:
     SD_COMMAND_ARGUMENT #12
     @ 2nd parameter is passed in r1
     @ and from the loop above r1 is already 0
-
+	LOAD_INTERWORK_FUNCTION sccmn_sdSendClock10 readInterwork r6
     CALL scsd_sdCommandAndDropResponse6 readInterwork
-
-    @ this function will trash r4 but leave r0 and r1 untouched
-    CALL sccmn_sdSendClock10 readInterwork
-
 
     movs r0, #1
     CALL sccmn_changeMode readInterwork
@@ -357,13 +376,14 @@ write32_loop:
 
 @ void scsd_writeData(void* buffer, int value_to_keep, int crc_buff1, int crc_buff2)
 BEGIN_THUMB_FUNCTION scsd_writeData
+	@ push sccmn_sdSendClock10 and the current lr reg to the stack, so that at the end we can
+	@ call in sequence sccmn_sdSendClock10 and then return
+	push {r6,lr}
+    push {r1-r7}
 
-    @ loads SD_DATAADD, do it before the push so that
-	@ it becomes available to the callee afterwards
+    @ loads SD_DATAADD
     movs r5, #0x90
     lsls r5, r5, #20
-
-    push {r1-r7,lr}
 
     @ while(*r5 &0x100) == 0
 scsd_writeData_waitOnWriteFalse:
@@ -384,6 +404,7 @@ scsd_writeData_waitOnWriteFalse:
     lsls r1, r1, #2
     @ no need for special handling because those 2 functions will be in the same block
     bl SCSD_writeBuffer32
+	@ save incremented r0 register
     push {r0}
 
     movs r1, #8
@@ -403,6 +424,11 @@ scsd_writeData_waitOnWriteTrue:
     lsrs r6, #9
     bcs scsd_writeData_waitOnWriteTrue
 
+
+	@ we pop from the stack r6 as pc, which corresponds to sccmn_sdSendClock10 so we jump to it
+	@ sccmn_sdSendClock10 doesn't push a new lr but pops a preexisting one from the stack, which in our case is the
+	@ lr provided to this function
+	@ also we load in r0 the value stored above
     pop {r0-r7,pc}
 
 .balign 4

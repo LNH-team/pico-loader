@@ -151,9 +151,6 @@ sclite_writeSectorSdhcLabel:
     @ call sclite_sdCommandAndDropResponse6
 	bl interwork_r5
 
-	@ push sccmn_changeMode and sclite_sdCommandAndDropResponse6
-	@ push {r4,r5}
-
 	@ load the rest of the functions
 	@ r4 sclite_writeData
 	@ r5 sccmn_sdio4BitCrc16
@@ -163,9 +160,6 @@ sclite_writeSectorSdhcLabel:
     @ into r0 and r1
     pop {r0,r1}
 
-    @ this function won't touch anything
-	@ bl interwork_r6
-    @ CALL sccmn_sdSendClock10 writeInterwork
 write_sector_loop:
     @ all the functions called in this loop don't change the value of any register
     @ except sclite_writeData, which will increase r0 by 512
@@ -199,21 +193,20 @@ write_sector_loop:
     movs r0, #0x90
     lsls r0, r0, #20
 
-    @ while(*r1 &0x100) == 0
+    @ while(*r0 &0x100) == 0
 beginwhile_WriteSector:
     ldrh r1, [r0]
     lsrs r1, #9
     bcc beginwhile_WriteSector
 
     movs r0, #1
+    @ call sccmn_changeMode writeInterwork
 	bl interwork_r4
-    @ CALL sccmn_changeMode writeInterwork
 
     @ restore EXMEMCNT register
     RESTORE_EXMEMCNT
 
     pop {r4-r7,pc}
-@ INTERWORK writeInterwork
 interwork_r4:
 	bx r4
 interwork_r5:
@@ -269,7 +262,7 @@ read_sector_loop:
     SD_COMMAND_ARGUMENT #12
     @ 2nd parameter is passed in r1
     @ and from the loop above r1 is already 0
-	ldr r6, sccmn_sdSendClock10_readInterworkLite_address
+	LOAD_INTERWORK_FUNCTION sccmn_sdSendClock10 readInterwork r6
     CALL sclite_sdCommandAndDropResponse6 readInterwork
 
     @ this function won't touch anything
