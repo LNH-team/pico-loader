@@ -152,8 +152,8 @@ sclite_writeSectorSdhcLabel:
 	bl interwork_r5
 
 	@ load the rest of the functions
-	@ r4 sclite_writeData
-	@ r5 sccmn_sdio4BitCrc16
+	@ r4 sccmn_sdio4BitCrc16
+	@ r5 sclite_writeData
 	ldmia r3!, {r4-r5}
 
     @ loads the saved r1 (buff) and r2 (writenum)
@@ -165,12 +165,12 @@ write_sector_loop:
     @ except sclite_writeData, which will increase r0 by 512
     @ sccmn_sdio4BitCrc16 will write the checksum to r2-r3
     @ call sccmn_sdio4BitCrc16
-	bl interwork_r5
+	bl interwork_r4
 
     @ first argument is buffer
     @ regs r2 and r3 hold the crc
 	@ call sclite_writeData
-	bl interwork_r4
+	bl interwork_r5
 
     subs r1, #1
     bne write_sector_loop
@@ -216,8 +216,8 @@ interwork_r5:
 INTERWORK_FUNCTION sccmn_changeMode writeInterwork
 INTERWORK_FUNCTION sclite_sdCommandAndDropResponse6 writeInterwork
 INTERWORK_FUNCTION sccmn_sdSendClock10 writeInterwork
-INTERWORK_FUNCTION sclite_writeData writeInterwork
 INTERWORK_FUNCTION sccmn_sdio4BitCrc16 writeInterwork
+INTERWORK_FUNCTION sclite_writeData writeInterwork
 
 .section "sclite_read_sector", "ax"
 @ bool sclite_readSector(uint32_t sector, uint8_t *buff, uint32_t readnum)
