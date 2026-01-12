@@ -75,8 +75,10 @@ BEGIN_THUMB_FUNCTION sccmn_sdSendClock10
 
 @ uint64_t sdio_crc16_4bit_checksum(void*)
 @ r0 and r1 are left untouched, the result is returned in r2-r3 instead
+@ a "continuation function" is provided in r5, and we have to jump to it
 BEGIN_THUMB_FUNCTION sccmn_sdio4BitCrc16
-    push {r0,r1,r4-r5,lr}
+	push {r5,lr}
+    push {r0,r1,r4-r5}
     movs r4, #0 @ r4 = crc_lo
     movs r5, #0 @ r5 = crc_hi
     movs r1, #128

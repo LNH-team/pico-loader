@@ -223,13 +223,8 @@ write_sector_loop:
     @ all the functions called in this loop don't change the value of r0 and r1
     @ except scsd_writeData, which will increase r0 by 512
     @ sccmn_sdio4BitCrc16 will write the checksum to r2-r3
-    @ call sccmn_sdio4BitCrc16
+    @ call sccmn_sdio4BitCrc16, this function will then tail call to r5 (scsd_writeData)
 	bl interwork_r4
-
-    @ first argument is buffer
-    @ regs r2 and r3 hold the crc
-	@ call scsd_writeData
-	bl interwork_r5
 
     subs r1, #1
     bne write_sector_loop
@@ -378,7 +373,7 @@ write32_loop:
 BEGIN_THUMB_FUNCTION scsd_writeData
 	@ push sccmn_sdSendClock10 and the current lr reg to the stack, so that at the end we can
 	@ call in sequence sccmn_sdSendClock10 and then return
-	push {r6,lr}
+	push {r6}
     push {r1-r7}
 
     @ loads SD_DATAADD
