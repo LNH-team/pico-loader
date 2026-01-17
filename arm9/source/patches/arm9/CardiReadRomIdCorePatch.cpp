@@ -20,6 +20,7 @@ static constexpr auto sSignaturesArm = std::to_array<const FunctionSignature>
 
 static constexpr auto sSignaturesThumb = std::to_array<const FunctionSignature>
 ({
+    { (const u32[]) { 0xB081B500u, 0x2100480Bu, 0xF958F000u, 0x6801480Au }, 0x02017530, 0x02017530 },
     { (const u32[]) { 0xB081B500u, 0x2100480Bu, 0xF98AF000u, 0x6801480Au }, 0x03007530, 0x03012776 },
     { (const u32[]) { 0xB081B500u, 0x2100480Bu, 0xF990F000u, 0x6801480Au }, 0x03007532, 0x03007532 },
     { (const u32[]) { 0x202EB508u, 0x21000680u, 0xFE8CF7FFu, 0x68014809u }, 0x03017531, 0x03017531 },
