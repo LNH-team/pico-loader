@@ -63,29 +63,6 @@ static u32 getThumbBlAddress(const u32* instructionPointer)
     return (u32)instructionPointer + 5 + ((int)((((blInstruction1 & 0x7FF) << 11) | (blInstruction2 & 0x7FF)) << 10) >> 9);
 }
 
-static u32 correctAddressForArm7iAutoLoad(u32 address)
-{
-    auto romHeader = (const nds_header_twl_t*)TWL_SHARED_MEMORY->twlRomHeader;
-    auto arm7iModuleParams = (const module_params_twl_t*)(
-        romHeader->arm7LoadAddress + romHeader->arm7iModuleParamsAddress);
-
-    auto autoLoadListEntry = (autoload_list_entry_sdk5_t*)arm7iModuleParams->autoloadListStart;
-    u32 currentAddress = arm7iModuleParams->autoloadStart;
-    while (autoLoadListEntry != (autoload_list_entry_sdk5_t*)arm7iModuleParams->autoloadListEnd)
-    {
-        if (address >= currentAddress && address < currentAddress + autoLoadListEntry->size)
-        {
-            address -= currentAddress;
-            address += autoLoadListEntry->targetAddress;
-            break;
-        }
-        currentAddress += autoLoadListEntry->size;
-        autoLoadListEntry++;
-    }
-
-    return address;
-}
-
 void Sdk5DsiSdCardRedirectPatch::ApplyPatch(PatchContext& patchContext)
 {
     if (!_attachFunction)
@@ -101,7 +78,8 @@ void Sdk5DsiSdCardRedirectPatch::ApplyPatch(PatchContext& patchContext)
         getDriveStructAddress = getArmBlAddress((u32*)((u8*)_attachFunction + _blToGetDriveStructOffset));
     }
 
-    getDriveStructAddress = correctAddressForArm7iAutoLoad(getDriveStructAddress);
+    auto arm7iAutoload = patchContext.GetAutoloadAdjusterTwl();
+    getDriveStructAddress = arm7iAutoload->AdjustInitialToFinal(getDriveStructAddress);
 
     auto sdRead = patchContext.GetLoaderPlatform()->CreateSdReadPatchCode(
         patchContext.GetPatchCodeCollection(), patchContext.GetPatchHeap());

@@ -43,6 +43,13 @@ struct build_params_t
     u32 magicLittleEndian;      //0x3381C0DE
 };
 
+struct autoload_list_entry_t
+{
+    u32 targetAddress;
+    u32 size;
+    u32 bssSize;
+};
+
 struct autoload_list_entry_sdk5_t
 {
     u32 targetAddress;

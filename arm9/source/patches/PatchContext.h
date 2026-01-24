@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include "SdkVersion.h"
+#include "AutoloadAdjuster.h"
 #include "PatchHeap.h"
 #include "PatchCodeCollection.h"
 
@@ -10,9 +11,11 @@ class LoaderPlatform;
 class PatchContext
 {
 public:
-    PatchContext(void* data, u32 dataSize, void* twlData, u32 twlDataSize,
+    PatchContext(void* data, u32 dataSize, const IAutoloadAdjuster* autoloadAdjuster,
+        void* twlData, u32 twlDataSize, const IAutoloadAdjuster* twlAutoloadAdjuster,
         SdkVersion sdkVersion, u32 gameCode, u8 gameRevision, const LoaderPlatform* loaderPlatform)
-        : _data(data), _dataSize(dataSize), _twlData(twlData), _twlDataSize(twlDataSize)
+        : _data(data), _dataSize(dataSize), _autoloadAdjuster(autoloadAdjuster)
+        , _twlData(twlData), _twlDataSize(twlDataSize), _twlAutoloadAdjuster(twlAutoloadAdjuster)
         , _sdkVersion(sdkVersion), _gameCode(gameCode), _gameRevision(gameRevision), _loaderPlatform(loaderPlatform) { }
 
     /// @brief Tries to find the given \p pattern of the given \p byteLength in the ntr region.
@@ -26,6 +29,14 @@ public:
     /// @param byteLength The length of the pattern.
     /// @return A pointer to the first location where the pattern was found, or \c nullptr if the pattern was not found.
     u32* FindPattern32Twl(const u32* pattern, u32 byteLength) const;
+
+    /// @brief Returns the ntr autoload adjuster of this context.
+    /// @return The ntr autoload adjuster of this context.
+    constexpr const IAutoloadAdjuster* GetAutoloadAdjuster() { return _autoloadAdjuster; }
+
+    /// @brief Returns the twl autoload adjuster of this context.
+    /// @return The twl autoload adjuster of this context.
+    constexpr const IAutoloadAdjuster* GetAutoloadAdjusterTwl() { return _twlAutoloadAdjuster; }
 
     /// @brief Returns the patch heap of this context.
     /// @return The patch heap of this context.
@@ -54,8 +65,10 @@ public:
 private:
     void* _data;
     u32 _dataSize;
+    const IAutoloadAdjuster* _autoloadAdjuster;
     void* _twlData;
     u32 _twlDataSize;
+    const IAutoloadAdjuster* _twlAutoloadAdjuster;
     SdkVersion _sdkVersion;
     u32 _gameCode;
     u8 _gameRevision;
