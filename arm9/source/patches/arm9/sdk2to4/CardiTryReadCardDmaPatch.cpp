@@ -289,7 +289,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
                 cardiOnReadCard = autoloadAdjuster->AdjustFinalToInitial(cardiOnReadCard);
             }
 
-            // MIi_CardDmaCopy32 is relative, but we need its final locations to call it later
+            // MIi_CardDmaCopy32 is relative, but we need its final location to call it later
             u32 miiCardDmaCopy32CallLocation = cardiSetCardDma + cardiSetCardDmaOffset;
             s32 miiCardDmaCopy32CallOffset = getArmBlOffset(*(u32*)miiCardDmaCopy32CallLocation);
             if (autoloadAdjuster)

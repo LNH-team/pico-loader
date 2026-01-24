@@ -2,10 +2,16 @@
 #include "common.h"
 #include "moduleParams.h"
 
+/// @ brief Abstract base class for a general autoload address adjuster.
 class IAutoloadAdjuster
 {
 public:
+    /// @brief Adjust an initial address (pre-autoload) to its final location after autoload.
+    /// @param addr The address to adjust for autoloading.
     virtual u32 AdjustInitialToFinal(u32 addr) const = 0;
+
+    /// @brief Adjust a final address (post-autoload) to its initial location before autoload.
+    /// @param addr The address to adjust for autoloading.
     virtual u32 AdjustFinalToInitial(u32 addr) const = 0;
 };
 
