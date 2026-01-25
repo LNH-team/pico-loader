@@ -27,11 +27,7 @@ void TwlAes::SetupAes(const nds_header_twl_t* romHeader) const
     REG_SCFG_EXT |= SCFG_EXT_AES;
     REG_SCFG_CLK |= SCFG_CLK_AES;
 
-    REG_AES_CNT = 0;
-
-    aes_reset();
-    aes_reset();
-    aes_waitKeyBusy();
+    SetupKeySlot(-1, nullptr);
 
     SetupModuleKeyXY(romHeader);
     SetupNandKeyX();
@@ -39,7 +35,7 @@ void TwlAes::SetupAes(const nds_header_twl_t* romHeader) const
     (&REG_AES_SEED0)[KEY_SLOT_NAND * 3].words[3] = NAND_KEYY_WORD_3;
 }
 
-void TwlAes::SetupKeySlot(u32 keySlot, const aes_u128_t* key) const
+void TwlAes::SetupKeySlot(int keySlot, const aes_u128_t* key) const
 {
     REG_AES_CNT = 0;
 
@@ -47,22 +43,21 @@ void TwlAes::SetupKeySlot(u32 keySlot, const aes_u128_t* key) const
     aes_reset();
     aes_waitKeyBusy();
 
-    aes_setKey(keySlot, key);
+    if (key != nullptr && keySlot != -1)
+    {
+        aes_setKey(keySlot, key);
+    }
 
-    aes_setKeySlot(keySlot);
-    aes_waitKeyBusy();
+    if (keySlot != -1)
+    {
+        aes_setKeySlot(keySlot);
+        aes_waitKeyBusy();
+    }
 }
 
 void TwlAes::DecryptModuleAes(void* data, u32 length, const aes_u128_t* iv) const
 {
-    REG_AES_CNT = 0;
-
-    aes_reset();
-    aes_reset();
-    aes_waitKeyBusy();
-
-    aes_setKeySlot(0);
-    aes_waitKeyBusy();
+    SetupKeySlot(KEY_SLOT_MODULE, nullptr);
 
     u32 offset = 0;
     while (length > 0)

@@ -19,7 +19,7 @@ public:
     /// @brief Sets a key into the specified key slot.
     /// @param keySlot The key slot to configure.
     /// @param key The 128-bit AES key to set.
-    void SetupKeySlot(u32 keySlot, const aes_u128_t* key) const;
+    void SetupKeySlot(int keySlot, const aes_u128_t* key) const;
 
 private:
     void SetupModuleKeyXY(const nds_header_twl_t* romHeader) const;
