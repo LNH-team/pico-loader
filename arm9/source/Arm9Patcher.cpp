@@ -117,7 +117,7 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
                 {
                     LOG_DEBUG("Could not decompress arm9i\n");
                 }
-
+                // unused currently
                 arm9iAutoload = new AutoloadAdjuster<autoload_list_entry_sdk5_t>(
                     (autoload_list_entry_sdk5_t*)arm9iModuleParams->autoloadListStart,
                     (autoload_list_entry_sdk5_t*)arm9iModuleParams->autoloadListEnd,

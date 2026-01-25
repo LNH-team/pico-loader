@@ -24,17 +24,21 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform) const
     ModuleParamsLocator moduleParamsLocator;
     auto moduleParams = moduleParamsLocator.FindModuleParams(romHeader);
     SdkVersion sdkVersion = moduleParams ? moduleParams->sdkVersion : 0u;
-    IAutoloadAdjuster* arm7Autoload = nullptr; // TODO unused
-    auto arm7iModuleParams = (const module_params_twl_t*)(twlRomHeader->arm7LoadAddress + twlRomHeader->arm7iModuleParamsAddress);
-    IAutoloadAdjuster* arm7iAutoload = new AutoloadAdjuster<autoload_list_entry_sdk5_t>(
-        (autoload_list_entry_sdk5_t*)arm7iModuleParams->autoloadListStart,
-        (autoload_list_entry_sdk5_t*)arm7iModuleParams->autoloadListEnd,
-        arm7iModuleParams->autoloadStart
-    );
     if (!moduleParams && romHeader->gameCode == GAMECODE("AS2E"))
     {
         // Spider-Man 2 (USA) is probably the only game without module params
         sdkVersion = 0x02004F50;
+    }
+    IAutoloadAdjuster* arm7Autoload = nullptr; // TODO unused
+    IAutoloadAdjuster* arm7iAutoload = nullptr;
+    if (gIsDsiMode & romHeader->SupportsDsiMode())
+    {
+        auto arm7iModuleParams = (const module_params_twl_t*)(twlRomHeader->arm7LoadAddress + twlRomHeader->arm7iModuleParamsAddress);
+        arm7iAutoload = new AutoloadAdjuster<autoload_list_entry_sdk5_t>(
+            (autoload_list_entry_sdk5_t*)arm7iModuleParams->autoloadListStart,
+            (autoload_list_entry_sdk5_t*)arm7iModuleParams->autoloadListEnd,
+            arm7iModuleParams->autoloadStart
+        );
     }
     PatchCollection patchCollection;
     LOG_DEBUG("Arm7 region: 0x%x - 0x%x\n", romHeader->arm7LoadAddress, romHeader->arm7LoadAddress + romHeader->arm7Size);
