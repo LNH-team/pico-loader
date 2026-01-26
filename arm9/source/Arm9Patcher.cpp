@@ -55,8 +55,8 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
     u32 arm9Size = romHeader->arm9Size;
     u32 arm9iSize = romHeader->SupportsDsiMode() ? twlRomHeader->arm9iSize : 0;
     u32 compressedEnd = 0;
-    IAutoloadAdjuster* arm9Autoload = nullptr;
-    IAutoloadAdjuster* arm9iAutoload = nullptr;
+    std::unique_ptr<IAutoloadAdjuster> arm9Autoload = nullptr;
+    std::unique_ptr<IAutoloadAdjuster> arm9iAutoload = nullptr;
     auto moduleParams = ModuleParamsLocator().FindModuleParams(romHeader);
     SdkVersion sdkVersion = moduleParams ? moduleParams->sdkVersion : 0u;
     if (moduleParams)
@@ -82,7 +82,7 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
 
         if (sdkVersion.IsTwlSdk())
         {
-            arm9Autoload = new AutoloadAdjuster<autoload_list_entry_sdk5_t>(
+            arm9Autoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_sdk5_t>>(
                 (autoload_list_entry_sdk5_t*)moduleParams->autoloadListStart,
                 (autoload_list_entry_sdk5_t*)moduleParams->autoloadListEnd,
                 moduleParams->autoloadStart
@@ -90,7 +90,7 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
         }
         else
         {
-            arm9Autoload = new AutoloadAdjuster<autoload_list_entry_t>(
+            arm9Autoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_t>>(
                 (autoload_list_entry_t*)moduleParams->autoloadListStart,
                 (autoload_list_entry_t*)moduleParams->autoloadListEnd,
                 moduleParams->autoloadStart
@@ -117,7 +117,7 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
                     LOG_DEBUG("Could not decompress arm9i\n");
                 }
                 // unused currently
-                arm9iAutoload = new AutoloadAdjuster<autoload_list_entry_sdk5_t>(
+                arm9iAutoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_sdk5_t>>(
                     (autoload_list_entry_sdk5_t*)arm9iModuleParams->autoloadListStart,
                     (autoload_list_entry_sdk5_t*)arm9iModuleParams->autoloadListEnd,
                     arm9iModuleParams->autoloadStart
@@ -132,7 +132,7 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
         {
             // Spider-Man 2 (USA) is probably the only game without module params
             sdkVersion = 0x02004F50;
-            arm9Autoload = new AutoloadAdjuster<autoload_list_entry_t>(
+            arm9Autoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_t>>(
                 (autoload_list_entry_t*)0x0215DBA0,
                 (autoload_list_entry_t*)0x0215DBB8,
                 0x02157CC0
