@@ -144,10 +144,10 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
     {
         (void*)romHeader->arm9LoadAddress,
         arm9Size,
-        arm9Autoload,
+        std::move(arm9Autoload),
         romHeader->SupportsDsiMode() ? (void*)twlRomHeader->arm9iLoadAddress : nullptr,
         arm9iSize,
-        arm9iAutoload,
+        std::move(arm9iAutoload),
         sdkVersion,
         romHeader->gameCode,
         romHeader->softwareVersion,

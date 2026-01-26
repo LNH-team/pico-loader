@@ -46,10 +46,10 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform) const
     {
         (void*)romHeader->arm7LoadAddress,
         romHeader->arm7Size,
-        arm7Autoload,
+        std::move(arm7Autoload),
         (romHeader->SupportsDsiMode()) ? (void*)twlRomHeader->arm7iLoadAddress : nullptr,
         (romHeader->SupportsDsiMode()) ? twlRomHeader->arm7iSize : 0,
-        arm7iAutoload,
+        std::move(arm7iAutoload),
         sdkVersion,
         romHeader->gameCode,
         romHeader->softwareVersion,

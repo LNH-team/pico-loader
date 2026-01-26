@@ -11,11 +11,11 @@ class LoaderPlatform;
 class PatchContext
 {
 public:
-    PatchContext(void* data, u32 dataSize, std::unique_ptr<IAutoloadAdjuster>& autoloadAdjuster,
-        void* twlData, u32 twlDataSize, std::unique_ptr<IAutoloadAdjuster>& twlAutoloadAdjuster,
+    PatchContext(void* data, u32 dataSize, std::unique_ptr<IAutoloadAdjuster> autoloadAdjuster,
+        void* twlData, u32 twlDataSize, std::unique_ptr<IAutoloadAdjuster> twlAutoloadAdjuster,
         SdkVersion sdkVersion, u32 gameCode, u8 gameRevision, const LoaderPlatform* loaderPlatform)
-        : _data(data), _dataSize(dataSize), _autoloadAdjuster(autoloadAdjuster)
-        , _twlData(twlData), _twlDataSize(twlDataSize), _twlAutoloadAdjuster(twlAutoloadAdjuster)
+        : _data(data), _dataSize(dataSize), _autoloadAdjuster(std::move(autoloadAdjuster))
+        , _twlData(twlData), _twlDataSize(twlDataSize), _twlAutoloadAdjuster(std::move(twlAutoloadAdjuster))
         , _sdkVersion(sdkVersion), _gameCode(gameCode), _gameRevision(gameRevision), _loaderPlatform(loaderPlatform) { }
 
     /// @brief Tries to find the given \p pattern of the given \p byteLength in the ntr region.
@@ -65,10 +65,10 @@ public:
 private:
     void* _data;
     u32 _dataSize;
-    std::unique_ptr<IAutoloadAdjuster>& _autoloadAdjuster;
+    std::unique_ptr<IAutoloadAdjuster> _autoloadAdjuster;
     void* _twlData;
     u32 _twlDataSize;
-    std::unique_ptr<IAutoloadAdjuster>& _twlAutoloadAdjuster;
+    std::unique_ptr<IAutoloadAdjuster> _twlAutoloadAdjuster;
     SdkVersion _sdkVersion;
     u32 _gameCode;
     u8 _gameRevision;
