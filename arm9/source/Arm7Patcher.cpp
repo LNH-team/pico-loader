@@ -31,7 +31,7 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform) const
     }
     std::unique_ptr<IAutoloadAdjuster> arm7Autoload = nullptr; // TODO unused
     std::unique_ptr<IAutoloadAdjuster> arm7iAutoload = nullptr;
-    if (gIsDsiMode & romHeader->SupportsDsiMode())
+    if (gIsDsiMode && romHeader->SupportsDsiMode())
     {
         auto arm7iModuleParams = (const module_params_twl_t*)(twlRomHeader->arm7LoadAddress + twlRomHeader->arm7iModuleParamsAddress);
         arm7iAutoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_sdk5_t>>(
