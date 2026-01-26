@@ -57,7 +57,6 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
     u32 compressedEnd = 0;
     IAutoloadAdjuster* arm9Autoload = nullptr;
     IAutoloadAdjuster* arm9iAutoload = nullptr;
-
     auto moduleParams = ModuleParamsLocator().FindModuleParams(romHeader);
     SdkVersion sdkVersion = moduleParams ? moduleParams->sdkVersion : 0u;
     if (moduleParams)
