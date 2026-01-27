@@ -37,8 +37,7 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform) const
         arm7iAutoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_sdk5_t>>(
             (autoload_list_entry_sdk5_t*)arm7iModuleParams->autoloadListStart,
             (autoload_list_entry_sdk5_t*)arm7iModuleParams->autoloadListEnd,
-            arm7iModuleParams->autoloadStart
-        );
+            arm7iModuleParams->autoloadStart);
     }
     PatchCollection patchCollection;
     LOG_DEBUG("Arm7 region: 0x%x - 0x%x\n", romHeader->arm7LoadAddress, romHeader->arm7LoadAddress + romHeader->arm7Size);

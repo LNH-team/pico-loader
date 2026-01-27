@@ -85,16 +85,14 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
             arm9Autoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_sdk5_t>>(
                 (autoload_list_entry_sdk5_t*)moduleParams->autoloadListStart,
                 (autoload_list_entry_sdk5_t*)moduleParams->autoloadListEnd,
-                moduleParams->autoloadStart
-            );
+                moduleParams->autoloadStart);
         }
         else
         {
             arm9Autoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_t>>(
                 (autoload_list_entry_t*)moduleParams->autoloadListStart,
                 (autoload_list_entry_t*)moduleParams->autoloadListEnd,
-                moduleParams->autoloadStart
-            );
+                moduleParams->autoloadStart);
         }
 
         if (gIsDsiMode && romHeader->SupportsDsiMode())
@@ -120,8 +118,7 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
                 arm9iAutoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_sdk5_t>>(
                     (autoload_list_entry_sdk5_t*)arm9iModuleParams->autoloadListStart,
                     (autoload_list_entry_sdk5_t*)arm9iModuleParams->autoloadListEnd,
-                    arm9iModuleParams->autoloadStart
-                );
+                    arm9iModuleParams->autoloadStart);
             }
         }
     }
@@ -135,8 +132,7 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
             arm9Autoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_t>>(
                 (autoload_list_entry_t*)0x0215DBA0,
                 (autoload_list_entry_t*)0x0215DBB8,
-                0x02157CC0
-            );
+                0x02157CC0);
         }
     }
     LOG_DEBUG("Arm9 region: 0x%x - 0x%x\n", romHeader->arm9LoadAddress, romHeader->arm9LoadAddress + arm9Size);
