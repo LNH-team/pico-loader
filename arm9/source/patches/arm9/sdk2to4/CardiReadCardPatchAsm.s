@@ -57,8 +57,13 @@ patch_cardireadcard_mov_r3_to_dst:
     str r3, [r6, #0x24]
 
 do_read:
+    lsrs r3, r1, #24 // if dst address is invalid (close to zero), ignore the read
+    beq ignore_read  // this is intended to fix reads to null pointers that would be ignored if done with DMA
+
     ldr r3, __patch_cardireadcard_sdread_asm_address
     blx r3
+
+ignore_read:
     pop {r1,r2,r3,r4,r6,pc}
 
 .balign 4

@@ -43,6 +43,9 @@ patch_cardireadromwithcpu_mov_left_to_read_to_r2:
     lsls r7, r2, #9
 
 do_read:
+    lsrs r3, r1, #24 // if dst address is invalid (close to zero), ignore the read
+    beq ignore_read  // this is intended to fix reads to null pointers that would be ignored if done with DMA
+
     ldr r3, __patch_cardireadromwithcpu_sdread_asm_address
     blx r3
     // arm
@@ -53,6 +56,8 @@ do_read:
     // r7 = number of bytes read
     // r5 = number of bytes left to read
     // [sp + 0 + 4] = actual dst
+
+ignore_read:
     pop {pc}
 
 .balign 4
