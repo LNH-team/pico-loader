@@ -1,4 +1,5 @@
 #include "common.h"
+#include "ArmHelper.h"
 #include "patches/PatchContext.h"
 #include "LastWindowCrcPatchCode.h"
 #include "LastWindowCrcPatch.h"
@@ -13,6 +14,6 @@ void LastWindowCrcPatch::ApplyPatch(PatchContext& patchContext)
 {
     auto patchCode = patchContext.GetPatchCodeCollection().AddUniquePatchCode<LastWindowCrcPatchCode>(patchContext.GetPatchHeap());
     u32 patchAddr = (u32)patchCode->GetLastWindowCrcFunction();
-    *_getCrc16 = MakeBlxCall(patchAddr);
+    *_getCrc16 = ArmHelper::MakeArmCall((u32)_getCrc16, patchAddr);
 }
 

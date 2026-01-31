@@ -1,4 +1,5 @@
 #include "common.h"
+#include "ArmHelper.h"
 #include "patches/PatchContext.h"
 #include "thumbInstructions.h"
 #include "CardiSetCardDmaPatchCode.h"
@@ -169,17 +170,6 @@ bool CardiTryReadCardDmaPatch::FindPatchTarget(PatchContext& patchContext)
     return true; //_cardiTryReadCardDma != nullptr;
 }
 
-static s32 getArmBlOffset(u32 blInstruction)
-{
-    return 8 + ((int)((blInstruction & 0xFFFFFF) << 8) >> 6);
-}
-
-static u32 getArmBlAddress(const u32* instructionPointer)
-{
-    u32 blInstruction = *instructionPointer;
-    return (u32)instructionPointer + 8 + ((int)((blInstruction & 0xFFFFFF) << 8) >> 6) + ((blInstruction >> 24) == 0xFA ? 1 : 0);
-}
-
 void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
 {
     if (!_cardiTryReadCardDma)
@@ -204,7 +194,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             {
                 cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x134);
                 cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x144);
-                cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x124));
+                cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x124));
                 if (*(u32*)cardiOnReadCard == 0xE92D40F0u)
                 {
                     cardiSetCardDmaDmaCopyCallOffset = 0x18;
@@ -222,7 +212,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             {
                 cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x140);
                 cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x150);
-                cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x130));
+                cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x130));
                 cardiSetCardDmaDmaCopyCallOffset = 0x18;
                 cardiOnReadCardOffset = 0x40;
             }
@@ -230,7 +220,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             {
                 cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x148) + 4;
                 cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x158);
-                cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x138));
+                cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x138));
                 cardiSetCardDmaDmaCopyCallOffset = 0x18;
                 cardiOnReadCardOffset = 0x40;
             }
@@ -240,11 +230,11 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
                 cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x16C);
                 if (*(u32*)((u8*)_cardiTryReadCardDma + 0x158) == 0xE12FFF1E)
                 {
-                    cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x148));
+                    cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x148));
                 }
                 else
                 {
-                    cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x14C));
+                    cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x14C));
                 }
                 cardiSetCardDmaDmaCopyCallOffset = 0x18;
                 cardiOnReadCardOffset = 0x40;
@@ -253,7 +243,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             {
                 cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x160) + 4;
                 cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x170);
-                cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x14C));
+                cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x14C));
                 cardiSetCardDmaDmaCopyCallOffset = 0x18;
                 cardiOnReadCardOffset = 0x40;
             }
@@ -261,7 +251,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             {
                 cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x178) + 4;
                 cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x188);
-                cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x16C));
+                cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x16C));
                 cardiSetCardDmaDmaCopyCallOffset = 0x1C;
                 cardiOnReadCardOffset = 0x48;
             }
@@ -269,7 +259,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             {
                 cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x180) + 4;
                 cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x190);
-                cardiSetCardDma = getArmBlAddress((u32*)((u8*)_cardiTryReadCardDma + 0x174));
+                cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x174));
                 cardiSetCardDmaDmaCopyCallOffset = 0x1C;
                 cardiOnReadCardOffset = 0x48;
             }
@@ -291,7 +281,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
 
             // MIi_CardDmaCopy32 is relative, but we need its final location to call it later
             u32 miiCardDmaCopy32CallLocation = cardiSetCardDma + cardiSetCardDmaDmaCopyCallOffset;
-            s32 miiCardDmaCopy32CallOffset = getArmBlOffset(*(u32*)miiCardDmaCopy32CallLocation);
+            s32 miiCardDmaCopy32CallOffset = ArmHelper::GetArmCallOffset(*(u32*)miiCardDmaCopy32CallLocation);
             if (autoloadAdjuster)
             {
                 miiCardDmaCopy32CallLocation = autoloadAdjuster->AdjustInitialToFinal(miiCardDmaCopy32CallLocation);
@@ -300,7 +290,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
 
             // same as above with OS_DisableIrqMask
             u32 osDisableIrqMaskCallLocation = cardiOnReadCard + cardiOnReadCardOffset + 4;
-            s32 osDisableIrqMaskCallOffset = getArmBlOffset(*(u32*)osDisableIrqMaskCallLocation);
+            s32 osDisableIrqMaskCallOffset = ArmHelper::GetArmCallOffset(*(u32*)osDisableIrqMaskCallLocation);
             if (autoloadAdjuster)
             {
                 osDisableIrqMaskCallLocation = autoloadAdjuster->AdjustInitialToFinal(osDisableIrqMaskCallLocation);
