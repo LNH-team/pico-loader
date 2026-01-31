@@ -9,8 +9,8 @@ template<typename T>
 class AutoloadAdjuster : public IAutoloadAdjuster
 {
 public:
-    AutoloadAdjuster(const T* autoloadListStart, const T* autoloadListEnd, u32 autoloadStartAddress) :
-        _autoloadListStart(autoloadListStart), _autoloadListEnd(autoloadListEnd), _autoloadStartAddress(autoloadStartAddress) { }
+    AutoloadAdjuster(const T* autoloadListStart, const T* autoloadListEnd, u32 autoloadStartAddress)
+        : _autoloadListStart(autoloadListStart), _autoloadListEnd(autoloadListEnd), _autoloadStartAddress(autoloadStartAddress) { }
 
     u32 AdjustInitialToFinal(u32 initialAddress) const override
     {
