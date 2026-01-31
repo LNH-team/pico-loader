@@ -3,8 +3,8 @@
 #include "moduleParams.h"
 #include "IAutoloadAdjuster.h"
 
-/// @brief Class for adjusting addresses for autoload from autoload list entries
-/// @tparam T Autoload list entry type
+/// @brief Class for adjusting addresses for autoload from autoload list entries.
+/// @tparam T The type of autoload list entry.
 template<typename T>
 class AutoloadAdjuster : public IAutoloadAdjuster
 {
