@@ -3,6 +3,8 @@
 #include "moduleParams.h"
 #include "IAutoloadAdjuster.h"
 
+/// @brief Class for adjusting addresses for autoload from autoload list entries
+/// @tparam T Autoload list entry type
 template<typename T>
 class AutoloadAdjuster : public IAutoloadAdjuster
 {
@@ -12,32 +14,14 @@ public:
 
     u32 AdjustInitialToFinal(u32 initialAddress) const override
     {
+        u32 finalAddress = initialAddress;
         u32 currentAddress = _autoloadStartAddress;
         for (auto autoloadListCurr = _autoloadListStart; autoloadListCurr != _autoloadListEnd; autoloadListCurr++)
         {
             if (initialAddress >= currentAddress && initialAddress < currentAddress + autoloadListCurr->size)
             {
-                initialAddress -= currentAddress;
-                initialAddress += autoloadListCurr->targetAddress;
-                break;
-            }
-            else
-            {
-                currentAddress += autoloadListCurr->size;
-            }
-        }
-        return initialAddress;
-    }
-
-    u32 AdjustFinalToInitial(u32 finalAddress) const override
-    {
-        u32 currentAddress = _autoloadStartAddress;
-        for (auto autoloadListCurr = _autoloadListStart; autoloadListCurr != _autoloadListEnd; autoloadListCurr++)
-        {
-            if (finalAddress >= autoloadListCurr->targetAddress && finalAddress < autoloadListCurr->targetAddress + autoloadListCurr->size)
-            {
-                finalAddress -= autoloadListCurr->targetAddress;
-                finalAddress += currentAddress;
+                finalAddress -= currentAddress;
+                finalAddress += autoloadListCurr->targetAddress;
                 break;
             }
             else
@@ -46,6 +30,26 @@ public:
             }
         }
         return finalAddress;
+    }
+
+    u32 AdjustFinalToInitial(u32 finalAddress) const override
+    {
+        u32 initialAddress = finalAddress;
+        u32 currentAddress = _autoloadStartAddress;
+        for (auto autoloadListCurr = _autoloadListStart; autoloadListCurr != _autoloadListEnd; autoloadListCurr++)
+        {
+            if (finalAddress >= autoloadListCurr->targetAddress && finalAddress < autoloadListCurr->targetAddress + autoloadListCurr->size)
+            {
+                initialAddress -= autoloadListCurr->targetAddress;
+                initialAddress += currentAddress;
+                break;
+            }
+            else
+            {
+                currentAddress += autoloadListCurr->size;
+            }
+        }
+        return initialAddress;
     }
 
 private:

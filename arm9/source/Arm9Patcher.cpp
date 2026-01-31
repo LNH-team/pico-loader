@@ -99,22 +99,23 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
         {
             auto arm9iModuleParams = (module_params_twl_t*)(romHeader->arm9LoadAddress + twlRomHeader->arm9iModuleParamsAddress);
             if (arm9iModuleParams->magicBigEndian == MODULE_PARAMS_TWL_MAGIC_BE &&
-                arm9iModuleParams->magicLittleEndian == MODULE_PARAMS_TWL_MAGIC_LE &&
-                arm9iModuleParams->compressedEnd != 0)
+                arm9iModuleParams->magicLittleEndian == MODULE_PARAMS_TWL_MAGIC_LE)
             {
-                LOG_DEBUG("Compressed arm9i found\n");
-                if (miiUncompressBackward)
+                if (arm9iModuleParams->compressedEnd != 0)
                 {
-                    arm9iSize = arm9iModuleParams->compressedEnd + *(u32*)(arm9iModuleParams->compressedEnd - 4) - twlRomHeader->arm9iLoadAddress;
-                    ((uncompress_func_t)miiUncompressBackward)((void*)arm9iModuleParams->compressedEnd);
-                    arm9iModuleParams->compressedEnd = 0;
-                    LOG_DEBUG("Decompressed arm9i\n");
+                    LOG_DEBUG("Compressed arm9i found\n");
+                    if (miiUncompressBackward)
+                    {
+                        arm9iSize = arm9iModuleParams->compressedEnd + *(u32*)(arm9iModuleParams->compressedEnd - 4) - twlRomHeader->arm9iLoadAddress;
+                        ((uncompress_func_t)miiUncompressBackward)((void*)arm9iModuleParams->compressedEnd);
+                        arm9iModuleParams->compressedEnd = 0;
+                        LOG_DEBUG("Decompressed arm9i\n");
+                    }
+                    else
+                    {
+                        LOG_DEBUG("Could not decompress arm9i\n");
+                    }
                 }
-                else
-                {
-                    LOG_DEBUG("Could not decompress arm9i\n");
-                }
-                // unused currently
                 arm9iAutoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_sdk5_t>>(
                     (autoload_list_entry_sdk5_t*)arm9iModuleParams->autoloadListStart,
                     (autoload_list_entry_sdk5_t*)arm9iModuleParams->autoloadListEnd,
