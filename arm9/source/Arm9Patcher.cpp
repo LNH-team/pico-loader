@@ -55,8 +55,8 @@ void Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApLis
     u32 arm9Size = romHeader->arm9Size;
     u32 arm9iSize = romHeader->SupportsDsiMode() ? twlRomHeader->arm9iSize : 0;
     u32 compressedEnd = 0;
-    std::unique_ptr<IAutoloadAdjuster> arm9Autoload = nullptr;
-    std::unique_ptr<IAutoloadAdjuster> arm9iAutoload = nullptr;
+    std::unique_ptr<IAutoloadAdjuster> arm9Autoload;
+    std::unique_ptr<IAutoloadAdjuster> arm9iAutoload;
     auto moduleParams = ModuleParamsLocator().FindModuleParams(romHeader);
     SdkVersion sdkVersion = moduleParams ? moduleParams->sdkVersion : 0u;
     if (moduleParams)

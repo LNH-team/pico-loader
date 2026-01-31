@@ -1,67 +1,55 @@
 #pragma once
 #include "common.h"
 #include "moduleParams.h"
-
-/// @ brief Abstract base class for a general autoload address adjuster.
-class IAutoloadAdjuster
-{
-public:
-    /// @brief Adjust an initial address (pre-autoload) to its final location after autoload.
-    /// @param addr The address to adjust for autoloading.
-    virtual u32 AdjustInitialToFinal(u32 addr) const = 0;
-
-    /// @brief Adjust a final address (post-autoload) to its initial location before autoload.
-    /// @param addr The address to adjust for autoloading.
-    virtual u32 AdjustFinalToInitial(u32 addr) const = 0;
-};
+#include "IAutoloadAdjuster.h"
 
 template<typename T>
 class AutoloadAdjuster : public IAutoloadAdjuster
 {
 public:
-    AutoloadAdjuster(T* autoloadListStart, T* autoloadListEnd, u32 autoloadStartAddr) :
-        _autoloadListStart(autoloadListStart), _autoloadListEnd(autoloadListEnd), _autoloadStartAddr(autoloadStartAddr) { }
+    AutoloadAdjuster(const T* autoloadListStart, const T* autoloadListEnd, u32 autoloadStartAddress) :
+        _autoloadListStart(autoloadListStart), _autoloadListEnd(autoloadListEnd), _autoloadStartAddress(autoloadStartAddress) { }
 
-    u32 AdjustInitialToFinal(u32 addr) const override
+    u32 AdjustInitialToFinal(u32 initialAddress) const override
     {
-        u32 currentAddr = _autoloadStartAddr;
-        for (const T* autoloadListCurr = _autoloadListStart; autoloadListCurr != _autoloadListEnd; autoloadListCurr++)
+        u32 currentAddress = _autoloadStartAddress;
+        for (auto autoloadListCurr = _autoloadListStart; autoloadListCurr != _autoloadListEnd; autoloadListCurr++)
         {
-            if (addr >= currentAddr && addr < currentAddr + autoloadListCurr->size)
+            if (initialAddress >= currentAddress && initialAddress < currentAddress + autoloadListCurr->size)
             {
-                addr -= currentAddr;
-                addr += autoloadListCurr->targetAddress;
+                initialAddress -= currentAddress;
+                initialAddress += autoloadListCurr->targetAddress;
                 break;
             }
             else
             {
-                currentAddr += autoloadListCurr->size;
+                currentAddress += autoloadListCurr->size;
             }
         }
-        return addr;
+        return initialAddress;
     }
 
-    u32 AdjustFinalToInitial(u32 addr) const override
+    u32 AdjustFinalToInitial(u32 finalAddress) const override
     {
-        u32 currentAddr = _autoloadStartAddr;
-        for (const T* autoloadListCurr = _autoloadListStart; autoloadListCurr != _autoloadListEnd; autoloadListCurr++)
+        u32 currentAddress = _autoloadStartAddress;
+        for (auto autoloadListCurr = _autoloadListStart; autoloadListCurr != _autoloadListEnd; autoloadListCurr++)
         {
-            if (addr >= autoloadListCurr->targetAddress && addr < autoloadListCurr->targetAddress + autoloadListCurr->size)
+            if (finalAddress >= autoloadListCurr->targetAddress && finalAddress < autoloadListCurr->targetAddress + autoloadListCurr->size)
             {
-                addr -= autoloadListCurr->targetAddress;
-                addr += currentAddr;
+                finalAddress -= autoloadListCurr->targetAddress;
+                finalAddress += currentAddress;
                 break;
             }
             else
             {
-                currentAddr += autoloadListCurr->size;
+                currentAddress += autoloadListCurr->size;
             }
         }
-        return addr;
+        return finalAddress;
     }
 
 private:
-    T* _autoloadListStart;
-    T* _autoloadListEnd;
-    u32 _autoloadStartAddr;
+    const T* _autoloadListStart;
+    const T* _autoloadListEnd;
+    u32 _autoloadStartAddress;
 };

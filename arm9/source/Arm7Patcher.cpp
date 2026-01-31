@@ -29,8 +29,8 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform) const
         // Spider-Man 2 (USA) is probably the only game without module params
         sdkVersion = 0x02004F50;
     }
-    std::unique_ptr<IAutoloadAdjuster> arm7Autoload = nullptr; // TODO unused
-    std::unique_ptr<IAutoloadAdjuster> arm7iAutoload = nullptr;
+    std::unique_ptr<IAutoloadAdjuster> arm7Autoload; // TODO unused
+    std::unique_ptr<IAutoloadAdjuster> arm7iAutoload;
     if (gIsDsiMode && romHeader->SupportsDsiMode())
     {
         auto arm7iModuleParams = (const module_params_twl_t*)(twlRomHeader->arm7LoadAddress + twlRomHeader->arm7iModuleParamsAddress);

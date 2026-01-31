@@ -32,11 +32,11 @@ public:
 
     /// @brief Returns the ntr autoload adjuster of this context.
     /// @return The ntr autoload adjuster of this context.
-    constexpr const IAutoloadAdjuster* GetAutoloadAdjuster() { return _autoloadAdjuster.get(); }
+    constexpr const IAutoloadAdjuster* GetAutoloadAdjuster() const { return _autoloadAdjuster.get(); }
 
     /// @brief Returns the twl autoload adjuster of this context.
     /// @return The twl autoload adjuster of this context.
-    constexpr const IAutoloadAdjuster* GetAutoloadAdjusterTwl() { return _twlAutoloadAdjuster.get(); }
+    constexpr const IAutoloadAdjuster* GetAutoloadAdjusterTwl() const { return _twlAutoloadAdjuster.get(); }
 
     /// @brief Returns the patch heap of this context.
     /// @return The patch heap of this context.
