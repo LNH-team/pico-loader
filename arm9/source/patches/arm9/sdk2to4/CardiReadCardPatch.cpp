@@ -178,7 +178,7 @@ void CardiReadCardPatch::ApplyPatch(PatchContext& patchContext)
             patch_cardireadcard_mov_r3_to_dst = THUMB_STR_SP_IMM(THUMB_R3, 0xC); // copy to r4 on the stack
             *(u16*)((u8*)_cardiReadCard + patchOffset + 0) = THUMB_LDR_PC_IMM(THUMB_R3, 0x6C); // ldr r3,= cardi_common
         }
-        else if (_foundPattern == sCARDiReadCardPatternSdk2004F4CThumb)
+        else if (_foundPattern == sCARDiReadCardPatternSdk2004F4CThumb || _foundPattern == sCARDiReadCardPatternSdk2027533ThumbChouSoujuu)
         {
             patchOffset = 0x36;
             patch_cardireadcard_return_offset = THUMB_MOVS_IMM(THUMB_R0, 0x2E);
