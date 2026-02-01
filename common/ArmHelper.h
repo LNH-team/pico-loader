@@ -9,7 +9,7 @@ public:
     /// @brief Check if an ARM instruction is an unconditional bl call.
     /// @param instruction The ARM instruction to check.
     /// @return True if the instruction is an unconditional bl call, false otherwise.
-    static bool IsArmBl(u32 instruction)
+    static bool IsArmUnconditionalBl(u32 instruction)
     {
         return (instruction >> 24) == 0xEB;
     }
@@ -33,12 +33,12 @@ public:
     }
 
     /// @brief Create an ARM call instruction (bl or blx).
-    /// @param callerAddress the address where the instruction is to be placed.
+    /// @param instructionAddress The address where the instruction is to be placed.
     /// @param targetAddress the address of the function to call. +1 if Thumb.
     /// @return The ARM call instruction to call the target.
-    static u32 MakeArmCall(u32 callerAddress, u32 targetAddress)
+    static u32 MakeArmCall(u32 instructionAddress, u32 targetAddress)
     {
-        u32 offset = targetAddress - callerAddress - 8;
+        u32 offset = targetAddress - instructionAddress - 8;
         return ((targetAddress & 1) ? 0xFA000000 : 0xEB000000) | ((offset >> 2) & 0xFFFFFF);
     }
 

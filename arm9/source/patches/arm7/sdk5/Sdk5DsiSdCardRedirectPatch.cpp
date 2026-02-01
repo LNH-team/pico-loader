@@ -28,10 +28,10 @@ bool Sdk5DsiSdCardRedirectPatch::FindPatchTarget(PatchContext& patchContext)
     {
         LOG_DEBUG("Found FATFSi_sdmcRtfsAttach at %p\n", _attachFunction);
         _blToGetDriveStructOffset = BL_TO_GET_DRIVE_STRUCT_OFFSET;
-        if (!_thumb && !ArmHelper::IsArmBl(*(u32*)((u8*)_attachFunction + _blToGetDriveStructOffset)))
+        if (!_thumb && !ArmHelper::IsArmUnconditionalBl(*(u32*)((u8*)_attachFunction + _blToGetDriveStructOffset)))
         {
             _blToGetDriveStructOffset = BL_TO_GET_DRIVE_STRUCT_OFFSET_ALT;
-            if (!ArmHelper::IsArmBl(*(u32*)((u8*)_attachFunction + _blToGetDriveStructOffset)))
+            if (!ArmHelper::IsArmUnconditionalBl(*(u32*)((u8*)_attachFunction + _blToGetDriveStructOffset)))
             {
                 LOG_WARNING("Unsupported arm7 version for SD redirection patches\n");
                 _attachFunction = nullptr;
