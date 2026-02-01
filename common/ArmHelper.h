@@ -34,7 +34,7 @@ public:
 
     /// @brief Create an ARM call instruction (bl or blx).
     /// @param instructionAddress The address where the instruction is to be placed.
-    /// @param targetAddress the address of the function to call. +1 if Thumb.
+    /// @param targetAddress The address of the function to call. +1 if Thumb.
     /// @return The ARM call instruction to call the target.
     static u32 MakeArmCall(u32 instructionAddress, u32 targetAddress)
     {
