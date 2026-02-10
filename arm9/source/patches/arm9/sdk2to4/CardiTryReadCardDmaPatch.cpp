@@ -170,6 +170,23 @@ bool CardiTryReadCardDmaPatch::FindPatchTarget(PatchContext& patchContext)
     return true; //_cardiTryReadCardDma != nullptr;
 }
 
+void CardiTryReadCardDmaPatch::ApplyReturnFalsePatch()
+{
+    if (!_cardiTryReadCardDma)
+        return;
+
+    if (_thumb)
+    {
+        ((u16*)_cardiTryReadCardDma)[0] = sReturnFalsePatchThumb[0];
+        ((u16*)_cardiTryReadCardDma)[1] = sReturnFalsePatchThumb[1];
+    }
+    else
+    {
+        _cardiTryReadCardDma[0] = sReturnFalsePatchArm[0];
+        _cardiTryReadCardDma[1] = sReturnFalsePatchArm[1];
+    }
+}
+
 void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
 {
     if (!_cardiTryReadCardDma)
@@ -177,16 +194,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
 
     if (!patchContext.GetLoaderPlatform()->HasDmaSdReads())
     {
-        if (_thumb)
-        {
-            ((u16*)_cardiTryReadCardDma)[0] = sReturnFalsePatchThumb[0];
-            ((u16*)_cardiTryReadCardDma)[1] = sReturnFalsePatchThumb[1];
-        }
-        else
-        {
-            _cardiTryReadCardDma[0] = sReturnFalsePatchArm[0];
-            _cardiTryReadCardDma[1] = sReturnFalsePatchArm[1];
-        }
+        ApplyReturnFalsePatch();
         return;
     }
 
@@ -208,8 +216,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
         }
         else
         {
-            ((u16*)_cardiTryReadCardDma)[0] = sReturnFalsePatchThumb[0];
-            ((u16*)_cardiTryReadCardDma)[1] = sReturnFalsePatchThumb[1];
+            ApplyReturnFalsePatch();
             return;
         }
     }
@@ -228,8 +235,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             else
             {
                 // old version is not supported yet
-                _cardiTryReadCardDma[0] = sReturnFalsePatchArm[0];
-                _cardiTryReadCardDma[1] = sReturnFalsePatchArm[1];
+                ApplyReturnFalsePatch();
                 return;
             }
         }
@@ -290,8 +296,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
         }
         else
         {
-            _cardiTryReadCardDma[0] = sReturnFalsePatchArm[0];
-            _cardiTryReadCardDma[1] = sReturnFalsePatchArm[1];
+            ApplyReturnFalsePatch();
             return;
         }
     }

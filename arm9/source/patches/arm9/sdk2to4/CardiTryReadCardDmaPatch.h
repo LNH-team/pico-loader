@@ -14,4 +14,5 @@ private:
     const u32* _foundPattern = nullptr;
 
     void TryPattern(PatchContext& patchContext, const u32* pattern);
+    void ApplyReturnFalsePatch();
 };
