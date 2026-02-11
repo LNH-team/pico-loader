@@ -373,17 +373,25 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
 
     if (_thumb)
     {
-        // patch CARDi_SetCardDma
+        // patch CARDi_SetCardDma (start of function is always 4-aligned)
         *(u16*)(cardiSetCardDma + 0) = 0x4800; // ldr r0, [pc]
         *(u16*)(cardiSetCardDma + 2) = 0x4700; // bx r0
         *(u32*)(cardiSetCardDma + 4) = (u32)cardiSetCardDmaPatchCode->GetCardiSetCardDmaFunction();
 
-        // patch CARDi_OnReadCard
-        u32 patchEntry = (u32)cardiSetCardDmaPatchCode->GetCardiOnReadCardPatchFunction();
-        *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 0) = 0x4800; // ldr r0, [pc]
-        *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 2) = 0x4780; // blx r0
-        *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 4) = patchEntry & 0xFFFF; // may not be 4-aligned
-        *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 6) = patchEntry >> 16;
+        // patch CARDi_OnReadCard (must handle 4-alignment of pc loads)
+        if (cardiOnReadCardOffset % 4 == 0)
+        {
+            *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 0) = 0x4800; // ldr r0, [pc]
+            *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 2) = 0x4780; // blx r0
+            *(u32*)(cardiOnReadCard + cardiOnReadCardOffset + 4) = (u32)cardiSetCardDmaPatchCode->GetCardiOnReadCardPatchFunction();
+        }
+        else
+        {
+            *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 2) = 0x4800; // ldr r0, [pc]
+            *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 4) = 0x4780; // blx r0
+            *(u32*)(cardiOnReadCard + cardiOnReadCardOffset + 6) = (u32)cardiSetCardDmaPatchCode->GetCardiOnReadCardPatchFunction();
+            *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 10) = 0x4600; // nop
+        }
     }
     else
     {
