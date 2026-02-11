@@ -326,11 +326,11 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
         miiCardDmaCopy32CallOffset = ArmHelper::GetArmCallOffset(*(u32*)miiCardDmaCopy32CallLocation);
     }
     u32 miiCardDmaCopy32 = miiCardDmaCopy32CallLocation + miiCardDmaCopy32CallOffset;
-	if (_thumb && (miiCardDmaCopy32 & 3) == 2)
-	{
-		// fix non-aligned Thumb call to ARM
-		miiCardDmaCopy32 &= ~2u;
-	}
+    if (_thumb && (miiCardDmaCopy32 & 3) == 2)
+    {
+        // fix non-aligned Thumb call to ARM
+        miiCardDmaCopy32 &= ~2u;
+    }
 
     // same as above with OS_DisableIrqMask
     u32 osDisableIrqMaskCallLocation = cardiOnReadCard + cardiOnReadCardOffset + 4;
@@ -348,11 +348,11 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
         osDisableIrqMaskCallLocation = autoloadAdjuster->AdjustInitialToFinal(osDisableIrqMaskCallLocation);
     }
     u32 osDisableIrqMask = osDisableIrqMaskCallLocation + osDisableIrqMaskCallOffset;
-	if (_thumb && (osDisableIrqMask & 3) == 2)
-	{
-		// fix non-aligned Thumb call to ARM
-		osDisableIrqMask &= ~2u;
-	}
+    if (_thumb && (osDisableIrqMask & 3) == 2)
+    {
+        // fix non-aligned Thumb call to ARM
+        osDisableIrqMask &= ~2u;
+    }
 
     // begin with patching
     auto sdReadDmaPatchCode = patchContext.GetLoaderPlatform()->CreateSdReadDmaPatchCode(
