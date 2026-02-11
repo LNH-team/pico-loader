@@ -172,9 +172,6 @@ bool CardiTryReadCardDmaPatch::FindPatchTarget(PatchContext& patchContext)
 
 void CardiTryReadCardDmaPatch::ApplyReturnFalsePatch()
 {
-    if (!_cardiTryReadCardDma)
-        return;
-
     if (_thumb)
     {
         ((u16*)_cardiTryReadCardDma)[0] = sReturnFalsePatchThumb[0];
@@ -202,17 +199,42 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
     u32 cardiOnReadCard;
     u32 cardiSetCardDma;
     u32 cardiSetCardDmaDmaCopyCallOffset;
-    u32 cardiOnReadCardOffset;
+    u32 cardiOnReadCardDisableIrqOffset;
+    u32 cardiOnReadCardPatchOffset;
+    bool patchUsingPool = false; // needed for SDK 2 and some SDK 3 Thumb
+    u32 cardiOnReadCardPoolOffset;
     if (_thumb)
     {
-        // TODO support more signatures
-        if (_foundPattern == sCARDiTryReadCardDmaPatternSdk4017530Thumb || _foundPattern == sCARDiTryReadCardDmaPatternSdk4027530Thumb)
+        if (_foundPattern == sCARDiTryReadCardDmaPatternThumbChouSoujuu)
+        {
+            cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0xEC) + 4;
+            cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x110) & ~1u;
+            cardiSetCardDma = ArmHelper::GetThumbCallAddress((u16*)((u8*)_cardiTryReadCardDma + 0xE2)) & ~1u;
+            cardiSetCardDmaDmaCopyCallOffset = 0xC;
+            cardiOnReadCardDisableIrqOffset = 0x28;
+            cardiOnReadCardPatchOffset = 0x28;
+            patchUsingPool = true;
+            cardiOnReadCardPoolOffset = 0x94;
+        }
+        else if (_foundPattern == sCARDiTryReadCardDmaPatternSdk2007531Thumb)
+        {
+            cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0xE4) + 4;
+            cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x108) & ~1u;
+            cardiSetCardDma = ArmHelper::GetThumbCallAddress((u16*)((u8*)_cardiTryReadCardDma + 0xD6)) & ~1u;
+            cardiSetCardDmaDmaCopyCallOffset = 0xC;
+            cardiOnReadCardDisableIrqOffset = 0x28;
+            cardiOnReadCardPatchOffset = 0x28;
+            patchUsingPool = true;
+            cardiOnReadCardPoolOffset = 0x50;
+        }
+        else if (_foundPattern == sCARDiTryReadCardDmaPatternSdk4017530Thumb || _foundPattern == sCARDiTryReadCardDmaPatternSdk4027530Thumb)
         {
             cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x124) + 4;
             cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x138) & ~1u;
             cardiSetCardDma = ArmHelper::GetThumbCallAddress((u16*)((u8*)_cardiTryReadCardDma + 0x118)) & ~1u;
             cardiSetCardDmaDmaCopyCallOffset = 0x10;
-            cardiOnReadCardOffset = 0x2E;
+            cardiOnReadCardDisableIrqOffset = 0x32;
+            cardiOnReadCardPatchOffset = 0x2E;
         }
         else
         {
@@ -230,7 +252,8 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             if (*(u32*)cardiOnReadCard == 0xE92D40F0u)
             {
                 cardiSetCardDmaDmaCopyCallOffset = 0x18;
-                cardiOnReadCardOffset = 0x40;
+                cardiOnReadCardDisableIrqOffset = 0x44;
+                cardiOnReadCardPatchOffset = 0x40;
             }
             else
             {
@@ -245,7 +268,8 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x150);
             cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x130));
             cardiSetCardDmaDmaCopyCallOffset = 0x18;
-            cardiOnReadCardOffset = 0x40;
+            cardiOnReadCardDisableIrqOffset = 0x44;
+            cardiOnReadCardPatchOffset = 0x40;
         }
         else if (_foundPattern == sCARDiTryReadCardDmaPattern)
         {
@@ -253,7 +277,8 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x158);
             cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x138));
             cardiSetCardDmaDmaCopyCallOffset = 0x18;
-            cardiOnReadCardOffset = 0x40;
+            cardiOnReadCardDisableIrqOffset = 0x44;
+            cardiOnReadCardPatchOffset = 0x40;
         }
         else if (_foundPattern == sCARDiTryReadCardDmaPatternSdk3017530)
         {
@@ -268,7 +293,8 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
                 cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x14C));
             }
             cardiSetCardDmaDmaCopyCallOffset = 0x18;
-            cardiOnReadCardOffset = 0x40;
+            cardiOnReadCardDisableIrqOffset = 0x44;
+            cardiOnReadCardPatchOffset = 0x40;
         }
         else if (_foundPattern == sCARDiTryReadCardDmaPatternSdk3027530)
         {
@@ -276,7 +302,8 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x170);
             cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x14C));
             cardiSetCardDmaDmaCopyCallOffset = 0x18;
-            cardiOnReadCardOffset = 0x40;
+            cardiOnReadCardDisableIrqOffset = 0x44;
+            cardiOnReadCardPatchOffset = 0x40;
         }
         else if (_foundPattern == sCARDiTryReadCardDmaPatternSdk4007532)
         {
@@ -284,7 +311,8 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x188);
             cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x16C));
             cardiSetCardDmaDmaCopyCallOffset = 0x1C;
-            cardiOnReadCardOffset = 0x48;
+            cardiOnReadCardDisableIrqOffset = 0x4C;
+            cardiOnReadCardPatchOffset = 0x48;
         }
         else if (_foundPattern == sCARDiTryReadCardDmaPatternSdk4027539SpiritTracks)
         {
@@ -292,7 +320,8 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x190);
             cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x174));
             cardiSetCardDmaDmaCopyCallOffset = 0x1C;
-            cardiOnReadCardOffset = 0x48;
+            cardiOnReadCardDisableIrqOffset = 0x4C;
+            cardiOnReadCardPatchOffset = 0x48;
         }
         else
         {
@@ -333,7 +362,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
     }
 
     // same as above with OS_DisableIrqMask
-    u32 osDisableIrqMaskCallLocation = cardiOnReadCard + cardiOnReadCardOffset + 4;
+    u32 osDisableIrqMaskCallLocation = cardiOnReadCard + cardiOnReadCardDisableIrqOffset;
     s32 osDisableIrqMaskCallOffset;
     if (_thumb)
     {
@@ -378,19 +407,28 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
         *(u16*)(cardiSetCardDma + 2) = 0x4700; // bx r0
         *(u32*)(cardiSetCardDma + 4) = (u32)cardiSetCardDmaPatchCode->GetCardiSetCardDmaFunction();
 
-        // patch CARDi_OnReadCard (must handle 4-alignment of pc loads)
-        if (cardiOnReadCardOffset % 4 == 0)
+        // patch CARDi_OnReadCard
+        if (patchUsingPool)
         {
-            *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 0) = 0x4800; // ldr r0, [pc]
-            *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 2) = 0x4780; // blx r0
-            *(u32*)(cardiOnReadCard + cardiOnReadCardOffset + 4) = (u32)cardiSetCardDmaPatchCode->GetCardiOnReadCardPatchFunction();
+            *(u16*)(cardiOnReadCard + cardiOnReadCardPatchOffset) = 0x4780; // blx r0
+            *(u32*)(cardiOnReadCard + cardiOnReadCardPoolOffset) = (u32)cardiSetCardDmaPatchCode->GetCardiOnReadCardPatchFunction();
         }
         else
         {
-            *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 2) = 0x4800; // ldr r0, [pc]
-            *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 4) = 0x4780; // blx r0
-            *(u32*)(cardiOnReadCard + cardiOnReadCardOffset + 6) = (u32)cardiSetCardDmaPatchCode->GetCardiOnReadCardPatchFunction();
-            *(u16*)(cardiOnReadCard + cardiOnReadCardOffset + 10) = 0x4600; // nop
+            // must handle 4-alignment of pc loads
+            if (cardiOnReadCardPatchOffset % 4 == 0)
+            {
+                *(u16*)(cardiOnReadCard + cardiOnReadCardPatchOffset + 0) = 0x4800; // ldr r0, [pc]
+                *(u16*)(cardiOnReadCard + cardiOnReadCardPatchOffset + 2) = 0x4780; // blx r0
+                *(u32*)(cardiOnReadCard + cardiOnReadCardPatchOffset + 4) = (u32)cardiSetCardDmaPatchCode->GetCardiOnReadCardPatchFunction();
+            }
+            else
+            {
+                *(u16*)(cardiOnReadCard + cardiOnReadCardPatchOffset + 2) = 0x4800; // ldr r0, [pc]
+                *(u16*)(cardiOnReadCard + cardiOnReadCardPatchOffset + 4) = 0x4780; // blx r0
+                *(u32*)(cardiOnReadCard + cardiOnReadCardPatchOffset + 6) = (u32)cardiSetCardDmaPatchCode->GetCardiOnReadCardPatchFunction();
+                *(u16*)(cardiOnReadCard + cardiOnReadCardPatchOffset + 10) = 0x4600; // nop
+            }
         }
     }
     else
@@ -400,9 +438,9 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
         *(u32*)(cardiSetCardDma + 4) = (u32)cardiSetCardDmaPatchCode->GetCardiSetCardDmaFunction();
 
         // patch CARDi_OnReadCard
-        *(u32*)(cardiOnReadCard + cardiOnReadCardOffset + 0) = 0xE59F0000; // ldr r0,= entryAddress
-        *(u32*)(cardiOnReadCard + cardiOnReadCardOffset + 4) = 0xE12FFF30; // blx r0
-        *(u32*)(cardiOnReadCard + cardiOnReadCardOffset + 8) = (u32)cardiSetCardDmaPatchCode->GetCardiOnReadCardPatchFunction();
+        *(u32*)(cardiOnReadCard + cardiOnReadCardPatchOffset + 0) = 0xE59F0000; // ldr r0,= entryAddress
+        *(u32*)(cardiOnReadCard + cardiOnReadCardPatchOffset + 4) = 0xE12FFF30; // blx r0
+        *(u32*)(cardiOnReadCard + cardiOnReadCardPatchOffset + 8) = (u32)cardiSetCardDmaPatchCode->GetCardiOnReadCardPatchFunction();
     }
 
     LOG_DEBUG("DMA enabled\n");
