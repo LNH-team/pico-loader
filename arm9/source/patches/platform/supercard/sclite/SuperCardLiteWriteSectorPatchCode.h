@@ -2,7 +2,7 @@
 #include "sections.h"
 #include "../SuperCardCommon.h"
 #include "patches/PatchCode.h"
-#include "SuperCardLiteSendCommandPatchCode.h"
+#include "../ISuperCardSendSdCommandPatchCode.h"
 #include "../../IWriteSectorsPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(sclite_write_sector);
@@ -39,7 +39,7 @@ public:
     SuperCardLiteWriteSectorPatchCode(PatchHeap& patchHeap,
         const SuperCardCommonPatchCode* superCardCommonPatchCode,
         const SuperCardChangeModePatchCode* superCardChangeModePatchCode,
-        const SuperCardLiteSendCommandPatchCode* superCardLiteSendCommandPatchCode,
+        const ISuperCardSendSdCommandPatchCode* superCardSendSdCommandPatchCode,
         const SuperCardLiteWriteDataPatchCode* superCardLiteWriteDataPatchCode)
         : PatchCode(SECTION_START(sclite_write_sector), SECTION_SIZE(sclite_write_sector), patchHeap)
     {
@@ -48,7 +48,7 @@ public:
         INTERWORK_LABEL(sccmn_sdSendClock10, writeInterwork) = (u32)superCardChangeModePatchCode->GetSdSendClock10Function();
         INTERWORK_LABEL(sccmn_changeMode, writeInterwork) = (u32)superCardChangeModePatchCode->GetScChangeModeFunction();
         INTERWORK_LABEL(sclite_sdCommandAndDropResponse6, writeInterwork)
-            = (u32)superCardLiteSendCommandPatchCode->GetSdCommandAndDropResponse6Function();
+            = (u32)superCardSendSdCommandPatchCode->GetSendSdCommandFunction();
     }
 
     const WriteSectorsFunc GetWriteSectorFunction() const override

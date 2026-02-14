@@ -2,7 +2,7 @@
 #include "sections.h"
 #include "../SuperCardCommon.h"
 #include "patches/PatchCode.h"
-#include "SuperCardSDSendCommandPatchCode.h"
+#include "../ISuperCardSendSdCommandPatchCode.h"
 #include "../../IReadSectorsPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(scsd_read_sector);
@@ -38,13 +38,13 @@ public:
     SuperCardSDReadSectorPatchCode(PatchHeap& patchHeap,
         const SuperCardCommonPatchCode* superCardCommonPatchCode,
         const SuperCardChangeModePatchCode* superCardChangeModePatchCode,
-        const SuperCardSDSendCommandPatchCode* superCardSDSendCommandPatchCode,
+        const ISuperCardSendSdCommandPatchCode* superCardSendSdCommandPatchCode,
         const SuperCardSDReadDataPatchCode* superCardSDReadDataPatchCode)
         : PatchCode(SECTION_START(scsd_read_sector), SECTION_SIZE(scsd_read_sector), patchHeap)
     {
         INTERWORK_LABEL(sccmn_changeMode, readInterwork) = (u32)superCardChangeModePatchCode->GetScChangeModeFunction();
         INTERWORK_LABEL(scsd_sdCommandAndDropResponse6, readInterwork)
-            = (u32)superCardSDSendCommandPatchCode->GetSdCommandAndDropResponse6Function();
+            = (u32)superCardSendSdCommandPatchCode->GetSendSdCommandFunction();
         INTERWORK_LABEL(scsd_readData, readInterwork) = (u32)superCardSDReadDataPatchCode->GetReadDataFunction();
         INTERWORK_LABEL(sccmn_sdSendClock10, readInterwork) = (u32)superCardChangeModePatchCode->GetSdSendClock10Function();
     }

@@ -1,10 +1,12 @@
 #pragma once
 #include "../LoaderPlatform.h"
 #include "SuperCardCommon.h"
-#include "sclite/SuperCardLiteWriteSectorPatchCode.h"
 #include "sclite/SuperCardLiteReadSectorPatchCode.h"
-#include "scsd/SuperCardSDWriteSectorPatchCode.h"
+#include "sclite/SuperCardLiteSendSdCommandPatchCode.h"
+#include "sclite/SuperCardLiteWriteSectorPatchCode.h"
 #include "scsd/SuperCardSDReadSectorPatchCode.h"
+#include "scsd/SuperCardSDSendSdCommandPatchCode.h"
+#include "scsd/SuperCardSDWriteSectorPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the slot 2 SuperCard flashcard
 class SuperCardLoaderPlatform : public LoaderPlatform
@@ -28,7 +30,7 @@ public:
                 return new SuperCardReadSectorLitePatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardLiteSendCommandPatchCode(patchHeap);
+                        return new SuperCardLiteSendSdCommandPatchCode(patchHeap);
                     }),
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
@@ -44,7 +46,7 @@ public:
                 return new SuperCardSDReadSectorPatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardSDSendCommandPatchCode(patchHeap);
+                        return new SuperCardSDSendSdCommandPatchCode(patchHeap);
                     }),
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
@@ -73,7 +75,7 @@ public:
                 return new SuperCardLiteWriteSectorPatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardLiteSendCommandPatchCode(patchHeap);
+                        return new SuperCardLiteSendSdCommandPatchCode(patchHeap);
                     }),
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
@@ -89,7 +91,7 @@ public:
                 return new SuperCardSDWriteSectorPatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardSDSendCommandPatchCode(patchHeap);
+                        return new SuperCardSDSendSdCommandPatchCode(patchHeap);
                     }),
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
