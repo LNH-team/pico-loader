@@ -76,18 +76,14 @@ INTERWORK_FUNCTION sccmn_sdSendClock10 readInterwork
 BEGIN_THUMB_FUNCTION sclite_readData
     push {r1,r4-r7,lr}
 
-    @ dummy read SD_STATUS
-    ldr r1,= sd_status_addr
-    ldrh r1, [r1]
-
-    @ loads sd_buff_bit_addr
-    movs r1, #0x94
+    @ loads sd_dataread
+    movs r1, #0x91
     lsls r1, r1, #20
 
-    @ loops as long as sd_buff_bit is 1
+    @ loops as long as sd_dataread is 0x100
 sclite_readData_buff_bit_loop:
     ldrh r3, [r1]
-    lsrs r3, #1
+    lsrs r3, #9
     bcs sclite_readData_buff_bit_loop
 
     @ loads sd_dataread_4
