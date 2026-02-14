@@ -11,6 +11,7 @@ enum SupercardType
     SUPERCARD_TYPE_SC_SD = 0x00,
     SUPERCARD_TYPE_SC_LITE = 0x01,
     SUPERCARD_TYPE_SC_CF = 0x02,
+    SUPERCARD_TYPE_CHIS = 0x04,
     SUPERCARD_TYPE_SC_RUMBLE = (0x10 | SUPERCARD_TYPE_SC_LITE),
     SUPERCARD_TYPE_UNK = ~SUPERCARD_TYPE_SC_RUMBLE,
 };
@@ -43,21 +44,7 @@ static SupercardType detectSupercardType()
         }
         default:
         {
-            auto* cfstatns = (vu16*)0x99C0000;
-            *cfstatns = 0x50;
-            __asm__ volatile(
-                "nop\n"
-                "nop\n"
-                "nop\n"
-                "nop\n"
-                "nop\n"
-                "nop\n"
-                "nop\n"
-                "nop\n"
-                );
-            return *cfstatns == 0x50
-                ? SUPERCARD_TYPE_SC_CF
-                : SUPERCARD_TYPE_UNK;
+            return SUPERCARD_TYPE_CHIS;
         }
     }
 }
@@ -172,8 +159,10 @@ bool SuperCardLoaderPlatform::InitializeSdCardIntern()
         case SUPERCARD_TYPE_SC_SD:
         case SUPERCARD_TYPE_SC_LITE:
         case SUPERCARD_TYPE_SC_RUMBLE:
+        case SUPERCARD_TYPE_CHIS:
         {
             isScLite = (type & SUPERCARD_TYPE_SC_LITE) != 0;
+            isSuperChis = type == SUPERCARD_TYPE_CHIS;
             return true;
         }
         default:
