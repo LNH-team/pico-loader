@@ -1,8 +1,10 @@
 #pragma once
 #include "../LoaderPlatform.h"
 #include "SuperCardCommon.h"
-#include "sclite/SuperCardLiteImpl.h"
-#include "scsd/SuperCardSDImpl.h"
+#include "sclite/SuperCardLiteWriteSectorPatchCode.h"
+#include "sclite/SuperCardLiteReadSectorPatchCode.h"
+#include "scsd/SuperCardSDWriteSectorPatchCode.h"
+#include "scsd/SuperCardSDReadSectorPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the slot 2 SuperCard flashcard
 class SuperCardLoaderPlatform : public LoaderPlatform
@@ -26,11 +28,11 @@ public:
                 return new SuperCardReadSectorLitePatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardSDCommandAndDropLitePatchCode(patchHeap);
+                        return new SuperCardLiteSendCommandPatchCode(patchHeap);
                     }),
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardReadDataLitePatchCode(patchHeap);
+                        return new SuperCardLiteReadDataPatchCode(patchHeap);
                     })
                 );
             });
@@ -39,14 +41,14 @@ public:
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
-                return new SuperCardReadSectorPatchCode(patchHeap, common, changeMode,
+                return new SuperCardSDReadSectorPatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardSdCommandAndDropPatchCode(patchHeap);
+                        return new SuperCardSDSendCommandPatchCode(patchHeap);
                     }),
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardReadDataPatchCode(patchHeap);
+                        return new SuperCardSDReadDataPatchCode(patchHeap);
                     })
                 );
             });
@@ -68,14 +70,14 @@ public:
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
-                return new SuperCardWriteSectorLitePatchCode(patchHeap, common, changeMode,
+                return new SuperCardLiteWriteSectorPatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardSDCommandAndDropLitePatchCode(patchHeap);
+                        return new SuperCardLiteSendCommandPatchCode(patchHeap);
                     }),
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardWriteDataLitePatchCode(patchHeap);
+                        return new SuperCardLiteWriteDataPatchCode(patchHeap);
                     })
                 );
             });
@@ -84,14 +86,14 @@ public:
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
-                return new SuperCardWriteSectorPatchCode(patchHeap, common, changeMode,
+                return new SuperCardSDWriteSectorPatchCode(patchHeap, common, changeMode,
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardSdCommandAndDropPatchCode(patchHeap);
+                        return new SuperCardSDSendCommandPatchCode(patchHeap);
                     }),
                     patchCodeCollection.GetOrAddSharedPatchCode([&]
                     {
-                        return new SuperCardWriteDataPatchCode(patchHeap);
+                        return new SuperCardSDWriteDataPatchCode(patchHeap);
                     })
                 );
             });
