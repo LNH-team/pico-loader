@@ -100,7 +100,7 @@ private:
 	const ISuperCardSendSdCommandPatchCode* CreateSdCommandPatchCode(
 	    PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const
 	{
-		if(isScLite)
+		if (isScLite)
 		{
 			return patchCodeCollection.GetOrAddSharedPatchCode([&]
 			{
