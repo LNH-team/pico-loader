@@ -404,6 +404,13 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
             cardiSetCardDmaDmaCopyCallOffset = 0x18;
             cardiOnReadCardDisableIrqCallOffset = 0x44;
             cardiOnReadCardPatchOffset = 0x40;
+            if (!ArmHelper::IsArmUnconditionalBl(*(u32*)(cardiSetCardDma + cardiSetCardDmaDmaCopyCallOffset)))
+            {
+                // some versions have inlined MIi_CardDmaCopy32
+                LOG_DEBUG("Failed to patch sCARDiTryReadCardDmaPattern20029A7\n");
+                ApplyReturnFalsePatch();
+                return;
+            }
         }
         else if (_foundPattern == sCARDiTryReadCardDmaPattern2012774)
         {
