@@ -183,10 +183,6 @@ bool CardiTryReadCardDmaPatch::FindPatchTarget(PatchContext& patchContext)
 
 static u32 resolveCallWithAutoload(u32 callLocation, const IAutoloadAdjuster* autoloadAdjuster, bool isThumb)
 {
-    if (autoloadAdjuster)
-    {
-        callLocation = autoloadAdjuster->AdjustInitialToFinal(callLocation);
-    }
     s32 callOffset;
     if (isThumb)
     {
@@ -195,6 +191,10 @@ static u32 resolveCallWithAutoload(u32 callLocation, const IAutoloadAdjuster* au
     else
     {
         callOffset = ArmHelper::GetArmCallOffset(*(u32*)callLocation);
+    }
+    if (autoloadAdjuster)
+    {
+        callLocation = autoloadAdjuster->AdjustInitialToFinal(callLocation);
     }
     u32 callDestination = callLocation + callOffset;
     if (isThumb && (callDestination & 3) == 2)
@@ -340,18 +340,6 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
     }
     else
     {
-#if 0
-        if (_foundPattern == sCARDiTryReadCardDmaPatternPingPals)
-        {
-            cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x130);
-            cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x140);
-            cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x120));
-            cardiSetCardDmaDmaCopyCallOffset = ; // does not exist, function is inlined
-            cardiOnReadCardDisableIrqCallOffset = 0x54;
-            cardiOnReadCardPatchOffset = 0x50;
-        }
-        else
-#endif
         if (_foundPattern == sCARDiTryReadCardDmaPatternUnknown)
         {
             cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x144) + 4;
