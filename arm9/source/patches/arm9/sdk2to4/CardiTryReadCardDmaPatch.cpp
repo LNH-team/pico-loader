@@ -12,7 +12,7 @@ static const u32 sCARDiTryReadCardDmaPatternUnknown[] = { 0xE92D47F0u, 0xE59F913
 static const u32 sCARDiTryReadCardDmaPatternSdk03007532HarvestMoon[] = { 0xE92D47F0u, 0xE59F4134u, 0xE3A06000u, 0xE5949020u };
 static const u32 sCARDiTryReadCardDmaPatternUnknown3[] = { 0xE92D4FF8u, 0xE59FB140u, 0xE3A05000u, 0xE59B8020u };
 static const u32 sCARDiTryReadCardDmaPatternSdk02027533PokemonRanger[] = { 0xE92D47F0u, 0xE59F9138u, 0xE3A06000u, 0xE599801Cu };
-static const u32 sCARDiTryReadCardDmaPattern20029A7[] = { 0xE92D47F0u, 0xE59F9128u, 0xE3A07000u, 0xE599401Cu }; // TODO test both variants
+static const u32 sCARDiTryReadCardDmaPattern20029A7[] = { 0xE92D47F0u, 0xE59F9128u, 0xE3A07000u, 0xE599401Cu };
 static const u32 sCARDiTryReadCardDmaPattern2012774[] = { 0xE92D47F0u, 0xE59F9134u, 0xE3A07000u, 0xE599401Cu };
 static const u32 sCARDiTryReadCardDmaPattern2017532BrainAge[] = { 0xE92D47F0u, 0xE59F9130u, 0xE3A07000u, 0xE599401Cu };
 static const u32 sCARDiTryReadCardDmaPattern2027530[] = { 0xE92D47F0u, 0xE59F913Cu, 0xE3A06000u, 0xE599801Cu };
@@ -379,7 +379,7 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
         else if (_foundPattern == sCARDiTryReadCardDmaPattern20029A7)
         {
             if (*(u32*)((u8*)_cardiTryReadCardDma + 0x140) == 0xE12FFF1E)
-            { // TODO testme
+            {
                 cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x144);
                 cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x154);
             }
