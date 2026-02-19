@@ -42,7 +42,7 @@ Note that there can be some game compatibility differences between different pla
 | R4            | Original R4DS (non-SDHC), M3 DS Simply                                                         | ❌ |
 | R4iDSN        | r4idsn.com                                                                                     | ❌ |
 | STARGATE      | Stargate 3DS DS-mode                                                                           | ✅ |
-| SUPERCARD     | SuperCard SD, Lite and Rumble (Slot-2 flashcart)                                               | ❌ |
+| SUPERCARD     | SuperCard SD, SuperCard Lite, SuperCard Rumble and SuperChis (Slot-2 flashcart)                | ❌ |
 | SUPERCARDCF   | SuperCard CF (Slot-2 flashcart)                                                                | ❌ |
 
 The DMA column indicates whether DMA card reads are implemented for the platform . Without DMA card reads, some games can have cache related issues.<br>
