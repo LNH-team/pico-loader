@@ -13,6 +13,9 @@ static const u32 sVBlankIntrPatternThumb3[] = { 0xE51FF004u, 0x037FD67Cu, 0x4804
 static const u32 sVBlankIntrPatternThumb4[] = { 0x46C04770u, 0x02FFFE1Du, 0x4804B508u, 0x28006800u }; // +8
 static const u32 sVBlankIntrPatternThumb5[] = { 0xE51FF004u, 0x037FA868u, 0x4804B508u, 0x28006800u }; // +8
 
+// sdk5
+static const u32 sVBlankIntrPatternArm2[] = { 0xE92D4008u, 0xE59F2038u, 0xE59F0038u, 0xE5921000u };
+
 bool CheatEnginePatch::FindPatchTarget(PatchContext& patchContext)
 {
     _vblankIrqHandler = patchContext.FindPattern32(sVBlankIntrPatternArm0, sizeof(sVBlankIntrPatternArm0));
@@ -26,6 +29,14 @@ bool CheatEnginePatch::FindPatchTarget(PatchContext& patchContext)
         if (_vblankIrqHandler)
         {
             _foundPattern = sVBlankIntrPatternArm1;
+        }
+    }
+    if (!_vblankIrqHandler)
+    {
+        _vblankIrqHandler = patchContext.FindPattern32(sVBlankIntrPatternArm2, sizeof(sVBlankIntrPatternArm2));
+        if (_vblankIrqHandler)
+        {
+            _foundPattern = sVBlankIntrPatternArm2;
         }
     }
     if (!_vblankIrqHandler)
@@ -132,6 +143,29 @@ void CheatEnginePatch::ApplyPatch(PatchContext& patchContext)
         // bx lr
         _vblankIrqHandler[6] = 0xE51FF004; // ldr pc,= address
         _vblankIrqHandler[7] = (u32)cheatEnginePatchCode->GetCheatEngineFunctionArm(); // address
+    }
+    else if (_foundPattern == sVBlankIntrPatternArm2)
+    {
+        // push {r3,lr}
+        // ldr r2,=
+        // ldr r0,=
+        // ldr r1, [r2]
+        // ldr r3, [r0, #0x60]
+        // add r0, r1, #1
+        // str r0, [r2]
+        // cmp r3, #0
+        // beq 1f
+        // mov lr, pc
+        // bx r3
+        // 1:
+        // ldr r1,=
+        // ldr r0, [r1]
+        // orr r0, r0, #1
+        // str r0, [r1]
+        // pop {r3,lr}
+        // bx lr
+        _vblankIrqHandler[15] = 0xE51FF004; // ldr pc,= address
+        _vblankIrqHandler[16] = (u32)cheatEnginePatchCode->GetCheatEngineFunctionArm(); // address
     }
     else if (_foundPattern == sVBlankIntrPatternThumb0)
     {
