@@ -4,8 +4,6 @@
 
 DEFINE_SECTION_SYMBOLS(patch_cheatengine);
 
-extern "C" void cheatengine_entry_arm(void);
-extern "C" void cheatengine_entry_thumb_replace(void);
 extern "C" void cheatengine_entry(void);
 
 extern const void* cheatengine_cheatsPtr;
@@ -22,15 +20,5 @@ public:
     const void* GetCheatEngineFunction() const
     {
         return GetAddressAtTarget((void*)cheatengine_entry);
-    }
-
-    const void* GetCheatEngineFunctionArm() const
-    {
-        return GetAddressAtTarget((void*)cheatengine_entry_arm);
-    }
-
-    const void* GetCheatEngineFunctionThumbReplace() const
-    {
-        return GetAddressAtTarget((void*)cheatengine_entry_thumb_replace);
     }
 };

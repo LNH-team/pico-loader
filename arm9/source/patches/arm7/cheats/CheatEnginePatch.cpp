@@ -1,5 +1,4 @@
 #include "common.h"
-#include "thumbInstructions.h"
 #include "CheatEnginePatchCode.h"
 #include "CheatEnginePatch.h"
 
@@ -44,11 +43,11 @@ void CheatEnginePatch::ApplyPatch(PatchContext& patchContext)
     int patchOffset;
     if (_foundPattern == sOSiIrqVBlankPattern0)
     {
-        patchOffset = 15;
+        patchOffset = 11;
     }
     else if (_foundPattern == sOSiIrqVBlankPattern1)
     {
-        patchOffset = 16;
+        patchOffset = 12;
     }
     else
     {
@@ -56,7 +55,8 @@ void CheatEnginePatch::ApplyPatch(PatchContext& patchContext)
         return;
     }
 
-    _vblankIrqHandler[patchOffset + 0] = 0xE51FF004; // ldr pc,= address
-    _vblankIrqHandler[patchOffset + 1] = (u32)cheatEnginePatchCode->GetCheatEngineFunctionArm(); // address
+    _vblankIrqHandler[patchOffset + 0] = 0xE59FC000; // ldr ip,= address
+    _vblankIrqHandler[patchOffset + 1] = 0xE12FFF3C; // blx ip
+    _vblankIrqHandler[patchOffset + 2] = (u32)cheatEnginePatchCode->GetCheatEngineFunction(); // address
     LOG_DEBUG("Cheats enabled\n");
 }
