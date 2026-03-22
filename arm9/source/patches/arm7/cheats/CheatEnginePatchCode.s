@@ -14,21 +14,6 @@ cheatengine_entry_arm:
     bx r12
 
 .thumb
-.global cheatengine_entry_thumb_replace
-.type cheatengine_entry_thumb_replace, %function
-cheatengine_entry_thumb_replace:
-    push {r4, r5, lr} // r5 is a dummy
-    ldr r0, [r0]
-    adr r4, cheatengine_entry_thumb_replace_return
-    cmp r0, #0
-    mov pc, r1
-
-.balign 4
-
-cheatengine_entry_thumb_replace_return:
-    pop {r4}
-    nop
-
 .global cheatengine_entry
 .type cheatengine_entry, %function
 cheatengine_entry:
