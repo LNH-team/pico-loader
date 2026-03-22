@@ -1,22 +1,40 @@
 .cpu arm7tdmi
 .section "patch_cheatengine", "ax"
 .syntax unified
-.thumb
 
 // For reference on how Action Replay codes work for the DS
 // - https://problemkaputt.de/gbatek-ds-cart-cheat-action-replay-ds.htm
 // - https://github.com/melonDS-emu/melonDS/blob/master/src/AREngine.cpp
 
+.arm
+.global cheatengine_entry_arm
+.type cheatengine_entry_arm, %function
+cheatengine_entry_arm:
+    adr r12, cheatengine_entry + 1
+    bx r12
+
+.thumb
+.global cheatengine_entry_thumb_replace
+.type cheatengine_entry_thumb_replace, %function
+cheatengine_entry_thumb_replace:
+    push {r4, r5, lr} // r5 is a dummy
+    ldr r0, [r0]
+    adr r4, cheatengine_entry_thumb_replace_return
+    cmp r0, #0
+    mov pc, r1
+
+.balign 4
+
+cheatengine_entry_thumb_replace_return:
+    pop {r4}
+    nop
+
 .global cheatengine_entry
 .type cheatengine_entry, %function
 cheatengine_entry:
+    pop {r0, r1}
+    mov lr, r1
     push {r4, r5, lr}
-
-    // set IRQ check flag in r1
-    movs r2, #1
-    ldr r0, [r1]
-    orrs r0, r2
-    str r0, [r1]
 
     // increment 16-bit counter for C5
     adr r1, c5counter
@@ -38,7 +56,6 @@ entry_cheats_loop:
 entry_end:
     pop {r4, r5}
     pop {r3}
-	adds r3, #4
     bx r3
 
 runCheat_end:
