@@ -54,15 +54,15 @@ void CheatEnginePatch::ApplyPatch(PatchContext& patchContext)
     int patchOffset;
     if (_foundPattern == sOSiIrqVBlankPattern0)
     {
-        patchOffset = 15;
+        patchOffset = 0x3C;
     }
     else if (_foundPattern == sOSiIrqVBlankPattern1)
     {
-        patchOffset = 16;
+        patchOffset = 0x40;
     }
     else if (_foundPattern == sOSiIrqVBlankPatternThumb0)
     {
-        patchOffset = 16;
+        patchOffset = 0x20;
     }
     else
     {
@@ -72,14 +72,14 @@ void CheatEnginePatch::ApplyPatch(PatchContext& patchContext)
 
     if (_thumb)
     {
-        ((u16*)_vblankIrqHandler)[patchOffset + 0] = THUMB_LDR_PC_IMM(THUMB_R1, 0); // ldr r1,= address
-        ((u16*)_vblankIrqHandler)[patchOffset + 1] = THUMB_BX(THUMB_R1); // bx r1
-        _vblankIrqHandler[(patchOffset + 2) >> 1] = (u32)cheatEnginePatchCode->GetCheatEngineFunction(); // address
+        *(u16*)((u8*)_vblankIrqHandler + patchOffset + 0) = THUMB_LDR_PC_IMM(THUMB_R1, 0); // ldr r1,= address
+        *(u16*)((u8*)_vblankIrqHandler + patchOffset + 2) = THUMB_BX(THUMB_R1); // bx r1
+        *(u32*)((u8*)_vblankIrqHandler + patchOffset + 4) = (u32)cheatEnginePatchCode->GetCheatEngineFunction(); // address
     }
     else
     {
-        _vblankIrqHandler[patchOffset + 0] = 0xE51FF004; // ldr pc,= address
-        _vblankIrqHandler[patchOffset + 1] = (u32)cheatEnginePatchCode->GetCheatEngineFunctionArm(); // address
+        *(u32*)((u8*)_vblankIrqHandler + patchOffset + 0) = 0xE51FF004; // ldr pc,= address
+        *(u32*)((u8*)_vblankIrqHandler + patchOffset + 4) = (u32)cheatEnginePatchCode->GetCheatEngineFunctionArm(); // address
     }
     LOG_DEBUG("Cheats enabled\n");
 }
