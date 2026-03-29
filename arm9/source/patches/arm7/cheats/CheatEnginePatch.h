@@ -15,4 +15,5 @@ private:
     const void* _cheats;
     u32* _vblankIrqHandler = nullptr;
     const u32* _foundPattern = nullptr;
+    u16 _thumb = false;
 };
