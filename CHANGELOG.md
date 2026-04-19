@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- DMA card read support for the DSTT platform - by @lifehackerhansol
 - DMA card read support for the M3DS platform - by @lifehackerhansol
 
 ### Fixed

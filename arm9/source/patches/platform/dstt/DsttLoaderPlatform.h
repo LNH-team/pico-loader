@@ -1,6 +1,7 @@
 #pragma once
 #include "../LoaderPlatform.h"
 #include "DsttReadSdPatchCode.h"
+#include "DsttReadSdDmaPatchCode.h"
 #include "DsttWriteSdPatchCode.h"
 #include "DsttSdStopTransmissionPatchCode.h"
 #include "DsttReadSdHelperPatchCode.h"
@@ -26,6 +27,21 @@ public:
         });
     }
 
+    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
+        PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
+    {
+        return patchCodeCollection.AddUniquePatchCode<DsttReadSdDmaPatchCode>(
+            patchHeap, miiCardDmaCopy32Ptr,
+                patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new DsttSdStopTransmissionPatchCode(patchHeap);
+                }),
+                patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new DsttReadSdHelperPatchCode(patchHeap);
+                }));
+    }
+
     const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
@@ -40,6 +56,8 @@ public:
     }
 
     LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
+
+    bool HasDmaSdReads() const override { return true; }
 
     bool InitializeSdCard() override;
 };
