@@ -34,7 +34,7 @@ Note that there can be some game compatibility differences between different pla
 | EZP           | EZ-Flash Parallel                                                                              | ❌ |
 | G003          | M3i Zero (GMP-Z003)                                                                            | ✅ |
 | ISNITRO       | Supports the IS-NITRO-EMULATOR through agb semihosting.                                        | ❌ |
-| M3DS          | M3 DS Real, M3i Zero, iTouchDS, r4rts.com, r4isdhc.com RTS (black)                             | ❌ |
+| M3DS          | M3 DS Real, M3i Zero, iTouchDS, r4rts.com, r4isdhc.com RTS (black)                             | ✅ |
 | M3CF          | M3 Compact Flash (Slot-2 flashcart)                                                            | ❌ |
 | MELONDS       | Melon DS support for testing purposes only.                                                    | ❌ |
 | MMCF          | DATEL Max Media Dock Compact Flash (Slot-2 flashcart)                                          | ❌ |

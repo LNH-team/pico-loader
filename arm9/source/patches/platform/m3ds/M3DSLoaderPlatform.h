@@ -1,5 +1,6 @@
 #pragma once
 #include "../LoaderPlatform.h"
+#include "M3DSReadSdSectorsDmaPatchCode.h"
 #include "M3DSReadSdSectorsPatchCode.h"
 #include "M3DSWriteSdSectorsPatchCode.h"
 
@@ -20,6 +21,15 @@ public:
         });
     }
 
+    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
+        PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
+    {
+        return patchCodeCollection.AddUniquePatchCode<M3DSReadSdSectorsDmaPatchCode>(
+            patchHeap, miiCardDmaCopy32Ptr,
+            patchCodeCollection.AddUniquePatchCode<M3DSReadSdSectorsDmaHelperPatchCode>(patchHeap)
+        );
+    }
+
     const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
@@ -34,4 +44,6 @@ public:
     }
 
     LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
+
+    bool HasDmaSdReads() const override { return true; }
 };
