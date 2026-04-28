@@ -369,8 +369,8 @@ void CardiTryReadCardDmaPatch::ApplyPatch(PatchContext& patchContext)
         }
         else if (_foundPattern == sCARDiTryReadCardDmaPatternSdk02027533PokemonRanger)
         {
-            cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x148);
-            cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x158);
+            cardiCommon = *(u32*)((u8*)_cardiTryReadCardDma + 0x144);
+            cardiOnReadCard = *(u32*)((u8*)_cardiTryReadCardDma + 0x154);
             cardiSetCardDma = ArmHelper::GetArmCallAddress((u32*)((u8*)_cardiTryReadCardDma + 0x138));
             cardiSetCardDmaDmaCopyCallOffset = 0x18;
             cardiOnReadCardDisableIrqCallOffset = 0x44;
