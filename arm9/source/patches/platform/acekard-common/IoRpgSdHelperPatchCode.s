@@ -8,9 +8,7 @@
 .global iorpg_sendSdioCommand
 .type iorpg_sendSdioCommand, %function
 iorpg_sendSdioCommand:
-    push {r4-r7,lr}
-
-    ldr r4, =0x040001A0
+    push {r5-r7,lr}
 
     // start copy to MCCMD1
     str r0, [r4,#0x8]
@@ -36,7 +34,7 @@ iorpg_sendSdioCommand_read_loop:
     lsrs r5, r5, #8
     bcs iorpg_sendSdioCommand_read_loop
 
-    pop {r4-r7,pc}
+    pop {r5-r7,pc}
 
 .balign 4
 
@@ -44,9 +42,8 @@ iorpg_sendSdioCommand_read_loop:
 .type iorpg_sdWaitForState, %function
 // r0 = state to wait for
 iorpg_sdWaitForState:
-    push {r4-r7,lr}
+    push {r5-r7,lr}
 
-    ldr r4, =0x040001A0
     ldr r5, =0x04100010
 
     // Reset cmd buffer
@@ -79,7 +76,7 @@ iorpg_sdWaitForState_shift:
     cmp r0, r7
     bne iorpg_sdWaitForState_read_loop
 
-    pop {r4-r7,pc}
+    pop {r5-r7,pc}
 
 .balign 4
 
