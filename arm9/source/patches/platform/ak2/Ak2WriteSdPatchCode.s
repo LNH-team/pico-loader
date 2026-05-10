@@ -51,8 +51,7 @@ ak2_writeSd_block_write_wait_busy:
 
     push {r0-r1}
     // Wait for SD state
-    movs r0, #4
-    movs r1, #0
+    movs r0, #0
     ldr r6, ak2_writeSd_sdWaitForState_address
     bl blx_r6
     pop {r0-r1}

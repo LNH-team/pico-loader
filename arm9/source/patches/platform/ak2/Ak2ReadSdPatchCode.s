@@ -27,8 +27,7 @@ ak2_readSd_sdsc_shift:
     bl blx_r3
 
     // Wait for SD state
-    movs r0, #4
-    movs r1, #7
+    movs r0, #7
     ldr r3, ak2_readSd_sdWaitForState_address
     bl blx_r3
 

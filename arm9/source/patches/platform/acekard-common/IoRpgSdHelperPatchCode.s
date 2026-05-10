@@ -42,8 +42,7 @@ iorpg_sendSdioCommand_read_loop:
 
 .global iorpg_sdWaitForState
 .type iorpg_sdWaitForState, %function
-// r0 = state shift, some carts put it in different bytes
-// r1 = state to wait for
+// r0 = state to wait for
 iorpg_sdWaitForState:
     push {r4-r7,lr}
 
@@ -70,10 +69,14 @@ iorpg_sdWaitForState_read_wait_data_ready:
     ldr r6, =0xFC2 // card ID
     cmp r7, r6
     beq iorpg_sdWaitForState_read_loop
-    lsrs r7, r7, r0
+
+.global iorpg_sdWaitForState_shift
+iorpg_sdWaitForState_shift:
+    lsrs r7, r7, #0
+
     movs r6, #0xF
     ands r7, r7, r6
-    cmp r1, r7
+    cmp r0, r7
     bne iorpg_sdWaitForState_read_loop
 
     pop {r4-r7,pc}

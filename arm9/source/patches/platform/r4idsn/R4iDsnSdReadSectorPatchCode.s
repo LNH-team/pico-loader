@@ -42,8 +42,7 @@ r4idsn_sdReadSector_read_loop_check_transfer_end:
 
     // Wait for SD state
     push {r0-r1}
-    movs r0, #4
-    movs r1, #7
+    movs r0, #7
     ldr r3, r4idsn_sdReadSector_sdWaitForState_address
     bl blx_r3
     pop {r0-r1}

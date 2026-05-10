@@ -24,7 +24,7 @@ protected:
         {
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
-                return new IoRpgSdHelperPatchCode(patchHeap);
+                return new IoRpgSdHelperPatchCode(patchHeap, GetPlatformSpecifics());
             });
         }
 
