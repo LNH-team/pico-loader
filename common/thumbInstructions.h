@@ -19,6 +19,7 @@
 #define THUMB_HI_PC                 15
 
 #define THUMB_LSLS_IMM(rd, rs, imm) (0x0000 | ((imm) << 6) | ((rs) << 3) | (rd))
+#define THUMB_LSRS_IMM(rd, rs, imm) (0x0800 | ((imm) << 6) | ((rs) << 3) | (rd))
 #define THUMB_ADDS_IMM(rd, rs, imm) (0x1C00 | ((imm) << 6) | ((rs) << 3) | (rd))
 #define THUMB_SUBS_IMM(rd, rs, imm) (0x1E00 | ((imm) << 6) | ((rs) << 3) | (rd))
 #define THUMB_MOVS_IMM(rd, imm)     (0x2000 | ((rd) << 8) | (imm))
