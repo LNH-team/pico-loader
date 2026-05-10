@@ -1,9 +1,9 @@
 #pragma once
 #include "../acekard-common/IoRpgLoaderPlatform.h"
 #include "../acekard-common/IoRpgDefinitions.h"
+#include "../acekard-common/IoRpgWriteSdPatchCode.h"
 #include "R4iDsnReadSdPatchCode.h"
 #include "R4iDsnSdReadSectorPatchCode.h"
-#include "R4iDsnWriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the Acekard 2 flashcard
 class R4iDsnLoaderPlatform : public IoRpgLoaderPlatform
@@ -34,21 +34,10 @@ public:
         });
     }
 
-    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
-    {
-        return patchCodeCollection.GetOrAddSharedPatchCode([&]
-        {
-            return new R4iDsnWriteSdPatchCode(patchHeap,
-                CreateSdHelperPatchCode(patchCodeCollection, patchHeap)
-            );
-        });
-    }
-
     void PatchSdscShift(void) const override
     {
         r4idsn_readSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R4, THUMB_R0);
-        r4idsn_writeSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R7, THUMB_R0);
+        iorpg_writeSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R7, THUMB_R0);
     }
 
     const IoRpgPlatformSpecifics& GetPlatformSpecifics(void) const override

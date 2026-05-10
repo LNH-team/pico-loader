@@ -2,6 +2,7 @@
 #include "../LoaderPlatform.h"
 #include "IoRpgDefinitions.h"
 #include "IoRpgSdHelperPatchCode.h"
+#include "IoRpgWriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for flashcarts based on the Acekard RPG family
 class IoRpgLoaderPlatform : public LoaderPlatform
@@ -13,6 +14,18 @@ public:
     LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
 
     bool InitializeSdCard() override;
+
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
+    {
+        return patchCodeCollection.GetOrAddSharedPatchCode([&]
+        {
+            return new IoRpgWriteSdPatchCode(patchHeap,
+                CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
+                GetPlatformSpecifics()
+            );
+        });
+    }
 
 protected:
     virtual void PatchSdscShift() const {};
