@@ -4,6 +4,7 @@
 #include "IoRpgSdHelperPatchCode.h"
 #include "IoRpgSdReadLoopPatchCode.h"
 #include "IoRpgReadSdPatchCode.h"
+#include "IoRpgReadSdDmaPatchCode.h"
 #include "IoRpgWriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for flashcarts based on the Acekard RPG family
@@ -16,6 +17,8 @@ public:
     LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
 
     bool InitializeSdCard() override;
+
+    bool HasDmaSdReads() const override { return true; }
 
     const IReadSectorsPatchCode* CreateSdReadPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
@@ -36,6 +39,20 @@ public:
         });
     }
 
+    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
+        PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
+    {
+        return patchCodeCollection.AddUniquePatchCode<IoRpgReadSdDmaPatchCode>(
+            patchHeap,
+            CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
+            patchCodeCollection.GetOrAddSharedPatchCode([&]
+            {
+                return new IoRpgDmaStartTransferPatchCode(patchHeap, miiCardDmaCopy32Ptr);
+            }),
+            GetPlatformSpecifics()
+        );
+    }
+
     const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
@@ -52,6 +69,7 @@ protected:
     void PatchSdscShift(void) const
     {
         iorpg_readSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R1, THUMB_R0);
+        iorpg_readSdDma_sdsc_shift = THUMB_MOVS_REG(THUMB_R5, THUMB_R0);
         iorpg_writeSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R7, THUMB_R0);
     }
 
