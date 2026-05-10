@@ -30,7 +30,7 @@ Note that there can be some game compatibility differences between different pla
 | AKRPG         | Acekard RPG SD card                                                                            | ❌ |
 | DATEL         | DATEL devices consisting of GAMES n' MUSIC and Action Replay DS(i) Media Edition               | ❌ |
 | DSPICO        | DSpico                                                                                         | ✅ |
-| DSTT          | DSTT, SuperCard DSONE SDHC, r4isdhc.com carts 2014+, r4i-sdhc.com carts, various derivatives   | ❌ |
+| DSTT          | DSTT, SuperCard DSONE SDHC, r4isdhc.com carts 2014+, r4i-sdhc.com carts, various derivatives   | ✅ |
 | EZP           | EZ-Flash Parallel                                                                              | ❌ |
 | G003          | M3i Zero (GMP-Z003)                                                                            | ✅ |
 | ISNITRO       | Supports the IS-NITRO-EMULATOR through agb semihosting.                                        | ❌ |

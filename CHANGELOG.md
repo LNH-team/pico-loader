@@ -3,10 +3,12 @@
 ## [Unreleased]
 
 ### Added
+- DMA card read support for the DSTT platform - by @lifehackerhansol
 - DMA card read support for the M3DS platform - by @lifehackerhansol
 
 ### Fixed
 - DMA card read offsets for Pokemon Ranger (EU) - by @taxicat1
+- Split DSTT SD read to multiple patches to avoid running out of space - by @lifehackerhansol
 
 ## [v1.6.0] - 29 Mar 2026
 
