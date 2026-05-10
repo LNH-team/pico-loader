@@ -50,4 +50,17 @@ public:
         r4idsn_readSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R4, THUMB_R0);
         r4idsn_writeSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R7, THUMB_R0);
     }
+
+    const IoRpgPlatformSpecifics& GetPlatformSpecifics(void) const override
+    {
+        static const IoRpgPlatformSpecifics data
+        {
+            .cmd12Command = 0x0C0001AB,
+            .cmd17Command = 0x110003AB,
+            .cmd18Command = 0x120004AB,
+            .cmd24Command = 0x180005AB,
+            .sdStateShift = 4
+        };
+        return data;
+    }
 };
