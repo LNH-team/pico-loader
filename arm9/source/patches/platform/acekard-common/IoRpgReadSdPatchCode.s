@@ -15,14 +15,13 @@ iorpg_readSd:
     movs r3, #0x80
     strb r3, [r4,#1]
 
-.global iorpg_readSd_sdsc_shift
-iorpg_readSd_sdsc_shift:
-    lsls r4, r0, #9
-
     push {r0-r1}
 
+.global iorpg_readSd_sdsc_shift
+iorpg_readSd_sdsc_shift:
+    lsls r1, r0, #9
+
     ldr r0, iorpg_readSd_cmd18_command
-    movs r1, r4
     ldr r3, iorpg_readSd_sendSdioCommand_address
     bl blx_r3
 

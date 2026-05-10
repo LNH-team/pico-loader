@@ -51,7 +51,7 @@ public:
 protected:
     void PatchSdscShift(void) const
     {
-        iorpg_readSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R4, THUMB_R0);
+        iorpg_readSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R1, THUMB_R0);
         iorpg_writeSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R7, THUMB_R0);
     }
 
