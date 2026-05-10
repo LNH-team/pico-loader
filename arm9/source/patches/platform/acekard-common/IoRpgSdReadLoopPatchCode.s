@@ -9,10 +9,10 @@
 .global iorpg_sdReadLoop
 .type iorpg_sdReadLoop, %function
 iorpg_sdReadLoop:
-    push {r4-r5,lr}
+    push {r5,lr}
 
-    ldr r4, =0x040001A0
-    ldr r5, =0x04100010
+    movs r5, #0x41
+    lsls r5, r5, #20 // r5 = 0x04100000
 
 sector_loop:
     // NOW we can start reading things
@@ -24,15 +24,17 @@ sector_loop:
     lsls r3, r3, #8
     str r3, [r4,#0xC]
 
-    ldr r3, =0xA1406004
-    str r3, [r4,#4]
+    // previously SdWaitForState set this to 0xA7406004
+    // We need this to become 0xA1406004
+    movs r3, #0xA1
+    strb r3, [r4,#7]
 
 iorpg_sdReadLoop_read_loop:
     ldrb r3, [r4,#6]
     lsrs r3, r3, #8 // check if data is ready
     bcc iorpg_sdReadLoop_read_loop_check_transfer_end // if not skip reading
 
-    ldr r3, [r5]
+    ldr r3, [r5, #0x10]
     stmia r1!, {r3}
 
 iorpg_sdReadLoop_read_loop_check_transfer_end:
@@ -50,7 +52,7 @@ iorpg_sdReadLoop_read_loop_check_transfer_end:
     subs r2, #1
     bne sector_loop
 
-    pop {r4-r5,pc}
+    pop {r5,pc}
 
 blx_r3:
     bx r3
