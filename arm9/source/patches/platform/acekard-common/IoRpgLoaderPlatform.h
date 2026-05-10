@@ -1,5 +1,6 @@
 #pragma once
 #include "../LoaderPlatform.h"
+#include "IoRpgDefinitions.h"
 #include "IoRpgSdHelperPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for flashcarts based on the Acekard RPG family
@@ -15,6 +16,8 @@ public:
 
 protected:
     virtual void PatchSdscShift() const {};
+
+    virtual const IoRpgPlatformSpecifics& GetPlatformSpecifics() const = 0;
 
     const IoRpgSdHelperPatchCode* CreateSdHelperPatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const

@@ -19,3 +19,12 @@ enum IoRpgSdioParamTypes
     IORPG_SDIO_WRITE_SINGLE_BLOCK = 5,
     IORPG_SDIO_WRITE_MULTI_BLOCK = 6
 };
+
+struct IoRpgPlatformSpecifics
+{
+    u32 cmd12Command;
+    u32 cmd17Command;
+    u32 cmd18Command;
+    u32 cmd24Command;
+    u8 sdStateShift;
+};
