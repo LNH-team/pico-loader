@@ -34,7 +34,7 @@ akrpg_readSd_sdsc_shift:
     pop {r0-r1}
 
     // Read sectors. Parameters identical to readSd
-    ldr r3, akrpg_readSd_sdReadSector_address
+    ldr r3, akrpg_readSd_sdReadLoop_address
     bl blx_r3
 
     // Send CMD12 == STOP_TRANSMISSION
@@ -55,8 +55,8 @@ blx_r3:
 akrpg_readSd_sendSdioCommand_address:
     .word 0
 
-.global akrpg_readSd_sdReadSector_address
-akrpg_readSd_sdReadSector_address:
+.global akrpg_readSd_sdReadLoop_address
+akrpg_readSd_sdReadLoop_address:
     .word 0
 
 .global akrpg_readSd_sdWaitForState_address

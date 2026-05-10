@@ -1,14 +1,14 @@
 .cpu arm7tdmi
 .syntax unified
-.section "akrpg_sdreadsector", "ax"
+.section "iorpg_sdreadloop", "ax"
 .thumb
 
 // r0 = src sector
 // r1 = dst
 // r2 = sector count
-.global akrpg_sdReadSector
-.type akrpg_sdReadSector, %function
-akrpg_sdReadSector:
+.global iorpg_sdReadLoop
+.type iorpg_sdReadLoop, %function
+iorpg_sdReadLoop:
     push {r4-r5,lr}
 
     ldr r4, =0x040001A0
@@ -27,23 +27,23 @@ sector_loop:
     ldr r3, =0xA1406004
     str r3, [r4,#4]
 
-akrpg_sdReadSector_read_loop:
+iorpg_sdReadLoop_read_loop:
     ldrb r3, [r4,#6]
     lsrs r3, r3, #8 // check if data is ready
-    bcc akrpg_sdReadSector_read_loop_check_transfer_end // if not skip reading
+    bcc iorpg_sdReadLoop_read_loop_check_transfer_end // if not skip reading
 
     ldr r3, [r5]
     stmia r1!, {r3}
 
-akrpg_sdReadSector_read_loop_check_transfer_end:
+iorpg_sdReadLoop_read_loop_check_transfer_end:
     ldrb r3, [r4,#7]
     lsrs r3, r3, #8 // check if transfer is done
-    bcs akrpg_sdReadSector_read_loop
+    bcs iorpg_sdReadLoop_read_loop
 
     // Wait for SD state
     push {r0-r1}
     movs r0, #7
-    ldr r3, akrpg_sdReadSector_sdWaitForState_address
+    ldr r3, iorpg_sdReadLoop_sdWaitForState_address
     bl blx_r3
     pop {r0-r1}
 
@@ -57,8 +57,8 @@ blx_r3:
 
 .balign 4
 
-.global akrpg_sdReadSector_sdWaitForState_address
-akrpg_sdReadSector_sdWaitForState_address:
+.global iorpg_sdReadLoop_sdWaitForState_address
+iorpg_sdReadLoop_sdWaitForState_address:
     .word 0
 
 .pool

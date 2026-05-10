@@ -1,9 +1,9 @@
 #pragma once
 #include "../acekard-common/IoRpgLoaderPlatform.h"
 #include "../acekard-common/IoRpgDefinitions.h"
+#include "../acekard-common/IoRpgSdReadLoopPatchCode.h"
 #include "../acekard-common/IoRpgWriteSdPatchCode.h"
 #include "R4iDsnReadSdPatchCode.h"
-#include "R4iDsnSdReadSectorPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for the Acekard 2 flashcard
 class R4iDsnLoaderPlatform : public IoRpgLoaderPlatform
@@ -26,7 +26,7 @@ public:
                 CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
                 patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new R4iDsnSdReadSectorPatchCode(
+                    return new IoRpgSdReadLoopPatchCode(
                         patchHeap,
                         CreateSdHelperPatchCode(patchCodeCollection, patchHeap)
                     );

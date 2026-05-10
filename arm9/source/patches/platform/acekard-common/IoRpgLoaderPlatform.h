@@ -2,6 +2,7 @@
 #include "../LoaderPlatform.h"
 #include "IoRpgDefinitions.h"
 #include "IoRpgSdHelperPatchCode.h"
+#include "IoRpgSdReadLoopPatchCode.h"
 #include "IoRpgWriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for flashcarts based on the Acekard RPG family

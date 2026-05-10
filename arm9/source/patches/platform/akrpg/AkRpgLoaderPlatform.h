@@ -1,11 +1,11 @@
 #pragma once
 #include "../acekard-common/IoRpgLoaderPlatform.h"
 #include "../acekard-common/IoRpgDefinitions.h"
+#include "../acekard-common/IoRpgSdReadLoopPatchCode.h"
 #include "../acekard-common/IoRpgWriteSdPatchCode.h"
 #include "AkRpgReadSdPatchCode.h"
-#include "AkRpgSdReadSectorPatchCode.h"
 
-/// @brief Implementation of LoaderPlatform for the Acekard 2 flashcard
+/// @brief Implementation of LoaderPlatform for the Acekard RPG flashcard
 class AkRpgLoaderPlatform : public IoRpgLoaderPlatform
 {
 private:
@@ -26,7 +26,7 @@ public:
                 CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
                 patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new AkRpgSdReadSectorPatchCode(
+                    return new IoRpgSdReadLoopPatchCode(
                         patchHeap,
                         CreateSdHelperPatchCode(patchCodeCollection, patchHeap)
                     );

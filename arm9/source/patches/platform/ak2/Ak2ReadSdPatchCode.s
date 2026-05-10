@@ -34,7 +34,7 @@ ak2_readSd_sdsc_shift:
     pop {r0-r1}
 
     // Read sectors. Parameters identical to readSd
-    ldr r3, ak2_readSd_sdReadSector_address
+    ldr r3, ak2_readSd_sdReadLoop_address
     bl blx_r3
 
     // Send CMD12 == STOP_TRANSMISSION
@@ -55,8 +55,8 @@ blx_r3:
 ak2_readSd_sendSdioCommand_address:
     .word 0
 
-.global ak2_readSd_sdReadSector_address
-ak2_readSd_sdReadSector_address:
+.global ak2_readSd_sdReadLoop_address
+ak2_readSd_sdReadLoop_address:
     .word 0
 
 .global ak2_readSd_sdWaitForState_address
