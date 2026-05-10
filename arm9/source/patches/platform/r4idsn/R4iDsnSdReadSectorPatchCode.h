@@ -1,7 +1,7 @@
 #pragma once
 #include "sections.h"
 #include "thumbInstructions.h"
-#include "../acekard-common/IoRpgSdWaitForStatePatchCode.h"
+#include "../acekard-common/IoRpgSdHelperPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(r4idsn_sdreadsector);
 
@@ -13,10 +13,10 @@ class R4iDsnSdReadSectorPatchCode : public PatchCode
 {
 public:
     explicit R4iDsnSdReadSectorPatchCode(PatchHeap& patchHeap,
-        const IoRpgSdWaitForStatePatchCode* iorpgSdWaitForStatePatchCode)
+        const IoRpgSdHelperPatchCode* iorpgSdHelperPatchCode)
         : PatchCode(SECTION_START(r4idsn_sdreadsector), SECTION_SIZE(r4idsn_sdreadsector), patchHeap)
     {
-        r4idsn_sdReadSector_sdWaitForState_address = (u32)iorpgSdWaitForStatePatchCode->GetSDWaitForStateFunction();
+        r4idsn_sdReadSector_sdWaitForState_address = (u32)iorpgSdHelperPatchCode->GetSdWaitForStateFunction();
     }
 
     const void* GetSDReadSectorFunction() const

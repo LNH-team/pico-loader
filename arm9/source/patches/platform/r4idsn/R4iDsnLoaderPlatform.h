@@ -1,11 +1,11 @@
 #pragma once
-#include "common.h"
 #include "../acekard-common/IoRpgLoaderPlatform.h"
+#include "../acekard-common/IoRpgDefinitions.h"
 #include "R4iDsnReadSdPatchCode.h"
 #include "R4iDsnSdReadSectorPatchCode.h"
 #include "R4iDsnWriteSdPatchCode.h"
 
-/// @brief Implementation of LoaderPlatform for the r4idsn.com flashcard.
+/// @brief Implementation of LoaderPlatform for the Acekard 2 flashcard
 class R4iDsnLoaderPlatform : public IoRpgLoaderPlatform
 {
 private:
@@ -22,20 +22,15 @@ public:
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            auto* waitForStatePatchCode = patchCodeCollection.GetOrAddSharedPatchCode([&]
-            {
-                return new IoRpgSdWaitForStatePatchCode(patchHeap);
-            });
             return new R4iDsnReadSdPatchCode(patchHeap,
+                CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
                 patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new IoRpgSendSdioCommandPatchCode(patchHeap);
-                }),
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new R4iDsnSdReadSectorPatchCode(patchHeap, waitForStatePatchCode);
-                }),
-                waitForStatePatchCode);
+                    return new R4iDsnSdReadSectorPatchCode(
+                        patchHeap,
+                        CreateSdHelperPatchCode(patchCodeCollection, patchHeap)
+                    );
+                }));
         });
     }
 
@@ -45,14 +40,8 @@ public:
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
             return new R4iDsnWriteSdPatchCode(patchHeap,
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new IoRpgSendSdioCommandPatchCode(patchHeap);
-                }),
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new IoRpgSdWaitForStatePatchCode(patchHeap);
-                }));
+                CreateSdHelperPatchCode(patchCodeCollection, patchHeap)
+            );
         });
     }
 

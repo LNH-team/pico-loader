@@ -1,5 +1,6 @@
 #pragma once
 #include "../acekard-common/IoRpgLoaderPlatform.h"
+#include "../acekard-common/IoRpgDefinitions.h"
 #include "Ak2ReadSdPatchCode.h"
 #include "Ak2SdReadSectorPatchCode.h"
 #include "Ak2WriteSdPatchCode.h"
@@ -21,20 +22,15 @@ public:
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            auto* waitForStatePatchCode = patchCodeCollection.GetOrAddSharedPatchCode([&]
-            {
-                return new IoRpgSdWaitForStatePatchCode(patchHeap);
-            });
             return new Ak2ReadSdPatchCode(patchHeap,
+                CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
                 patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new IoRpgSendSdioCommandPatchCode(patchHeap);
-                }),
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new Ak2SdReadSectorPatchCode(patchHeap, waitForStatePatchCode);
-                }),
-                waitForStatePatchCode);
+                    return new Ak2SdReadSectorPatchCode(
+                        patchHeap,
+                        CreateSdHelperPatchCode(patchCodeCollection, patchHeap)
+                    );
+                }));
         });
     }
 
@@ -44,14 +40,8 @@ public:
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
             return new Ak2WriteSdPatchCode(patchHeap,
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new IoRpgSendSdioCommandPatchCode(patchHeap);
-                }),
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new IoRpgSdWaitForStatePatchCode(patchHeap);
-                }));
+                CreateSdHelperPatchCode(patchCodeCollection, patchHeap)
+            );
         });
     }
 

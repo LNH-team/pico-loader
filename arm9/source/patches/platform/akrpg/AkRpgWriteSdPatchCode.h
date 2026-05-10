@@ -3,8 +3,7 @@
 #include "thumbInstructions.h"
 #include "patches/PatchCode.h"
 #include "../IWriteSectorsPatchCode.h"
-#include "../acekard-common/IoRpgSendSdioCommandPatchCode.h"
-#include "../acekard-common/IoRpgSdWaitForStatePatchCode.h"
+#include "../acekard-common/IoRpgSdHelperPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(akrpg_writesd);
 
@@ -18,12 +17,11 @@ class AkRpgWriteSdPatchCode : public PatchCode, public IWriteSectorsPatchCode
 {
 public:
     AkRpgWriteSdPatchCode(PatchHeap& patchHeap,
-        const IoRpgSendSdioCommandPatchCode* iorpgSendSdioCommandPatchCode,
-        const IoRpgSdWaitForStatePatchCode* iorpgSdWaitForStatePatchCode)
+        const IoRpgSdHelperPatchCode* iorpgSdHelperPatchCode)
         : PatchCode(SECTION_START(akrpg_writesd), SECTION_SIZE(akrpg_writesd), patchHeap)
     {
-        akrpg_writeSd_sendSdioCommand_address = (u32)iorpgSendSdioCommandPatchCode->GetSendSdioCommandFunction();
-        akrpg_writeSd_sdWaitForState_address = (u32)iorpgSdWaitForStatePatchCode->GetSDWaitForStateFunction();
+        akrpg_writeSd_sendSdioCommand_address = (u32)iorpgSdHelperPatchCode->GetSendSdioCommandFunction();
+        akrpg_writeSd_sdWaitForState_address = (u32)iorpgSdHelperPatchCode->GetSdWaitForStateFunction();
     }
 
     const WriteSectorsFunc GetWriteSectorFunction() const override

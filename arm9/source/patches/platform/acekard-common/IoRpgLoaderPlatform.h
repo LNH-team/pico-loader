@@ -1,7 +1,6 @@
 #pragma once
 #include "../LoaderPlatform.h"
-#include "IoRpgSendSdioCommandPatchCode.h"
-#include "IoRpgSdWaitForStatePatchCode.h"
+#include "IoRpgSdHelperPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for flashcarts based on the Acekard RPG family
 class IoRpgLoaderPlatform : public LoaderPlatform
@@ -16,6 +15,15 @@ public:
 
 protected:
     virtual void PatchSdscShift() const {};
+
+    const IoRpgSdHelperPatchCode* CreateSdHelperPatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const
+        {
+            return patchCodeCollection.GetOrAddSharedPatchCode([&]
+            {
+                return new IoRpgSdHelperPatchCode(patchHeap);
+            });
+        }
 
 private:
     u32 _ioRpgCmdSdioByte;

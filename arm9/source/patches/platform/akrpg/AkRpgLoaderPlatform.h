@@ -1,10 +1,11 @@
 #pragma once
 #include "../acekard-common/IoRpgLoaderPlatform.h"
+#include "../acekard-common/IoRpgDefinitions.h"
 #include "AkRpgReadSdPatchCode.h"
 #include "AkRpgSdReadSectorPatchCode.h"
 #include "AkRpgWriteSdPatchCode.h"
 
-/// @brief Implementation of LoaderPlatform for the Acekard RPG SD card.
+/// @brief Implementation of LoaderPlatform for the Acekard 2 flashcard
 class AkRpgLoaderPlatform : public IoRpgLoaderPlatform
 {
 private:
@@ -21,20 +22,15 @@ public:
     {
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
-            auto* waitForStatePatchCode = patchCodeCollection.GetOrAddSharedPatchCode([&]
-            {
-                return new IoRpgSdWaitForStatePatchCode(patchHeap);
-            });
             return new AkRpgReadSdPatchCode(patchHeap,
+                CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
                 patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
-                    return new IoRpgSendSdioCommandPatchCode(patchHeap);
-                }),
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new AkRpgSdReadSectorPatchCode(patchHeap, waitForStatePatchCode);
-                }),
-                waitForStatePatchCode);
+                    return new AkRpgSdReadSectorPatchCode(
+                        patchHeap,
+                        CreateSdHelperPatchCode(patchCodeCollection, patchHeap)
+                    );
+                }));
         });
     }
 
@@ -44,14 +40,8 @@ public:
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
             return new AkRpgWriteSdPatchCode(patchHeap,
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new IoRpgSendSdioCommandPatchCode(patchHeap);
-                }),
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new IoRpgSdWaitForStatePatchCode(patchHeap);
-                }));
+                CreateSdHelperPatchCode(patchCodeCollection, patchHeap)
+            );
         });
     }
 

@@ -1,11 +1,10 @@
 #pragma once
 #include "sections.h"
 #include "thumbInstructions.h"
-#include "patches/PatchCode.h"
 #include "R4iDsnSdReadSectorPatchCode.h"
+#include "patches/PatchCode.h"
 #include "../IReadSectorsPatchCode.h"
-#include "../acekard-common/IoRpgSendSdioCommandPatchCode.h"
-#include "../acekard-common/IoRpgSdWaitForStatePatchCode.h"
+#include "../acekard-common/IoRpgSdHelperPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(r4idsn_readsd);
 
@@ -20,14 +19,13 @@ class R4iDsnReadSdPatchCode : public PatchCode, public IReadSectorsPatchCode
 {
 public:
     R4iDsnReadSdPatchCode(PatchHeap& patchHeap,
-        const IoRpgSendSdioCommandPatchCode* iorpgSendSdioCommandPatchCode,
-        const R4iDsnSdReadSectorPatchCode* r4idsnSdReadSectorPatchCode,
-        const IoRpgSdWaitForStatePatchCode* iorpgSdWaitForStatePatchCode)
+        const IoRpgSdHelperPatchCode* iorpgSdHelperPatchCode,
+        const R4iDsnSdReadSectorPatchCode* r4idsnSdReadSectorPatchCode)
         : PatchCode(SECTION_START(r4idsn_readsd), SECTION_SIZE(r4idsn_readsd), patchHeap)
     {
-        r4idsn_readSd_sendSdioCommand_address = (u32)iorpgSendSdioCommandPatchCode->GetSendSdioCommandFunction();
+        r4idsn_readSd_sendSdioCommand_address = (u32)iorpgSdHelperPatchCode->GetSendSdioCommandFunction();
         r4idsn_readSd_sdReadSector_address = (u32)r4idsnSdReadSectorPatchCode->GetSDReadSectorFunction();
-        r4idsn_readSd_sdWaitForState_address = (u32)iorpgSdWaitForStatePatchCode->GetSDWaitForStateFunction();
+        r4idsn_readSd_sdWaitForState_address = (u32)iorpgSdHelperPatchCode->GetSdWaitForStateFunction();
     }
 
     const ReadSectorsFunc GetReadSectorsFunction() const override

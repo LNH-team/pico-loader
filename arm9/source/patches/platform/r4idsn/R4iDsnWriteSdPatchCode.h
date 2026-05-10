@@ -3,8 +3,7 @@
 #include "thumbInstructions.h"
 #include "patches/PatchCode.h"
 #include "../IWriteSectorsPatchCode.h"
-#include "../acekard-common/IoRpgSendSdioCommandPatchCode.h"
-#include "../acekard-common/IoRpgSdWaitForStatePatchCode.h"
+#include "../acekard-common/IoRpgSdHelperPatchCode.h"
 
 DEFINE_SECTION_SYMBOLS(r4idsn_writesd);
 
@@ -17,13 +16,12 @@ extern u16 r4idsn_writeSd_sdsc_shift;
 class R4iDsnWriteSdPatchCode : public PatchCode, public IWriteSectorsPatchCode
 {
 public:
-    explicit R4iDsnWriteSdPatchCode(PatchHeap& patchHeap,
-        const IoRpgSendSdioCommandPatchCode* iorpgSendSdioCommandPatchCode,
-        const IoRpgSdWaitForStatePatchCode* iorpgSdWaitForStatePatchCode)
+    R4iDsnWriteSdPatchCode(PatchHeap& patchHeap,
+        const IoRpgSdHelperPatchCode* iorpgSdHelperPatchCode)
         : PatchCode(SECTION_START(r4idsn_writesd), SECTION_SIZE(r4idsn_writesd), patchHeap)
     {
-        r4idsn_writeSd_sendSdioCommand_address = (u32)iorpgSendSdioCommandPatchCode->GetSendSdioCommandFunction();
-        r4idsn_writeSd_sdWaitForState_address = (u32)iorpgSdWaitForStatePatchCode->GetSDWaitForStateFunction();
+        r4idsn_writeSd_sendSdioCommand_address = (u32)iorpgSdHelperPatchCode->GetSendSdioCommandFunction();
+        r4idsn_writeSd_sdWaitForState_address = (u32)iorpgSdHelperPatchCode->GetSdWaitForStateFunction();
     }
 
     const WriteSectorsFunc GetWriteSectorFunction() const override
