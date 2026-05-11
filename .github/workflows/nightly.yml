@@ -34,7 +34,7 @@ jobs:
           "MPCF"
         ]
     runs-on: ubuntu-latest
-    container: skylyrac/blocksds:slim-v1.13.1
+    container: skylyrac/blocksds:slim-v1.20.0
     name: Build Pico Loader
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
@@ -43,10 +43,10 @@ jobs:
       DOTNET_NOLOGO: true
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 9.x
       - name: Run build script
@@ -58,7 +58,7 @@ jobs:
           mv picoLoader7.bin data/aplist.bin data/patchlist.bin data/savelist.bin Pico_Loader_${{ matrix.platform }}
           mv picoLoader9_${{ matrix.platform }}.bin Pico_Loader_${{ matrix.platform }}/picoLoader9.bin
       - name: Publish build to GH Actions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: |
             Pico_Loader_${{ matrix.platform }}
