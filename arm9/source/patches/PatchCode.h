@@ -23,6 +23,8 @@ public:
     /// @brief Copies the patch code to the target address.
     void CopyToTarget() const
     {
+        if (_targetAddress == nullptr || _code == nullptr || _size == 0)
+            return;
         memcpy(_targetAddress, _code, _size);
     }
 
