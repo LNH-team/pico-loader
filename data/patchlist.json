@@ -359,6 +359,35 @@
         ]
     },
 
+    // YUTE - Ultimate Mortal Kombat (USA)
+    // YUTP - Ultimate Mortal Kombat (Europe)
+    //
+    // These games have an issue where a resource load can fail, returning a null pointer, but a flag indicating
+    // the resource is available is still set anyway. The patch adds the necessary null pointer check.
+    // This issue seems to be a race condition affected by SD card speed and DMA availability.
+    {
+        "gameCode": "YUTE", // Ultimate Mortal Kombat (USA)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "0200B244",
+                "data": "B2 26 C4 E1 B2 20 C0 E1 04 20 C0 E5 01 10 A0 E3 00 00 54 E3 02 10 C0 15",
+            }
+        ]
+    },
+    {
+        "gameCode": "YUTP", // Ultimate Mortal Kombat (Europe)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "0200B3B8",
+                "data": "B2 26 C4 E1 B6 20 C0 E1 01 10 A0 E3 00 00 54 E3 00 10 C0 15 00 20 C0 05",
+            }
+        ]
+    },
+
     // MetaFortress games below here.
     //
     // MetaFortress is an automated system that replaces the typical way DS games are built. It automatically injects
