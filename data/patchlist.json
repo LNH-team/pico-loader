@@ -231,6 +231,45 @@
         ]
     },
 
+    // CQKP - NRL Mascot Mania (Europe)
+    // CQQP - AFL Mascot Manor (Europe)
+    //
+    // These games have EEPROM-probing AP that is nearly identical to the Dementium II AP above, except the function is
+    // not inlined and so can be stubbed over to return the correct value.
+    // Additionally, they have a function to do a CRC check on the ARM7. This is patched by adding a jump directly to a successful return.
+    {
+        "gameCode": "CQKP", // NRL Mascot Mania (Europe)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "0206FC10",
+                "data": "0D 00 00 EA"
+            },
+            {
+                "type": "replace",
+                "address": "0206FF70",
+                "data": "01 00 A0 E3 1E FF 2F E1"
+            }
+        ]
+    },
+    {
+        "gameCode": "CQQP", // AFL Mascot Manor (Europe)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "0206EB88",
+                "data": "0D 00 00 EA"
+            },
+            {
+                "type": "replace",
+                "address": "0206EEE8",
+                "data": "01 00 A0 E3 1E FF 2F E1"
+            }
+        ]
+    },
+
     // YGXE - Grand Theft Auto - Chinatown Wars (USA)
     // YGXP - Grand Theft Auto - Chinatown Wars (Europe)
     // YGXJ - Grand Theft Auto - Chinatown Wars (Japan)
