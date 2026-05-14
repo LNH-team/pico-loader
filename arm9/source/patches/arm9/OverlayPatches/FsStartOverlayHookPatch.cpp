@@ -24,8 +24,12 @@ void FsStartOverlayHookPatch::TryPattern(PatchContext& patchContext, const u32* 
 
 bool FsStartOverlayHookPatch::FindPatchTarget(PatchContext& patchContext)
 {
-    if (!_patchHead) // no patches
+    if (!_patchHead)
+	{
+        // no patches
+        LOG_DEBUG("No overlay patches, not searching for FS_StartOverlay\n");
         return true;
+	}
 
     if (patchContext.GetSdkVersion().GetMajor() == 5)
     {
@@ -47,7 +51,7 @@ bool FsStartOverlayHookPatch::FindPatchTarget(PatchContext& patchContext)
     else
     {
         // sdk 2-4
-        if (patchContext.GetSdkVersion().GetMajor() < 4)
+        if (patchContext.GetSdkVersion().GetMajor() <= 3)
         {
             TryPattern(patchContext, sFSStartOverlayPatternSdk3, -0xC);
         }
