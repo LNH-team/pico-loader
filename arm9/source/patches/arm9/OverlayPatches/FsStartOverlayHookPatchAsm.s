@@ -8,8 +8,7 @@
 fsstartoverlayhook_entry:
     movs r0, #0x4
     add lr, r0
-    ldr r2, fsstartoverlayhook_dcFlushRangeAddress
-    push {r2,lr}
+    push {lr}
     ldr r0, fsstartoverlayhook_hookFuncAddress
 1:
     blx r0
@@ -18,8 +17,9 @@ fsstartoverlayhook_entry:
 
     ldr r0, [r5, #4]
     ldr r1, [r5, #8]
-    pop {r2}
+    ldr r2, fsstartoverlayhook_dcFlushRangeAddress
     blx r2
+
     ldr r4, [r5, #0x10]
     pop {pc}
 
