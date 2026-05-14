@@ -54,10 +54,11 @@ public:
 
     /// @brief Get the address of the callee in an Thumb call (bl or blx).
     /// @param instructionPointer Pointer to the first Thumb call instruction.
-    /// @return The offset to the destination function. +1 if Thumb.
+    /// @return The address of the destination function. +1 if Thumb.
     static u32 GetThumbCallAddress(const void* instructionPointer)
     {
         auto pc = (const u16*)((u32)instructionPointer & ~1);
-        return (u32)pc + GetThumbCallOffset(pc[0], pc[1]);
+        s32 offset = GetThumbCallOffset(pc[0], pc[1]);
+        return (offset & 1) ? (u32)pc : ((u32)pc & ~2) + offset;
     }
 };
