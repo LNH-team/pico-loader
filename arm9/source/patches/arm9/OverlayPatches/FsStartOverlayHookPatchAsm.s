@@ -1,18 +1,14 @@
 .cpu arm946e-s
-.section ".fsstartoverlayhook", "ax"
+.section "fsstartoverlayhook", "ax"
 .syntax unified
 .thumb
-
-.global __fsstartoverlayhook_start
-__fsstartoverlayhook_start:
 
 .global fsstartoverlayhook_entry
 .type fsstartoverlayhook_entry, %function
 fsstartoverlayhook_entry:
     movs r0, #0x4
     add lr, r0
-    ldr r2, fsstartoverlayhook_dcFlushRangeOffset
-    add r2, lr
+    ldr r2, fsstartoverlayhook_dcFlushRangeAddress
     push {r2,lr}
     ldr r0, fsstartoverlayhook_hookFuncAddress
 1:
@@ -29,8 +25,8 @@ fsstartoverlayhook_entry:
 
 .balign 4
 
-.global fsstartoverlayhook_dcFlushRangeOffset
-fsstartoverlayhook_dcFlushRangeOffset:
+.global fsstartoverlayhook_dcFlushRangeAddress
+fsstartoverlayhook_dcFlushRangeAddress:
     .word 0
 
 .global fsstartoverlayhook_hookFuncAddress
@@ -38,8 +34,4 @@ fsstartoverlayhook_hookFuncAddress:
     .word 0
 
 .pool
-
-.global __fsstartoverlayhook_end
-__fsstartoverlayhook_end:
-
 .end

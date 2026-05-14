@@ -1,68 +1,73 @@
 #include "common.h"
+#include "ArmHelper.h"
 #include "../../PatchContext.h"
 #include "thumbInstructions.h"
+#include "FsStartOverlayHookPatchAsm.h"
 #include "FsStartOverlayHookPatch.h"
 
+static const u32 sFSStartOverlayPatternSdk3[] = { 0xE59F10DCu, 0xE1A04000u, 0xE1D100B0u, 0xE3500002u }; // -0xC
 static const u32 sFSStartOverlayPatternSdk4[] = { 0xE59F10D0u, 0xE1A04000u, 0xE1D100B0u, 0xE3500002u }; // -0xC
 static const u32 sFSStartOverlayPatternSdk4Thumb[] = { 0x481F1C06u, 0x28028800u, 0x69E8D121u, 0x0E012700u }; // -8
 static const u32 sFSStartOverlayPattern[] = { 0xE3500001u, 0x0A00001Cu, 0xE595001Cu, 0xE3A03000u }; // -0x14
 static const u32 sFSStartOverlayPatternThumb[] = { 0x69E8D023u, 0x0E012600u, 0x42082002u, 0x491BD013u }; // -0x10
 static const u32 sFSStartOverlayPatternThumbHybrid[] = { 0x68691C07u, 0x42814828u, 0x4828D30Cu, 0xD2094281u }; // -8
 
-extern "C" void fsstartoverlayhook_entry();
-
-extern u8 __fsstartoverlayhook_start[];
-extern u8 __fsstartoverlayhook_end[];
-
-extern u32 fsstartoverlayhook_dcFlushRangeOffset;
-extern u32 fsstartoverlayhook_hookFuncAddress;
+void FsStartOverlayHookPatch::TryPattern(PatchContext& patchContext, const u32* pattern, u32 startOffset)
+{
+    _fsStartOverlay = patchContext.FindPattern32(pattern, 16);
+    if (_fsStartOverlay)
+    {
+        _fsStartOverlay = (u32*)((u8*)_fsStartOverlay + startOffset);
+        _foundPattern = pattern;
+    }
+}
 
 bool FsStartOverlayHookPatch::FindPatchTarget(PatchContext& patchContext)
 {
     if (!_patchHead) // no patches
         return true;
 
-    if (patchContext.GetSdkVersion().GetMajor() <= 4)
+    if (patchContext.GetSdkVersion().GetMajor() == 5)
     {
-        _fsStartOverlay = patchContext.FindPattern32(sFSStartOverlayPatternSdk4, sizeof(sFSStartOverlayPatternSdk4));
-        if (_fsStartOverlay)
+        TryPattern(patchContext, sFSStartOverlayPattern, -0x14);
+        if (!_fsStartOverlay)
         {
-            _fsStartOverlay -= 3;
-        }
-        else
-        {
-            _fsStartOverlay = patchContext.FindPattern32(sFSStartOverlayPatternSdk4Thumb, sizeof(sFSStartOverlayPatternSdk4Thumb));
+            TryPattern(patchContext, sFSStartOverlayPatternThumb, -0x10);
             if (_fsStartOverlay)
             {
-                _fsStartOverlay -= 2;
                 _thumb = true;
+            }
+        }
+
+        if (!_fsStartOverlay)
+        {
+            TryPattern(patchContext, sFSStartOverlayPatternThumbHybrid, -0x8);
+            if (_fsStartOverlay)
+            {
+                _thumb = true;
+                _hybrid = true;
             }
         }
     }
     else
     {
-        _fsStartOverlay = patchContext.FindPattern32(sFSStartOverlayPattern, sizeof(sFSStartOverlayPattern));
-        if (_fsStartOverlay)
+        // sdk 2-4
+        if (patchContext.GetSdkVersion().GetMajor() < 4)
         {
-            _fsStartOverlay -= 5;
+            TryPattern(patchContext, sFSStartOverlayPatternSdk3, -0xC);
         }
-        else
+
+        if (!_fsStartOverlay)
         {
-            _fsStartOverlay = patchContext.FindPattern32(sFSStartOverlayPatternThumb, sizeof(sFSStartOverlayPatternThumb));
+            TryPattern(patchContext, sFSStartOverlayPatternSdk4, -0xC);
+        }
+
+        if (!_fsStartOverlay)
+        {
+            TryPattern(patchContext, sFSStartOverlayPatternSdk4Thumb, -0x8);
             if (_fsStartOverlay)
             {
-                _fsStartOverlay -= 4;
                 _thumb = true;
-            }
-            else
-            {
-                _fsStartOverlay = patchContext.FindPattern32(sFSStartOverlayPatternThumbHybrid, sizeof(sFSStartOverlayPatternThumbHybrid));
-                if (_fsStartOverlay)
-                {
-                    _fsStartOverlay -= 2;
-                    _thumb = true;
-                    _hybrid = true;
-                }
             }
         }
     }
@@ -95,45 +100,64 @@ void FsStartOverlayHookPatch::ApplyPatch(PatchContext& patchContext)
     fsstartoverlayhook_hookFuncAddress = (u32)firstPatch;
 
     u32 patchOffset;
+    u32 dcFlushRangeCallOffset;
     if (_thumb)
     {
-        u32 blDcFlushRange1;
-        u32 blDcFlushRange2;
-        if (_hybrid)
+        if (_foundPattern == sFSStartOverlayPatternThumbHybrid)
         {
             patchOffset = 0x8E;
-            blDcFlushRange1 = *(u16*)((u8*)_fsStartOverlay + 0x92);
-            blDcFlushRange2 = *(u16*)((u8*)_fsStartOverlay + 0x94);
+            dcFlushRangeCallOffset = 0x92;
+        }
+        else if (_foundPattern == sFSStartOverlayPatternSdk4Thumb)
+        {
+            patchOffset = 0x68;
+            dcFlushRangeCallOffset = 0x6C;
+        }
+        else if (_foundPattern == sFSStartOverlayPatternThumb)
+        {
+            patchOffset = 0x6C;
+            dcFlushRangeCallOffset = 0x70;
         }
         else
         {
-            if (patchContext.GetSdkVersion().GetMajor() <= 4)
-            {
-                patchOffset = 0x68;
-                blDcFlushRange1 = *(u16*)((u8*)_fsStartOverlay + 0x6C);
-                blDcFlushRange2 = *(u16*)((u8*)_fsStartOverlay + 0x6E);
-            }
-            else
-            {
-                patchOffset = 0x6C;
-                blDcFlushRange1 = *(u16*)((u8*)_fsStartOverlay + 0x70);
-                blDcFlushRange2 = *(u16*)((u8*)_fsStartOverlay + 0x72);
-            }
+            LOG_WARNING("Unknown Thumb FS_StartOverlay\n");
+            return;
         }
-        fsstartoverlayhook_dcFlushRangeOffset = ((int)((((blDcFlushRange1 & 0x7FF) << 11) | (blDcFlushRange2 & 0x7FF)) << 10) >> 9) - (_hybrid ? 5 : 1);
     }
     else
     {
-        patchOffset = 0xAC;
-        u32 blDcFlushRange = *(u32*)((u8*)_fsStartOverlay + 0xB0);
-        fsstartoverlayhook_dcFlushRangeOffset = (int)((blDcFlushRange & 0xFFFFFF) << 8) >> 6;
+        if (_foundPattern == sFSStartOverlayPatternSdk3)
+        {
+            patchOffset = 0xAC;
+            dcFlushRangeCallOffset = 0xB4;
+        }
+        else if (_foundPattern == sFSStartOverlayPatternSdk4 || _foundPattern == sFSStartOverlayPattern)
+        {
+            patchOffset = 0xAC;
+            dcFlushRangeCallOffset = 0xB0;
+        }
+        else
+        {
+            LOG_WARNING("Unknown Arm FS_StartOverlay\n");
+            return;
+        }
     }
 
-    u32 patch1Size = (u32)__fsstartoverlayhook_end - (u32)__fsstartoverlayhook_start;
-    void* patch1Address = patchContext.GetPatchHeap().Alloc(patch1Size);
+    if (_thumb)
+    {
+        u16* blDcFlushRange = (u16*)((u8*)_fsStartOverlay + dcFlushRangeCallOffset);
+        fsstartoverlayhook_dcFlushRangeAddress = ArmHelper::GetThumbCallAddress(blDcFlushRange);
+    }
+    else
+    {
+        u32* blDcFlushRange = (u32*)((u8*)_fsStartOverlay + dcFlushRangeCallOffset);
+        fsstartoverlayhook_dcFlushRangeAddress = ArmHelper::GetArmCallAddress(blDcFlushRange);
+    }
 
-    u32 entryAddress = (u32)&fsstartoverlayhook_entry - (u32)__fsstartoverlayhook_start + (u32)patch1Address;
-    memcpy(patch1Address, __fsstartoverlayhook_start, patch1Size);
+    u32 patch1Size = SECTION_SIZE(fsstartoverlayhook);
+    void* patch1Address = patchContext.GetPatchHeap().Alloc(patch1Size);
+    u32 entryAddress = (u32)&fsstartoverlayhook_entry - (u32)SECTION_START(fsstartoverlayhook) + (u32)patch1Address;
+    memcpy(patch1Address, SECTION_START(fsstartoverlayhook), patch1Size);
 
     if (_thumb)
     {
