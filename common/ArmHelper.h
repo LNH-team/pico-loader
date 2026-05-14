@@ -59,6 +59,6 @@ public:
     {
         auto pc = (const u16*)((u32)instructionPointer & ~1);
         s32 offset = GetThumbCallOffset(pc[0], pc[1]);
-        return (offset & 1) ? (u32)pc : ((u32)pc & ~2) + offset;
+        return ((offset & 1) ? (u32)pc : ((u32)pc & ~2)) + offset;
     }
 };
