@@ -11,7 +11,6 @@ public:
 private:
     u32* _fsStartOverlay = nullptr;
     u16 _thumb = false;
-    u16 _hybrid = false;
     const u32* _foundPattern = nullptr;
 
     void TryPattern(PatchContext& patchContext, const u32* pattern, u32 startOffset);

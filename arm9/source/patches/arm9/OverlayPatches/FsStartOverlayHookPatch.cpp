@@ -33,19 +33,14 @@ bool FsStartOverlayHookPatch::FindPatchTarget(PatchContext& patchContext)
         if (!_fsStartOverlay)
         {
             TryPattern(patchContext, sFSStartOverlayPatternThumb, -0x10);
-            if (_fsStartOverlay)
+            if (!_fsStartOverlay)
             {
-                _thumb = true;
+                TryPattern(patchContext, sFSStartOverlayPatternThumbHybrid, -0x8);
             }
-        }
 
-        if (!_fsStartOverlay)
-        {
-            TryPattern(patchContext, sFSStartOverlayPatternThumbHybrid, -0x8);
             if (_fsStartOverlay)
             {
                 _thumb = true;
-                _hybrid = true;
             }
         }
     }
@@ -161,7 +156,7 @@ void FsStartOverlayHookPatch::ApplyPatch(PatchContext& patchContext)
 
     if (_thumb)
     {
-        if (_hybrid)
+        if ((patchOffset & 3) == 2)
         {
             *(u16*)((u8*)_fsStartOverlay + patchOffset + 0) = THUMB_LDR_PC_IMM(THUMB_R0, 4);
             *(u16*)((u8*)_fsStartOverlay + patchOffset + 2) = THUMB_NOP;
