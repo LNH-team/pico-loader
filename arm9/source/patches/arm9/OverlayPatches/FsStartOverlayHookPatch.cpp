@@ -104,7 +104,7 @@ void FsStartOverlayHookPatch::ApplyPatch(PatchContext& patchContext)
     {
         if (_foundPattern == sFSStartOverlayPatternThumbHybrid)
         {
-            patchOffset = 0x8E;
+            patchOffset = 0x90;
             dcFlushRangeCallOffset = 0x92;
         }
         else if (_foundPattern == sFSStartOverlayPatternSdk4Thumb)
@@ -159,19 +159,9 @@ void FsStartOverlayHookPatch::ApplyPatch(PatchContext& patchContext)
 
     if (_thumb)
     {
-        if ((patchOffset & 3) == 2)
-        {
-            *(u16*)((u8*)_fsStartOverlay + patchOffset + 0) = THUMB_LDR_PC_IMM(THUMB_R0, 4);
-            *(u16*)((u8*)_fsStartOverlay + patchOffset + 2) = THUMB_NOP;
-            *(u16*)((u8*)_fsStartOverlay + patchOffset + 4) = THUMB_BLX(THUMB_R0);
-            *(u32*)((u8*)_fsStartOverlay + patchOffset + 6) = entryAddress;
-        }
-        else
-        {
-            *(u16*)((u8*)_fsStartOverlay + patchOffset + 0) = THUMB_LDR_PC_IMM(THUMB_R0, 0);
-            *(u16*)((u8*)_fsStartOverlay + patchOffset + 2) = THUMB_BLX(THUMB_R0);
-            *(u32*)((u8*)_fsStartOverlay + patchOffset + 4) = entryAddress;
-        }
+        *(u16*)((u8*)_fsStartOverlay + patchOffset + 0) = THUMB_LDR_PC_IMM(THUMB_R0, 0);
+        *(u16*)((u8*)_fsStartOverlay + patchOffset + 2) = THUMB_BLX(THUMB_R0);
+        *(u32*)((u8*)_fsStartOverlay + patchOffset + 4) = entryAddress;
     }
     else
     {
