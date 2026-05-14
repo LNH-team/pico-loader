@@ -115,7 +115,7 @@ void FsStartOverlayHookPatch::ApplyPatch(PatchContext& patchContext)
         }
         else
         {
-            LOG_WARNING("Unknown Thumb FS_StartOverlay\n");
+            LOG_ERROR("Unknown Thumb FS_StartOverlay\n");
             return;
         }
     }
@@ -133,19 +133,18 @@ void FsStartOverlayHookPatch::ApplyPatch(PatchContext& patchContext)
         }
         else
         {
-            LOG_WARNING("Unknown Arm FS_StartOverlay\n");
+            LOG_ERROR("Unknown Arm FS_StartOverlay\n");
             return;
         }
     }
 
+    void* blDcFlushRange = (void*)((u8*)_fsStartOverlay + dcFlushRangeCallOffset);
     if (_thumb)
     {
-        u16* blDcFlushRange = (u16*)((u8*)_fsStartOverlay + dcFlushRangeCallOffset);
         fsstartoverlayhook_dcFlushRangeAddress = ArmHelper::GetThumbCallAddress(blDcFlushRange);
     }
     else
     {
-        u32* blDcFlushRange = (u32*)((u8*)_fsStartOverlay + dcFlushRangeCallOffset);
         fsstartoverlayhook_dcFlushRangeAddress = ArmHelper::GetArmCallAddress(blDcFlushRange);
     }
 
