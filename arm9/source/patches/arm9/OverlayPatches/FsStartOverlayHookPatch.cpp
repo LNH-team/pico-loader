@@ -5,7 +5,12 @@
 #include "FsStartOverlayHookPatchAsm.h"
 #include "FsStartOverlayHookPatch.h"
 
+#define TMP_SDK3_THUMB
+
 static const u32 sFSStartOverlayPatternSdk3[] = { 0xE59F10DCu, 0xE1A04000u, 0xE1D100B0u, 0xE3500002u }; // -0xC
+#ifdef TMP_SDK3_THUMB
+static const u32 sFSStartOverlayPatternSdk3Thumb[] = { 0x88004822u, 0xD1242802u, 0x7FE92700u, 0x40012002u }; // -0xC
+#endif
 static const u32 sFSStartOverlayPatternSdk4[] = { 0xE59F10D0u, 0xE1A04000u, 0xE1D100B0u, 0xE3500002u }; // -0xC
 static const u32 sFSStartOverlayPatternSdk4Thumb[] = { 0x481F1C06u, 0x28028800u, 0x69E8D121u, 0x0E012700u }; // -8
 static const u32 sFSStartOverlayPattern[] = { 0xE3500001u, 0x0A00001Cu, 0xE595001Cu, 0xE3A03000u }; // -0x14
@@ -54,6 +59,16 @@ bool FsStartOverlayHookPatch::FindPatchTarget(PatchContext& patchContext)
         if (patchContext.GetSdkVersion().GetMajor() <= 3)
         {
             TryPattern(patchContext, sFSStartOverlayPatternSdk3, -0xC);
+#ifdef TMP_SDK3_THUMB
+            if (!_fsStartOverlay)
+            {
+                TryPattern(patchContext, sFSStartOverlayPatternSdk3Thumb, -0xC);
+                if (_fsStartOverlay)
+                {
+                    _thumb = true;
+                }
+            }
+#endif
         }
 
         if (!_fsStartOverlay)
@@ -117,6 +132,13 @@ void FsStartOverlayHookPatch::ApplyPatch(PatchContext& patchContext)
             patchOffset = 0x6C;
             dcFlushRangeCallOffset = 0x70;
         }
+#ifdef TMP_SDK3_THUMB
+        else if (_foundPattern == sFSStartOverlayPatternSdk3Thumb)
+        {
+            patchOffset = 0x70;
+            dcFlushRangeCallOffset = 0x74;
+        }
+#endif
         else
         {
             LOG_ERROR("Unknown Thumb FS_StartOverlay\n");
