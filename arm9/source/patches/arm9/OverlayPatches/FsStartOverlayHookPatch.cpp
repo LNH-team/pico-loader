@@ -25,11 +25,11 @@ void FsStartOverlayHookPatch::TryPattern(PatchContext& patchContext, const u32* 
 bool FsStartOverlayHookPatch::FindPatchTarget(PatchContext& patchContext)
 {
     if (!_patchHead)
-	{
+    {
         // no patches
         LOG_DEBUG("No overlay patches, not searching for FS_StartOverlay\n");
         return true;
-	}
+    }
 
     if (patchContext.GetSdkVersion().GetMajor() == 5)
     {
