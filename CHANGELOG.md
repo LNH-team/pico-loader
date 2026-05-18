@@ -6,6 +6,7 @@
 - DMA card read support for the DSTT platform - by @lifehackerhansol
 - DMA card read support for the M3DS platform - by @lifehackerhansol
 - AP patches for NRL Mascot Mania and AFL Mascot Manor - by @taxicat1
+- Houkago Shounen race condition patch - by @taxicat1
 
 ### Fixed
 - DMA card read offsets for Pokemon Ranger (EU) - by @taxicat1
