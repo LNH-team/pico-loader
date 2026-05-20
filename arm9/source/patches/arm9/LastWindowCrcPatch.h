@@ -11,14 +11,14 @@
 /// So the CRC is sensitive not only to code modifications, but also to which encrypted functions
 /// were run, and how many times they were run.
 ///
-/// The current DS Protect patch modifies NotA1, causes one of its subfunction to run twice, and
+/// The current DS Protect patch modifies NotA1, causes one of its subfunctions to run twice, and
 /// the other subfunction to not be run, which obviously breaks the CRC.
 ///
 /// Another region is also CRCed, from 0202DB34 to 02030334. What resides here is the game functions
 /// that are supplied to DS Protect as callbacks. These are left unmodified, but to be sure, the CRC
 /// for them is patched anyway.
 ///
-/// To make things more annoying, the memory location of the correct CRCes are randomized, and the code
+/// To make things more annoying, the memory locations of the correct CRCs are randomized, and the code
 /// that checks the CRCs resides in a compressed overlay which is loaded into ITCM. This same function
 /// also receives several dummy checks that are expected to fail, and so cannot be patched to always
 /// report the CRC matches.
