@@ -362,9 +362,12 @@
     // YUTE - Ultimate Mortal Kombat (USA)
     // YUTP - Ultimate Mortal Kombat (Europe)
     //
-    // These games have an issue where they flag a pointer as available before actually writing the pointer into a context structure.
-    // If a vblank occurs during that interval, and the pointer is marked as available but is null anyway, the game will crash.
-    // To fix this, the flag is ignored entirely and the pointer itself is checked instead. This changes only a single load offset.
+    // These games have an issue where a flag can become out of sync with its associated object due to a vblank interrupt occurring
+    // while running the object constructor. When this happens, the vblank interrupt handler has a failsafe to create a new object.
+    // However, the object constructor opens sound_data.sdat, which will softlock the game because NitroFS functions cannot
+    // be called when interrupts are disabled (i.e. from within the vblank interrupt handler).
+    // To fix this, the flag that causes the issue in the first place is ignored and the pointer itself is checked instead.
+    // This changes only a single load offset.
     {
         "gameCode": "YUTE", // Ultimate Mortal Kombat (USA)
         "gameVersion": 0,
