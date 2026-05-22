@@ -364,13 +364,14 @@
     // MetaFortress is an automated system that replaces the typical way DS games are built. It automatically injects
     // code inside developer-written game functions that conducts checksums on other functions, including SDK functions
     // and also other game functions that previously were modified with injected checksum calculations.
+    // These checksums work to detect the flashcart kernel patches for ROM reading, save data access, or other features.
     // The checksums themselves are randomized: the way they load pointers, access data, update the checksum state,
     // perform a checksum finalization, and compare the calculated result to the expected result, as well as what happens
     // if the checksum fails, are all subject to a high degree of randomization that makes automated static analysis
     // difficult or impossible.
     //
     // This is in stark contrast to DS Protect, which had no per-game randomization (except for The Legend of Zelda: Spirit Tracks)
-    // and required each invokation and response behavior be manually programmed in.
+    // and required each invocation and response behavior be manually programmed in.
     //
     // For example, a basic game function like this:
     //
@@ -396,7 +397,7 @@
     //     checksum += checksum << 2;
     //     checksum ^= checksum >> 13;
     //     checksum += checksum << 5;
-    //     if (checksum == 0xFBD4230)                 /* Compare checksum, correct value is often loaded off the stack */
+    //     if (checksum == 0x1FBD4230)                /* Compare checksum, correct value is often loaded off the stack */
     //     {
     //         /* Game func stuff */                  /* Normal game procedure */
     //     }
@@ -524,6 +525,8 @@
 
     // BIGE - Battle of Giants - Mutant Insects (USA)
     // BIGP - Combat of Giants - Mutant Insects (Europe)
+    //
+    // These games also use custom ARM9 entrypoints to run a MetaFortress checksum on the ARM7 immediately.
     {
         "gameCode": "BIGE", // Battle of Giants - Mutant Insects (USA)
         "gameVersion": 0,
@@ -985,6 +988,8 @@
     // TADP - Kirby - Mass Attack (Europe)
     // TADJ - Atsumete! Kirby (Japan)
     // TADK - Moyeora! Kirby (Korea)
+    //
+    // These games also have DS Protect, which is patched separately (see FsStartOverlayHookPatch and DSProtectOverlayPatch).
     {
         "gameCode": "TADE", // Kirby - Mass Attack (USA)
         "gameVersion": 0,
