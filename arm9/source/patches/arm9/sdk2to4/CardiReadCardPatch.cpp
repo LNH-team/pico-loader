@@ -270,6 +270,16 @@ void CardiReadCardPatch::ApplyPatch(PatchContext& patchContext)
             patch_cardireadcard_adjust_cardicommon_offset = THUMB_SUBS_IMM(THUMB_R6, THUMB_R6, 4);
             patch_cardireadcard_mov_r3_to_dst = THUMB_MOV_HIREG(THUMB_HI_R8, THUMB_R3);
         }
+        else if (_foundPattern == sCARDiReadCardPatternSdk2004F4DDebug)
+        {
+            patchOffset = 0x54;
+            patch_cardireadcard_return_offset = THUMB_MOVS_IMM(THUMB_R0, 0x50);
+            patch_cardireadcard_mov_src_to_r0 = THUMB_MOVS_REG(THUMB_R0, THUMB_R1); // src
+            patch_cardireadcard_mov_dst_to_r1 = THUMB_MOVS_REG(THUMB_R1, THUMB_R7); // dst
+            patch_cardireadcard_mov_cardicommon_to_r6 = THUMB_MOVS_REG(THUMB_R6, THUMB_R4);
+            patch_cardireadcard_adjust_cardicommon_offset = THUMB_SUBS_IMM(THUMB_R6, THUMB_R6, 4);
+            patch_cardireadcard_mov_r3_to_dst = THUMB_MOVS_REG(THUMB_R7, THUMB_R3);
+        }
         else
         {
             LOG_FATAL("Unsupported CARDi_ReadCard pattern\n");
