@@ -323,7 +323,7 @@
             {
                 "type": "replace",
                 "address": "0205653C",
-                "data": "20 B5 05 00 68 6F 01 38 07 D0 05 DF 68 6F 01 38 03 D0 90 21 68 58 40 00 01 38 20 BD",
+                "data": "20 B5 05 00 68 6F 01 38 07 D0 05 DF 68 6F 01 38 03 D0 90 21 68 58 40 00 01 38 20 BD"
             }
         ]
     },
@@ -334,7 +334,27 @@
             {
                 "type": "replace",
                 "address": "0205653C",
-                "data": "20 B5 05 00 68 6F 01 38 07 D0 05 DF 68 6F 01 38 03 D0 90 21 68 58 40 00 01 38 20 BD",
+                "data": "20 B5 05 00 68 6F 01 38 07 D0 05 DF 68 6F 01 38 03 D0 90 21 68 58 40 00 01 38 20 BD"
+            }
+        ]
+    },
+
+    // YHGJ - Houkago Shounen (Japan)
+    //
+    // This game has a save speed race condition leading to a softlock. The game will draw a face in the notebook during the 
+    // card async wait, and once the face is finished, set a flag to advance the menu state. But if saving finishes too quickly,
+    // it will exit the async wait, stop calling the face-drawing function, never finish it, never set the flag, and become stuck.
+    // To fix this, part of the saving function is rewritten to include a check for if the async wait idle callback function is the one
+    // that draws the face, and if this is the final block of save data to be written (saving happens in four blocks).
+    // If both of these are true, then it will loop calling the save idle callback until the menu advance flag is set.
+    {
+        "gameCode": "YHGJ", // Houkago Shounen (Japan)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "02027EB4",
+                "data": "FF FF FF FA 08 4D A8 42 0C D1 3F 0C 0A D2 76 09 08 D2 06 4E F6 68 A8 47 30 78 05 28 FB D1 30 79 1C 28 F8 D3 00 F0 52 E8 50 C1 09 02 CC 87 0C 02"
             }
         ]
     },
