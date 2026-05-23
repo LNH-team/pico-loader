@@ -11,9 +11,9 @@ patch_lastwindowcrc_entry:
     cmp r1, r3
     beq crc_dsprotect
 
-    ldr r3, =0x0202DB34 // CRC of other code region (unknown)
+    ldr r3, =0x0202DB34 // CRC of DS Protect callbacks
     cmp r1, r3
-    beq crc_unk
+    beq crc_callback
 
     swi #0xE // Normal CRC if address does not match (never hit?)
     bx lr
@@ -22,7 +22,7 @@ crc_dsprotect:
     ldr r0, =0x67D7
     bx lr
 
-crc_unk:
+crc_callback:
     ldr r0, =0x0D1E
     bx lr
 
