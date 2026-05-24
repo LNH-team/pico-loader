@@ -15,12 +15,13 @@ fsstartoverlayhook_entry:
     cmp r0, #0
     bne 1b
 
-    ldr r0, [r5, #4]
-    ldr r1, [r5, #8]
+    // r0=[r5,#0x4], r1=[r5,#0x8] (DC_FlushRange args)
+    // r4=[r5,#0x10] (instruction overwritten by patch in some signatures)
+    adds r3, r5, #4
+    ldm r3!, {r0-r2, r4}
     ldr r2, fsstartoverlayhook_dcFlushRangeAddress
     blx r2
 
-    ldr r4, [r5, #0x10]
     pop {pc}
 
 .balign 4
