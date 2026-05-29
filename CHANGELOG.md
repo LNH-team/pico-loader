@@ -7,6 +7,7 @@
 - DMA card read support for the M3DS platform - by @lifehackerhansol
 - AP patches for NRL Mascot Mania and AFL Mascot Manor - by @taxicat1
 - Houkago Shounen race condition patch - by @taxicat1
+- Race condition patch for Ultimate Mortal Kombat (USA) and (Europe) - by @taxicat1
 - Card read patch for Minna no Mahjong DS - by @taxicat1
 
 ### Fixed
