@@ -14,7 +14,7 @@ static const u32 sCARDiReadCardPatternUnknown[] = { 0xE92D4FF0u, 0xE24DD004u, 0x
 static const u32 sCARDiReadCardPatternSdk20029A7[] = { 0xE92D4FF0u, 0xE24DD004u, 0xE1A0A000u, 0xE59F90E0u };
 static const u32 sCARDiReadCardPatternSdk2004E8BPingPals[] = { 0xE92D4FF0u, 0xE24DD004u, 0xE1A0A000u, 0xE59F90FCu };
 static const u32 sCARDiReadCardPatternSdk2004F4CThumb[] = { 0xB083B5F0u, 0x4E279000u, 0x30209001u, 0x4F269001u };
-static const u32 sCARDiReadCardPatternSdk2004F4DDebug[] = { 0xE92D47F0u, 0xE1A05000u, 0xE59F40D4u, 0xE5941018u };
+static const u32 sCARDiReadCardPatternSdk2007530MinnaNoMahjong[] = { 0xE92D47F0u, 0xE1A05000u, 0xE59F40D4u, 0xE5941018u };
 static const u32 sCARDiReadCardPatternSdk2027533ThumbChouSoujuu[] = { 0xB083B5F0u, 0x4E259000u, 0x30209001u, 0x4F249001u };
 static const u32 sCARDiReadCardPatternSdk3027530Thumb[] = { 0xB082B5F8u, 0x90019000u, 0x90013020u, 0x69C24825u };
 static const u32 sCARDiReadCardPatternSdk4002774[] = { 0xE92D4070u, 0xE59F40D0u, 0xE1A06000u, 0xE3A00C02u };
@@ -78,7 +78,7 @@ bool CardiReadCardPatch::FindPatchTarget(PatchContext& patchContext)
             if (patchContext.GetSdkVersion().GetMajor() <= SDK_VERSION_MAJOR_NITRO_2)
             {
                 if (!_cardiReadCard)
-                    TryPattern(patchContext, sCARDiReadCardPatternSdk2004F4DDebug, sizeof(sCARDiReadCardPatternSdk2004F4DDebug));
+                    TryPattern(patchContext, sCARDiReadCardPatternSdk2007530MinnaNoMahjong, sizeof(sCARDiReadCardPatternSdk2007530MinnaNoMahjong));
                 if (!_cardiReadCard)
                     TryPattern(patchContext, sCARDiReadCardPatternSdk2004E8BPingPals, sizeof(sCARDiReadCardPatternSdk2004E8BPingPals));
             }
@@ -269,6 +269,16 @@ void CardiReadCardPatch::ApplyPatch(PatchContext& patchContext)
             patch_cardireadcard_mov_cardicommon_to_r6 = THUMB_MOV_HIREG(THUMB_R6, THUMB_HI_R9);
             patch_cardireadcard_adjust_cardicommon_offset = THUMB_SUBS_IMM(THUMB_R6, THUMB_R6, 4);
             patch_cardireadcard_mov_r3_to_dst = THUMB_MOV_HIREG(THUMB_HI_R8, THUMB_R3);
+        }
+        else if (_foundPattern == sCARDiReadCardPatternSdk2007530MinnaNoMahjong)
+        {
+            patchOffset = 0x54;
+            patch_cardireadcard_return_offset = THUMB_MOVS_IMM(THUMB_R0, 0x50);
+            patch_cardireadcard_mov_src_to_r0 = THUMB_MOVS_REG(THUMB_R0, THUMB_R1); // src
+            patch_cardireadcard_mov_dst_to_r1 = THUMB_MOVS_REG(THUMB_R1, THUMB_R7); // dst
+            patch_cardireadcard_mov_cardicommon_to_r6 = THUMB_MOVS_REG(THUMB_R6, THUMB_R4);
+            patch_cardireadcard_adjust_cardicommon_offset = THUMB_SUBS_IMM(THUMB_R6, THUMB_R6, 4);
+            patch_cardireadcard_mov_r3_to_dst = THUMB_MOVS_REG(THUMB_R7, THUMB_R3);
         }
         else
         {
