@@ -359,6 +359,38 @@
         ]
     },
 
+    // YUTE - Ultimate Mortal Kombat (USA)
+    // YUTP - Ultimate Mortal Kombat (Europe)
+    //
+    // These games have an issue where a flag can become out of sync with its associated object due to a vblank interrupt occurring
+    // while running the object constructor. When this happens, the vblank interrupt handler has a failsafe to create a new object.
+    // However, the object constructor opens sound_data.sdat, which will softlock the game because NitroFS functions cannot
+    // be called when interrupts are disabled (i.e. from within the vblank interrupt handler).
+    // To fix this, the flag that causes the issue in the first place is ignored and the pointer itself is checked instead.
+    // This changes only a single load offset.
+    {
+        "gameCode": "YUTE", // Ultimate Mortal Kombat (USA)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "0203295C",
+                "data": "15",
+            }
+        ]
+    },
+    {
+        "gameCode": "YUTP", // Ultimate Mortal Kombat (Europe)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "02032C88",
+                "data": "0F",
+            }
+        ]
+    },
+
     // MetaFortress games below here.
     //
     // MetaFortress is an automated system that replaces the typical way DS games are built. It automatically injects
