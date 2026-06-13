@@ -12,10 +12,19 @@
 /// @brief SDIO parameter types. Used with IORPG_CMD_SDIO command.
 enum IoRpgSdioParamTypes
 {
-    IORPG_SDIO_NORESPONSE = 0ull,
-    IORPG_SDIO_READ_RESPONSE = 1ull,
-    IORPG_SDIO_READ_SINGLE_BLOCK = 3ull,
-    IORPG_SDIO_READ_MULTI_BLOCK = 4ull,
-    IORPG_SDIO_WRITE_SINGLE_BLOCK = 5ull,
-    IORPG_SDIO_WRITE_MULTI_BLOCK = 6ull
+    IORPG_SDIO_NORESPONSE = 0,
+    IORPG_SDIO_READ_RESPONSE = 1,
+    IORPG_SDIO_READ_SINGLE_BLOCK = 3,
+    IORPG_SDIO_READ_MULTI_BLOCK = 4,
+    IORPG_SDIO_WRITE_SINGLE_BLOCK = 5,
+    IORPG_SDIO_WRITE_MULTI_BLOCK = 6
+};
+
+struct IoRpgPlatformSpecifics
+{
+    u32 cmd12Command;
+    u32 cmd17Command;
+    u32 cmd18Command;
+    u32 cmd24Command;
+    u8 sdStateShift;
 };

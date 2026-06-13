@@ -1,7 +1,11 @@
 #pragma once
 #include "../LoaderPlatform.h"
-#include "IoRpgSendSdioCommandPatchCode.h"
-#include "IoRpgSdWaitForStatePatchCode.h"
+#include "IoRpgDefinitions.h"
+#include "IoRpgSdHelperPatchCode.h"
+#include "IoRpgSdReadLoopPatchCode.h"
+#include "IoRpgReadSdPatchCode.h"
+#include "IoRpgReadSdDmaPatchCode.h"
+#include "IoRpgWriteSdPatchCode.h"
 
 /// @brief Implementation of LoaderPlatform for flashcarts based on the Acekard RPG family
 class IoRpgLoaderPlatform : public LoaderPlatform
@@ -14,8 +18,71 @@ public:
 
     bool InitializeSdCard() override;
 
+    bool HasDmaSdReads() const override { return true; }
+
+    const IReadSectorsPatchCode* CreateSdReadPatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
+    {
+        return patchCodeCollection.GetOrAddSharedPatchCode([&]
+        {
+            return new IoRpgReadSdPatchCode(patchHeap,
+                CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
+                patchCodeCollection.GetOrAddSharedPatchCode([&]
+                {
+                    return new IoRpgSdReadLoopPatchCode(
+                        patchHeap,
+                        CreateSdHelperPatchCode(patchCodeCollection, patchHeap)
+                    );
+                }),
+                GetPlatformSpecifics()
+            );
+        });
+    }
+
+    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
+        PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
+    {
+        return patchCodeCollection.AddUniquePatchCode<IoRpgReadSdDmaPatchCode>(
+            patchHeap,
+            CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
+            patchCodeCollection.GetOrAddSharedPatchCode([&]
+            {
+                return new IoRpgDmaStartTransferPatchCode(patchHeap, miiCardDmaCopy32Ptr);
+            }),
+            GetPlatformSpecifics()
+        );
+    }
+
+    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
+    {
+        return patchCodeCollection.GetOrAddSharedPatchCode([&]
+        {
+            return new IoRpgWriteSdPatchCode(patchHeap,
+                CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
+                GetPlatformSpecifics()
+            );
+        });
+    }
+
 protected:
-    virtual void PatchSdscShift() const {};
+    void PatchSdscShift(void) const
+    {
+        iorpg_readSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R1, THUMB_R0);
+        iorpg_readSdDma_sdsc_shift = THUMB_MOVS_REG(THUMB_R5, THUMB_R0);
+        iorpg_writeSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R7, THUMB_R0);
+    }
+
+    virtual const IoRpgPlatformSpecifics& GetPlatformSpecifics() const = 0;
+
+    const IoRpgSdHelperPatchCode* CreateSdHelperPatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const
+        {
+            return patchCodeCollection.GetOrAddSharedPatchCode([&]
+            {
+                return new IoRpgSdHelperPatchCode(patchHeap, GetPlatformSpecifics());
+            });
+        }
 
 private:
     u32 _ioRpgCmdSdioByte;

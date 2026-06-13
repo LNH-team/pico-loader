@@ -1,8 +1,6 @@
 #pragma once
 #include "../acekard-common/IoRpgLoaderPlatform.h"
-#include "Ak2ReadSdPatchCode.h"
-#include "Ak2SdReadSectorPatchCode.h"
-#include "Ak2WriteSdPatchCode.h"
+#include "../acekard-common/IoRpgDefinitions.h"
 
 /// @brief Implementation of LoaderPlatform for the Acekard 2 flashcard
 class Ak2LoaderPlatform : public IoRpgLoaderPlatform
@@ -16,48 +14,17 @@ private:
 public:
     Ak2LoaderPlatform() : IoRpgLoaderPlatform(IORPG_CMD_SDIO_BYTE) { }
 
-    const IReadSectorsPatchCode* CreateSdReadPatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
+protected:
+    const IoRpgPlatformSpecifics& GetPlatformSpecifics(void) const override
     {
-        return patchCodeCollection.GetOrAddSharedPatchCode([&]
+        static const IoRpgPlatformSpecifics data
         {
-            auto* waitForStatePatchCode = patchCodeCollection.GetOrAddSharedPatchCode([&]
-            {
-                return new IoRpgSdWaitForStatePatchCode(patchHeap);
-            });
-            return new Ak2ReadSdPatchCode(patchHeap,
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new IoRpgSendSdioCommandPatchCode(patchHeap);
-                }),
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new Ak2SdReadSectorPatchCode(patchHeap, waitForStatePatchCode);
-                }),
-                waitForStatePatchCode);
-        });
-    }
-
-    const IWriteSectorsPatchCode* CreateSdWritePatchCode(
-        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
-    {
-        return patchCodeCollection.GetOrAddSharedPatchCode([&]
-        {
-            return new Ak2WriteSdPatchCode(patchHeap,
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new IoRpgSendSdioCommandPatchCode(patchHeap);
-                }),
-                patchCodeCollection.GetOrAddSharedPatchCode([&]
-                {
-                    return new IoRpgSdWaitForStatePatchCode(patchHeap);
-                }));
-        });
-    }
-
-    void PatchSdscShift(void) const override
-    {
-        ak2_readSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R4, THUMB_R0);
-        ak2_writeSd_sdsc_shift = THUMB_MOVS_REG(THUMB_R7, THUMB_R0);
+            .cmd12Command = 0x0C0001D5,
+            .cmd17Command = 0x110003D5,
+            .cmd18Command = 0x120004D5,
+            .cmd24Command = 0x180005D5,
+            .sdStateShift = 4
+        };
+        return data;
     }
 };
