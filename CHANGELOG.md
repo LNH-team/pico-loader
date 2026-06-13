@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+- DMA card read support for the AK2/AKRPG/R4iDSN platform - by @lifehackerhansol
 - DMA card read support for the DSTT platform - by @lifehackerhansol
 - DMA card read support for the M3DS platform - by @lifehackerhansol
 - AP patches for NRL Mascot Mania and AFL Mascot Manor - by @taxicat1

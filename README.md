@@ -26,8 +26,8 @@ Note that there can be some game compatibility differences between different pla
 | PICO_PLATFORM | Description                                                                                    | DMA |
 | ------------- | ---------------------------------------------------------------------------------------------- | --- |
 | ACE3DS        | Ace3DS+, Gateway 3DS (blue), r4isdhc.com.cn carts, r4isdhc.hk carts 2020+, various derivatives | ✅ |
-| AK2           | Acekard 2, 2.1, 2i, r4ids.cn, various derivatives                                              | ❌ |
-| AKRPG         | Acekard RPG SD card                                                                            | ❌ |
+| AK2           | Acekard 2, 2.1, 2i, r4ids.cn, various derivatives                                              | ✅ |
+| AKRPG         | Acekard RPG SD card                                                                            | ✅ |
 | DATEL         | DATEL devices consisting of GAMES n' MUSIC and Action Replay DS(i) Media Edition               | ❌ |
 | DSPICO        | DSpico                                                                                         | ✅ |
 | DSTT          | DSTT, SuperCard DSONE SDHC, r4isdhc.com carts 2014+, r4i-sdhc.com carts, various derivatives   | ✅ |
@@ -40,7 +40,7 @@ Note that there can be some game compatibility differences between different pla
 | MMCF          | DATEL Max Media Dock Compact Flash (Slot-2 flashcart)                                          | ❌ |
 | MPCF          | GBA Media Player Compact Flash (Slot-2 cart)                                                   | ❌ |
 | R4            | Original R4DS (non-SDHC), M3 DS Simply                                                         | ❌ |
-| R4iDSN        | r4idsn.com                                                                                     | ❌ |
+| R4iDSN        | r4idsn.com                                                                                     | ✅ |
 | STARGATE      | Stargate 3DS DS-mode                                                                           | ✅ |
 | SUPERCARD     | SuperCard SD, SuperCard Lite, SuperCard Rumble and SuperChis (Slot-2 flashcart)                | ❌ |
 | SUPERCARDCF   | SuperCard CF (Slot-2 flashcart)                                                                | ❌ |
