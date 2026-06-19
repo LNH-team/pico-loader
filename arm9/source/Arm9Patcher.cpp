@@ -48,7 +48,7 @@ static const u32 sMiiUncompressBackwardPattern[] = { 0xE3500000, 0x0A000027, 0xE
 static const u32 sMiiUncompressBackwardPatternHybrid[] = { 0xE3500000, 0x0A000029, 0xE92D01F0, 0xE9100006 };
 
 Arm9Patcher::PatchResult Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, const ApListEntry* apListEntry,
-    bool isCloneBootRom, const loader_info_t* loaderInfo) const
+    bool isCloneBootRom, bool runInDSiMode, const loader_info_t* loaderInfo) const
 {
     auto romHeader = (const nds_header_ntr_t*)TWL_SHARED_MEMORY->ntrSharedMem.romHeader;
     auto twlRomHeader = (const nds_header_twl_t*)TWL_SHARED_MEMORY->twlRomHeader;
@@ -117,7 +117,7 @@ Arm9Patcher::PatchResult Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderP
                     moduleParams->autoloadStart);
             }
 
-            if (gIsDsiMode && romHeader->SupportsDsiMode())
+            if (runInDSiMode)
             {
                 auto arm9iModuleParams = (module_params_twl_t*)(romHeader->arm9LoadAddress + twlRomHeader->arm9iModuleParamsAddress);
                 if (arm9iModuleParams->magicBigEndian == MODULE_PARAMS_TWL_MAGIC_BE &&
@@ -205,7 +205,7 @@ Arm9Patcher::PatchResult Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderP
                 patchCollection.AddPatch(new CardiIsRomDmaAvailablePatch());
                 patchCollection.AddPatch(new CardiReadRomWithCpuPatch());
 
-                if (gIsDsiMode && romHeader->SupportsDsiMode())
+                if (runInDSiMode)
                 {
                     patchCollection.AddPatch(new CardiReadCardWithHashInternalAsyncPatch());
                 }
@@ -218,7 +218,7 @@ Arm9Patcher::PatchResult Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderP
         }
 
         patchCollection.AddPatch(new CardiReadRomIdCorePatch());
-        osResetSystemPatch = new OSResetSystemPatch(loaderInfo);
+        osResetSystemPatch = new OSResetSystemPatch(loaderInfo, runInDSiMode);
         patchCollection.AddPatch(osResetSystemPatch);
         AddGamePatches(patchCollection, romHeader->gameCode, apListEntry);
 

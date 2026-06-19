@@ -63,9 +63,11 @@ private:
     const char* _arguments = nullptr;
     pload_cheats_t* _cheats = nullptr;
     nds_header_twl_t _romHeader;
+    bool _runInDSiMode = true;
     DsiWareSaveResult _dsiwareSaveResult;
 
     bool IsCloneBootRom(u32 romOffset);
+    bool IsValidDSiRom();
     void ApplyArm7Patches();
     void PreprocessCheats();
     void SetupSharedMemory(u32 cardId, u32 agbMem, u32 resetParam, u32 romOffset, u32 bootType);

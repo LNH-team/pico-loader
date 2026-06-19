@@ -172,6 +172,7 @@ void NdsLoader::Load(BootMode bootMode)
         || (_romHeader.arm9AutoLoadDoneHookAddress == 0 && _romHeader.arm7AutoLoadDoneHookAddress == 0)
         || _romHeader.arm7LoadAddress >= 0x03000000;
 
+    _runInDSiMode = _runInDSiMode && Environment::IsDsiMode() && _romHeader.SupportsDsiMode();
     if (isHomebrew)
     {
         LOG_DEBUG("Homebrew\n");
@@ -180,11 +181,19 @@ void NdsLoader::Load(BootMode bootMode)
     {
         LOG_DEBUG("Sdk rom\n");
 
+        if (_runInDSiMode && !IsValidDSiRom())
+        {
+            LOG_WARNING("Broken DSi ROM detected\n");
+            _runInDSiMode = false;
+            ErrorDisplay().PrintWarning(
+                "WARNING: DSi ROM detected with missing DSi parts.\nROM will run in DS mode.\n\nPress (A) to continue...");
+        }
+
         bool isCloneBootRom = bootMode != BootMode::Multiboot && IsCloneBootRom(romOffset);
         sendToArm9(IPC_COMMAND_ARM9_SET_ROM_FILE_INFO);
         sendToArm9(_romFile.dir_sect);
         sendToArm9((u32)(_romFile.dir_ptr - _romFile.obj.fs->win));
-        sendToArm9(isCloneBootRom ? 1 : 0);
+        sendToArm9((isCloneBootRom ? 1 : 0) | (_runInDSiMode ? 2 : 0));
 
         memset(&_dsiwareSaveResult, 0, sizeof(_dsiwareSaveResult));
         if (bootMode != BootMode::Multiboot)
@@ -238,7 +247,7 @@ void NdsLoader::Load(BootMode bootMode)
 
     if (Environment::IsDsiMode())
     {
-        if (_romHeader.SupportsDsiMode())
+        if (_runInDSiMode)
         {
             SetupTwlConfig();
             TwlAes().SetupAes(&_romHeader);
@@ -255,13 +264,10 @@ void NdsLoader::Load(BootMode bootMode)
             return;
         }
 
-        if (Environment::IsDsiMode() && _romHeader.SupportsDsiMode())
+        if (_runInDSiMode && !TryLoadArm9i())
         {
-            if (!TryLoadArm9i())
-            {
-                ErrorDisplay().PrintError("Failed to load arm9i.");
-                return;
-            }
+            ErrorDisplay().PrintError("Failed to load arm9i.");
+            return;
         }
     }
 
@@ -278,13 +284,10 @@ void NdsLoader::Load(BootMode bootMode)
             return;
         }
 
-        if (Environment::IsDsiMode() && _romHeader.SupportsDsiMode())
+        if (_runInDSiMode && !TryLoadArm7i())
         {
-            if (!TryLoadArm7i())
-            {
-                ErrorDisplay().PrintError("Failed to load arm7i.");
-                return;
-            }
+            ErrorDisplay().PrintError("Failed to load arm7i.");
+            return;
         }
     }
 
@@ -302,7 +305,7 @@ void NdsLoader::Load(BootMode bootMode)
         LOG_DEBUG("Arm7 patches done\n");
     }
 
-    if (Environment::IsDsiMode() && _romHeader.SupportsDsiMode())
+    if (_runInDSiMode)
     {
         SetupDsiDeviceList();
 
@@ -338,7 +341,7 @@ void NdsLoader::Load(BootMode bootMode)
 
     if (Environment::IsDsiMode())
     {
-        if (_romHeader.SupportsDsiMode())
+        if (_runInDSiMode)
         {
             if (!(_romHeader.twlFlags2 & 1))
             {
@@ -382,6 +385,40 @@ bool NdsLoader::IsCloneBootRom(u32 romOffset)
     }
 
     return isCloneBootRom;
+}
+
+bool NdsLoader::IsValidDSiRom()
+{
+    // Every valid retail DSi rom should have a non-zero title id
+    if (_romHeader.titleId == 0)
+    {
+        return false;
+    }
+
+    // Check if the DSi area contains mirrors of sector 0x8000
+    auto buffer = std::make_unique_for_overwrite<u8[]>(512 * 2);
+    UINT bytesRead = 0;
+    if (f_lseek(&_romFile, 0x8000) != FR_OK ||
+        f_read(&_romFile, buffer.get(), 512, &bytesRead) != FR_OK ||
+        bytesRead != 512)
+    {
+        return false;
+    }
+
+    bytesRead = 0;
+    if (f_lseek(&_romFile, _romHeader.arm7iRomOffset) != FR_OK ||
+        f_read(&_romFile, buffer.get() + 512, 512, &bytesRead) != FR_OK ||
+        bytesRead != 512)
+    {
+        return false;
+    }
+
+    if (memcmp(buffer.get(), buffer.get() + 512, 512) == 0)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void NdsLoader::InsertArgv()
@@ -536,7 +573,7 @@ void NdsLoader::ApplyArm7Patches()
         u32 mbk6 = 0;
         u32 mbk7 = 0;
         u32 mbk8 = 0;
-        if (Environment::IsDsiMode() && _romHeader.SupportsDsiMode())
+        if (_runInDSiMode)
         {
             mbk6 = REG_MBK6;
             mbk7 = REG_MBK7;
@@ -560,7 +597,7 @@ void NdsLoader::ApplyArm7Patches()
             memcpy(patchCode.get(), srcAddress, patchSpaceSize);
         }
 
-        if (Environment::IsDsiMode() && _romHeader.SupportsDsiMode())
+        if (_runInDSiMode)
         {
             REG_MBK6 = mbk6;
             REG_MBK7 = mbk7;
@@ -601,7 +638,7 @@ void NdsLoader::SetupSharedMemory(u32 cardId, u32 agbMem, u32 resetParam, u32 ro
 
     LoadFirmwareUserSettings();
 
-    if (!_romHeader.SupportsDsiMode())
+    if (!_runInDSiMode)
     {
         memcpy((void*)0x027FF800, (void*)0x02FFF800, sizeof(shared_memory_ntr_t));
         memcpy((void*)0x023FF800, (void*)0x02FFF800, sizeof(shared_memory_ntr_t));
@@ -749,7 +786,7 @@ void NdsLoader::HandleAntiPiracy()
 void NdsLoader::RemapWram()
 {
     mem_unlockAllTwlWram();
-    if (_romHeader.SupportsDsiMode())
+    if (_runInDSiMode)
     {
         REG_MBK6 = _romHeader.arm7MbkSettings[0];
         REG_MBK7 = _romHeader.arm7MbkSettings[1];

@@ -10,6 +10,7 @@
 - Houkago Shounen race condition patch - by @taxicat1
 - Race condition patch for Ultimate Mortal Kombat (USA) and (Europe) - by @taxicat1
 - Card read patch for Minna no Mahjong DS - by @taxicat1
+- Ability to detect DSi roms with missing DSi parts and run them in DS mode
 
 ### Fixed
 - DMA card read offsets for Pokemon Ranger (EU) - by @taxicat1

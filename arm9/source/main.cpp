@@ -46,6 +46,7 @@ static LoaderPlatform* sLoaderPlatform;
 static u32 sRomDirSector;
 static u32 sRomDirSectorOffset;
 static u16 sIsCloneBootRom;
+static u16 sRunInDSiMode;
 static loader_info_t sLoaderInfo;
 static void** sSoftResetCheatsPointer = nullptr;
 
@@ -152,6 +153,7 @@ static void handleApplyArm9PatchesCommand()
         sLoaderPlatform,
         sApListEntry.GetGameCode() == 0 ? nullptr : &sApListEntry,
         sIsCloneBootRom,
+        sRunInDSiMode,
         &sLoaderInfo);
     sSoftResetCheatsPointer = result.softResetCheatsPointer;
     ipc_sendWordDirect(1);
@@ -160,7 +162,7 @@ static void handleApplyArm9PatchesCommand()
 static void handleApplyArm7PatchesCommand(u32 cheatsLength)
 {
     void* cheats = nullptr;
-    void* patchSpaceStart = Arm7Patcher().ApplyPatches(sLoaderPlatform, cheatsLength, cheats);
+    void* patchSpaceStart = Arm7Patcher().ApplyPatches(sLoaderPlatform, cheatsLength, cheats, sRunInDSiMode);
     if (sSoftResetCheatsPointer != nullptr)
     {
         *sSoftResetCheatsPointer = cheats;
@@ -181,7 +183,9 @@ static void handleSetRomFileInfoCommand()
 {
     sRomDirSector = receiveFromArm7();
     sRomDirSectorOffset = receiveFromArm7();
-    sIsCloneBootRom = receiveFromArm7();
+    u32 flags = receiveFromArm7();
+    sIsCloneBootRom = (flags & 1) != 0;
+    sRunInDSiMode = (flags & 2) != 0;
 }
 
 static void handleInitializeLoaderInfoCommand()
@@ -212,6 +216,20 @@ static void handleGetSdFunctionsCommand()
     ipc_sendWordDirect(1);
 }
 
+static void handleDisplayErrorCommand()
+{
+    bool isWarning = receiveFromArm7();
+    if (isWarning)
+    {
+        ErrorDisplay().PrintWarning((const char*)0x02000000);
+    }
+    else
+    {
+        ErrorDisplay().PrintError((const char*)0x02000000);
+    }
+    ipc_sendWordDirect(1);
+}
+
 [[gnu::noinline, gnu::section(".itcm")]]
 static void handleSwitchToDSModeCommand()
 {
@@ -229,8 +247,7 @@ static void handleBootCommand()
     sLoaderPlatform->PrepareRomBoot(sRomDirSector, sRomDirSectorOffset);
     Arm9IoRegisterClearer().ClearNtrIoRegisters(isSdkResetSystem);
     REG_EXMEMCNT |= 0x0880; // map ds and gba slot to arm7
-    auto ntrRomHeader = (const nds_header_ntr_t*)TWL_SHARED_MEMORY->ntrSharedMem.romHeader;
-    if (gIsDsiMode && ntrRomHeader->SupportsDsiMode())
+    if (sRunInDSiMode)
     {
         Arm9IoRegisterClearer().ClearTwlIoRegisters();
         REG_SCFG_EXT = 0x8307F100;
@@ -323,7 +340,7 @@ static void handleArm7Command(u32 command)
         }
         case IPC_COMMAND_ARM9_DISPLAY_ERROR:
         {
-            ErrorDisplay().PrintError((const char*)0x02000000);
+            handleDisplayErrorCommand();
             break;
         }
         case IPC_COMMAND_ARM9_SWITCH_TO_DS_MODE:

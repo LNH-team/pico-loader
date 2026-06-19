@@ -6,9 +6,21 @@
 #include <libtwl/gfx/gfxBackground.h>
 #include "nitroFont2.h"
 #include "font_nft2.h"
+#include "fastClear.h"
 #include "ErrorDisplay.h"
 
-void ErrorDisplay::PrintError(const char* errorString)
+static void waitForVBlank()
+{
+    while (gfx_getVCount() != 191);
+    while (gfx_getVCount() == 191);
+}
+
+static bool readAButton()
+{
+    return ((~REG_KEYINPUT) & KEY_A) != 0;
+}
+
+void ErrorDisplay::Print(const char* errorString, bool pressAToContinue)
 {
     mem_setVramEMapping(MEM_VRAM_E_MAIN_BG_00000);
     auto textBuffer = (u8*)0x02100000;
@@ -23,8 +35,7 @@ void ErrorDisplay::PrintError(const char* errorString)
     };
     nft2_renderString((const nft2_header_t*)font_nft2, errorString, textBuffer, 256, &renderParams);
     memcpy((void*)GFX_BG_MAIN, textBuffer, 256 * 192);
-    while (gfx_getVCount() != 191);
-    while (gfx_getVCount() == 191);
+    waitForVBlank();
     // 4 bit grayscale palette
     for (int i = 0; i < 16; i++)
     {
@@ -44,5 +55,32 @@ void ErrorDisplay::PrintError(const char* errorString)
     GFX_PLTT_BG_SUB[0] = 0;
     REG_MASTER_BRIGHT_SUB = 0x8010;
     REG_DISPCNT_SUB = 0x10000;
-    while (true);
+    if (pressAToContinue)
+    {
+        waitForVBlank();
+        bool previousAButtonState = readAButton();
+        while (true)
+        {
+            waitForVBlank();
+            bool aButtonState = readAButton();
+            if (!previousAButtonState && aButtonState)
+            {
+                break;
+            }
+            previousAButtonState = aButtonState;
+        }
+    }
+    else
+    {
+        while (true);
+    }
+
+    REG_MASTER_BRIGHT = 0x4010;
+    REG_MASTER_BRIGHT_SUB = 0x4010;
+    REG_DISPCNT = 0;
+    REG_DISPCNT_SUB = 0;
+    mem_setVramEMapping(MEM_VRAM_E_LCDC);
+    fastClear((void*)0x06880000, 0x10000);
+    fastClear((void*)GFX_PLTT_BG_MAIN, 512);
+    fastClear((void*)GFX_PLTT_BG_SUB, 512);
 }

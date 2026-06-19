@@ -92,7 +92,7 @@ void OSResetSystemPatch::ApplyPatch(PatchContext& patchContext)
         if (_hybrid)
         {
             offset = 0x80;
-            if (!gIsDsiMode)
+            if (!_runInDSiMode)
             {
                 patch_osresetsystem_entry_jump_to_twl_arm7_sync = THUMB_NOP;
             }

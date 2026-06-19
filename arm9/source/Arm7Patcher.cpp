@@ -30,7 +30,7 @@ static u32 correctAddress(u32 address, const nds_header_ntr_t* romHeader)
     }
 }
 
-void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheatsLength, void*& cheatsPtr) const
+void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheatsLength, void*& cheatsPtr, bool runInDSiMode) const
 {
     cheatsPtr = nullptr;
     auto romHeader = (const nds_header_ntr_t*)TWL_SHARED_MEMORY->ntrSharedMem.romHeader;
@@ -45,7 +45,7 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
     }
     std::unique_ptr<IAutoloadAdjuster> arm7Autoload; // TODO unused
     std::unique_ptr<IAutoloadAdjuster> arm7iAutoload;
-    if (gIsDsiMode && romHeader->SupportsDsiMode())
+    if (runInDSiMode)
     {
         auto arm7iModuleParams = (const module_params_twl_t*)(twlRomHeader->arm7LoadAddress + twlRomHeader->arm7iModuleParamsAddress);
         arm7iAutoload = std::make_unique<AutoloadAdjuster<autoload_list_entry_sdk5_t>>(
@@ -113,7 +113,7 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
 
         if (sdkVersion.IsTwlSdk())
         {
-            if (gIsDsiMode && (twlRomHeader->HasNandAccess() || twlRomHeader->HasSdAccess()))
+            if (runInDSiMode && (twlRomHeader->HasNandAccess() || twlRomHeader->HasSdAccess()))
             {
                 patchCollection.AddPatch(new Sdk5DsiSdCardRedirectPatch());
             }
@@ -151,7 +151,7 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
         u32 mbk6 = 0;
         u32 mbk7 = 0;
         u32 mbk8 = 0;
-        if (gIsDsiMode && romHeader->SupportsDsiMode())
+        if (runInDSiMode)
         {
             mbk6 = REG_MBK6;
             mbk7 = REG_MBK7;
@@ -170,7 +170,7 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
         ic_invalidateAll();
 
         // If in DSi mode and the rom is a DSi rom, restore twl wram.
-        if (gIsDsiMode && romHeader->SupportsDsiMode())
+        if (runInDSiMode)
         {
             REG_MBK6 = mbk6;
             REG_MBK7 = mbk7;
