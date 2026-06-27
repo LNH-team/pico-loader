@@ -7,7 +7,7 @@
 bool DsiWareSaveArranger::SetupDsiWareSave(const TCHAR* romPath, const nds_header_twl_t& romHeader, DsiWareSaveResult& result) const
 {
     char path[256];
-    strcpy(path, romPath);
+    snprintf(path, sizeof(path), "%s", romPath);
     if (!CreateDeviceListPath(path, result.romFilePath))
     {
         return false;
@@ -32,7 +32,7 @@ bool DsiWareSaveArranger::SetupDsiWareSave(const TCHAR* romPath, const nds_heade
 
     if (romHeader.twlPublicSavSize != 0)
     {
-        strcpy(path, romPath);
+        snprintf(path, sizeof(path), "%s", romPath);
         char* extension = strrchr(path, '.');
         if (!extension)
             extension = &path[strlen(path)];
@@ -194,7 +194,7 @@ std::unique_ptr<DsiWareSaveArranger::fat_header_t> DsiWareSaveArranger::CreateFa
 bool DsiWareSaveArranger::CreateDeviceListPath(TCHAR* savePath, char* deviceListPath) const
 {
     auto fileInfo = std::make_unique<FILINFO>();
-    strcpy(deviceListPath, "nand:/");
+    memcpy(deviceListPath, "nand:/", 7);
     char* shortPath = deviceListPath + 6;
     char* currentPathSegment = strchr(savePath, '/');
     do
@@ -223,7 +223,7 @@ bool DsiWareSaveArranger::CreateDeviceListPath(TCHAR* savePath, char* deviceList
             return false;
         }
 
-        strcpy(shortPath, nameToUse);
+        memcpy(shortPath, nameToUse, length + 1);
         shortPath += length;
         if (currentPathSegment)
         {
