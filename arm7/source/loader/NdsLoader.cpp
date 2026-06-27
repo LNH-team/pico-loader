@@ -176,6 +176,10 @@ void NdsLoader::Load(BootMode bootMode)
     if (isHomebrew)
     {
         LOG_DEBUG("Homebrew\n");
+        sendToArm9(IPC_COMMAND_ARM9_SET_ROM_FILE_INFO);
+        sendToArm9(_romFile.dir_sect);
+        sendToArm9((u32)(_romFile.dir_ptr - _romFile.obj.fs->win));
+        sendToArm9(_runInDSiMode ? 2 : 0);
     }
     else
     {
