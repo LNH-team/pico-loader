@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [v1.7.0] - 27 Jun 2026
 
 ### Added
 - DMA card read support for the AK2/AKRPG/R4iDSN platform - by @lifehackerhansol
