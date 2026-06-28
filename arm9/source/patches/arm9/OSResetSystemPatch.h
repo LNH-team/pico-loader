@@ -7,7 +7,7 @@ class OSResetSystemPatch : public Patch
 {
 public:
     OSResetSystemPatch(const loader_info_t* loaderInfo, bool runInDSiMode)
-        : _loaderInfo(loaderInfo), _runInDSiMode(runInDSiMode) { }
+        : _runInDSiMode(runInDSiMode), _loaderInfo(loaderInfo) { }
 
     bool FindPatchTarget(PatchContext& patchContext) override;
     void ApplyPatch(PatchContext& patchContext) override;

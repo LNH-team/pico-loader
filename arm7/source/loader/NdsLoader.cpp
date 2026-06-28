@@ -173,13 +173,10 @@ void NdsLoader::Load(BootMode bootMode)
         || _romHeader.arm7LoadAddress >= 0x03000000;
 
     _runInDSiMode = _runInDSiMode && Environment::IsDsiMode() && _romHeader.SupportsDsiMode();
+    bool isCloneBootRom = false;
     if (isHomebrew)
     {
         LOG_DEBUG("Homebrew\n");
-        sendToArm9(IPC_COMMAND_ARM9_SET_ROM_FILE_INFO);
-        sendToArm9(_romFile.dir_sect);
-        sendToArm9((u32)(_romFile.dir_ptr - _romFile.obj.fs->win));
-        sendToArm9(_runInDSiMode ? 2 : 0);
     }
     else
     {
@@ -193,12 +190,16 @@ void NdsLoader::Load(BootMode bootMode)
                 "WARNING: DSi ROM detected with missing DSi parts.\nROM will run in DS mode.\n\nPress (A) to continue...");
         }
 
-        bool isCloneBootRom = bootMode != BootMode::Multiboot && IsCloneBootRom(romOffset);
-        sendToArm9(IPC_COMMAND_ARM9_SET_ROM_FILE_INFO);
-        sendToArm9(_romFile.dir_sect);
-        sendToArm9((u32)(_romFile.dir_ptr - _romFile.obj.fs->win));
-        sendToArm9((isCloneBootRom ? 1 : 0) | (_runInDSiMode ? 2 : 0));
+        isCloneBootRom = bootMode != BootMode::Multiboot && IsCloneBootRom(romOffset);
+    }
 
+    sendToArm9(IPC_COMMAND_ARM9_SET_ROM_FILE_INFO);
+    sendToArm9(isHomebrew ? 0 : _romFile.dir_sect);
+    sendToArm9(isHomebrew ? 0 : (u32)(_romFile.dir_ptr - _romFile.obj.fs->win));
+    sendToArm9((isCloneBootRom ? 1 : 0) | (_runInDSiMode ? 2 : 0));
+
+    if (!isHomebrew)
+    {
         memset(&_dsiwareSaveResult, 0, sizeof(_dsiwareSaveResult));
         if (bootMode != BootMode::Multiboot)
         {

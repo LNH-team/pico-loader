@@ -1,5 +1,10 @@
 # Changelog
 
+## [v1.7.1] - 28 Jun 2026
+
+### Fixed
+- Arm9 initialization when booting homebrew in DSi mode
+
 ## [v1.7.0] - 27 Jun 2026
 
 ### Added
