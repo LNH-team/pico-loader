@@ -12,21 +12,19 @@ BEGIN_ASM_FUNC ez5h_readSector
 	push {r4-r7,lr}
 	movs r6,r1
 
-	adr r2,ez5h_readSector_data
+	adr r2,read_sector_data
 	@ r2 holds the lower word of EZ5H_CMD_SDMC_READ_DATA
 	@ r3 holds REG_MCCMD0
 	@ r4 holds EZ5H_CTRL_READ_512
 	@ r5 holds REG_MCD1
-	@ r7 holds the address to ez5h_sendSDIOCommand
-	ldmia r2, {r2,r3,r4,r5,r7}
+	ldmia r2, {r2,r3,r4,r5}
 
 ez5h_sdhc_read_label:
 	lsls r1,r0,#9
 
 	movs r0,#0x51
-    @ call ez5h_sendSDIOCommand
-    bl read_interwork
-	cmp r0,#0
+	CALL_NO_INTERWORK SEND_SDIO_COMMAND_REG
+	@ zero flag is set accordingly
 	beq sdio_fail
 
 	@ lower word of EZ5H_CMD_SDMC_READ_DATA
@@ -64,16 +62,11 @@ check_busy:
 	blt is_busy
 
 sdio_fail:
+	@ r0 is the og result of ez5h_sendSDIOCommand, pass it through
 	pop	 {r4-r7,pc}
-read_interwork:
-	bx r7
-
 .balign 4
-ez5h_readSector_data:
+read_sector_data:
 	.word EZ5H_CMD_SDMC_READ_DATA_LOWER_WORD
 	.word REG_MCCMD0
 	.word EZ5H_CTRL_READ_512
 	.word REG_MCD1
-.global ez5h_readSector_sendSDIOCommand
-ez5h_readSector_sendSDIOCommand:
-	.word 0

@@ -42,59 +42,67 @@
 @ args are passed on the stack:
 @ inbuff = sp+4
 @ out = sp
+@
+@ returns:
+@	in r0 the value at sp+4 passed in input
+@	in sp+0/sp+4 the crc value ready to be sent
+
 BEGIN_ASM_FUNC ez5h_sdio4BitCrc16
 	ldr r0, [sp,#4]
-	mov r1, sp
-    push {r0,r2,r3,r4-r5,r6,lr}
-    movs r4, #0 @ r4 = crc_lo
-    movs r5, #0 @ r5 = crc_hi
-    movs r6, #128
+	push {r0,r2,r3,r4-r5,r6,lr}
+	movs r4, #0 @ r4 = crc_lo
+	movs r5, #0 @ r5 = crc_hi
+	movs r6, #128
 1:
-    @ r5 = data_out
-    lsrs r3, r5, #16
-    eors r5, r3
+	@ r5 = data_out
+	lsrs r3, r5, #16
+	eors r5, r3
 
-    ldmia r0!, {r2}
+	ldmia r0!, {r2}
 
-    bl byteSwap32
-    @ r2 = data_in
+	bl byteSwap32
+	@ r2 = data_in
 
-    lsrs r3, r2, #16
-    eors r5, r3
-    eors r2, r5 // r2 = xorred
-    movs r5, r4 // r5 = crc_hi
-    movs r4, r2 // r4 = crc_lo
+	lsrs r3, r2, #16
+	eors r5, r3
+	eors r2, r5 // r2 = xorred
+	movs r5, r4 // r5 = crc_hi
+	movs r4, r2 // r4 = crc_lo
 
-    lsls r3, r2, #20
-    eors r4, r3
-    lsrs r3, r2, #12
-    eors r5, r3
-    lsls r3, r2, #16
-    eors r5, r3
+	lsls r3, r2, #20
+	eors r4, r3
+	lsrs r3, r2, #12
+	eors r5, r3
+	lsls r3, r2, #16
+	eors r5, r3
 
-    subs r6, #1
-    bne 1b
+	subs r6, #1
+	bne 1b
 
-    movs r2, r4
-    bl byteSwap32
-	str r2, [r1,#4]
+	movs r2, r4
+	bl byteSwap32
+	@ write return high part to the stack slot sp+4 (which gets offsetted by 28 due to 7 extra regs having been pushed)
+	str r2, [sp,#4+28]
 
-    movs r2, r5
-    bl byteSwap32
-	str r2, [r1]
-    pop {r0,r2,r3,r4-r5,r6,pc}
+	movs r2, r5
+	bl byteSwap32
+	@ write return high part to the stack slot sp+0 (which gets offsetted by 28 due to 7 extra regs having been pushed)
+	str r2, [sp,#0+28]
+	@ r7 used as scratch
+	pop {r0,r2,r3,r4-r5,r6,r7}
+	mov pc,r7
 
 byteSwap32:
-    push {r4-r5,lr}
-    movs r5, #16
-    ldr r4, =0xFF00FF
-    rors r2, r5 // ror 16
-    ands r4, r2
-    bics r2, r4
-    lsls r4, r4, #8
-    lsrs r2, r2, #8
-    orrs r2, r4
-    pop {r4-r5,pc}
+	push {r4-r5,lr}
+	movs r5, #16
+	ldr r4, =0xFF00FF
+	rors r2, r5 // ror 16
+	ands r4, r2
+	bics r2, r4
+	lsls r4, r4, #8
+	lsrs r2, r2, #8
+	orrs r2, r4
+	pop {r4-r5,pc}
 
 
 .section "ez5h_write_data_rom_command", "ax"
@@ -103,8 +111,7 @@ byteSwap32:
 BEGIN_ASM_FUNC ez5h_sendWriteDataRomCommand
 	ldrh r1, [r0]
 	adds r0, #2
-BEGIN_ASM_FUNC ez5h_sendWriteDataRomCommandShort
-	push {r0,r3,lr}
+	push {r0,r3}
 	adr r0,send_writedata_data
 	@ r0 holds EZ5H_CTRL_READ_0
 	@ r2 holds the lower word of EZ5H_CMD_SDMC_WRITE_DATA 0xF6B8
@@ -138,7 +145,8 @@ BEGIN_ASM_FUNC ez5h_sendWriteDataRomCommandShort
 	@ check if bit 31 is set (busy flag)
 	cmp r2, #0
 	blt 1b
-	pop {r0,r3,pc}
+	pop {r0,r3}
+	mov pc, lr
 
 .balign 4
 send_writedata_data:
@@ -155,83 +163,65 @@ send_writedata_data:
 BEGIN_ASM_FUNC ez5h_writeSector
 	push {r0-r1,r4-r7,lr}
 
-.global ez5h_sdhc_write_label
 ez5h_sdhc_write_label:
 	lsls r1, r0, #9
 
 	movs r0, #0x58
-	ldr r7, ez5h_writeSector_sendSDIOCommand
-	bl write_trampoline	
-	cmp r0, #0
+	CALL_NO_INTERWORK SEND_SDIO_COMMAND_REG
+	@ zero flag is set accordingly
 	beq sdio_fail_write
 
 	@ ez5h_sendSDIOCommand returned us EZ5H_CMD_SDMC_SEND_CLK(1) in r0-r1
 	@ save low word of command
 	movs r6, r0
-	ldr r7, ez5h_writeSector_sendCommand
-	bl write_trampoline	
-	@ bl ez5h_sendCommand
+	CALL_NO_INTERWORK SEND_COMMAND_REG
 
 	@ we use lower short as value to write, upper short is EZ5H_CMD_SDMC_SEND_CRC_STATUS used below
-	ldr r1, =0xF8B8F0FF
-	lsrs r5, r1, #16
+	adr r0, write_tokens_label
+	ldrh r5, [r0,#2]
 
-	@ bl ez5h_sendWriteDataRomCommandShort
-	ldr r7, ez5h_writeSector_sendWriteDataRomCommandShort
-	bl write_trampoline	
+	CALL_NO_INTERWORK SEND_WRITE_DATA_ROM_REG
 
 	@ load buffer addr that was pushed at the start
 	@ sdio4BitCrc16 will get the arguments directly from the stack
 	@ and return the buffer address in r0
-	@ ldr r0, [sp,#4]
-	@ mov r1, sp
-	@ bl ez5h_sdio4BitCrc16
-	ldr r7, ez5h_writeSector_sdio4BitCrc16
-	bl write_trampoline
+	CALL_NO_INTERWORK SDIO_CRC_REG
 
 	@ write the data
-	@ r0 is the data buffer left untouched by the above function call
+	@ r0 is the data buffer provided by the above function call after dereferencing the input r0
 	@ and it gets automatically incremented in ez5h_sendWriteDataRomCommand
-	movs r4, #0xFF
+	movs r3, #0xFF
 1:
-	@ bl ez5h_sendWriteDataRomCommand
-	ldr r7, ez5h_writeSector_sendWriteDataRomCommand
-	bl write_trampoline
+	CALL_NO_INTERWORK SEND_WRITE_DATA_ROM_REG
 	@ do 0x100 iterations
-	subs r4, #1
+	subs r3, #1
 	bge 1b
 
 	@ write the crc
 	@ r0 gets automatically incremented in ez5h_sendWriteDataRomCommand
 	mov r0, sp
-	movs r4, #4
+	movs r3, #3
 1:
-	@ bl ez5h_sendWriteDataRomCommand
-	ldr r7, ez5h_writeSector_sendWriteDataRomCommand
-	bl write_trampoline
-	subs r4, #1
-	bne 1b
+	CALL_NO_INTERWORK SEND_WRITE_DATA_ROM_REG
+	subs r3, #1
+	bge 1b
 
 	@ wait crc status start acknowledgment
 	@ load EZ5H_CMD_SDMC_SEND_CRC_STATUS
 	movs r1, #0
 	movs r0, r5
 1:
-	@ bl ez5h_sendCommand
-	bl write_trampoline
+	CALL_NO_INTERWORK SEND_COMMAND_REG
 	lsrs r2, #1
 	bcs 1b
 
 	@ send single crc read clock
-	@ bl ez5h_sendCommand
-	ldr r7, ez5h_writeSector_sendCommand
-	bl write_trampoline
+	@ ===============================MAYBE BREAK====================
+	@ CALL_NO_INTERWORK SEND_COMMAND_REG
 
 	@ wait crc status acknowledged
 1:
-	@ bl ez5h_sendCommand
-	ldr r7, ez5h_writeSector_sendCommand
-	bl write_trampoline
+	CALL_NO_INTERWORK SEND_COMMAND_REG
 	lsrs r2, #1
 	bcc 1b
 
@@ -240,32 +230,14 @@ ez5h_sdhc_write_label:
 	movs r0, r6
 	movs r4, #0xFF
 1:
-	@ bl ez5h_sendCommand
-	ldr r7, ez5h_writeSector_sendCommand
-	bl write_trampoline
+	CALL_NO_INTERWORK SEND_COMMAND_REG
 	tst r2, r4
 	bne 1b
 
 sdio_fail_write:
 	@ r0 either is 0 or is EZ5H_CMD_SDMC_SEND_CLK(1) (thus nonzero)
 	pop	{r1-r2,r4-r7,pc}
-write_trampoline:
-	bx r7
+.balign 4
 .pool
-
-.global ez5h_writeSector_sendSDIOCommand
-.global ez5h_writeSector_sendCommand
-.global ez5h_writeSector_sendWriteDataRomCommandShort
-.global ez5h_writeSector_sendWriteDataRomCommand
-.global ez5h_writeSector_sdio4BitCrc16
-
-ez5h_writeSector_sendSDIOCommand:
-	.word 0
-ez5h_writeSector_sendCommand:
-	.word 0
-ez5h_writeSector_sendWriteDataRomCommandShort:
-	.word 0
-ez5h_writeSector_sendWriteDataRomCommand:
-	.word 0
-ez5h_writeSector_sdio4BitCrc16:
-	.word 0
+write_tokens_label:
+	.word 0xF8B8F0FF

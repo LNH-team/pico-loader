@@ -10,16 +10,7 @@ static void cardExt_RomReadData(u64 command, u32 flags, void* buffer, u32 length
     if ((u32)buffer & 3)
         card_romCpuReadUnaligned((u8*)buffer, length);
     else
-        card_romCpuRead(buffer, length);
-}
-
-static void cardExt_RomWriteData(u64 command, u32 flags, const void* buffer, u32 length) {
-    card_romSetCmd(command);
-    card_romStartXfer(flags, false);
-    if ((u32)buffer & 3)
-        card_romCpuWriteUnaligned((u8*)buffer, length);
-    else
-        card_romCpuWrite(buffer, length);
+        card_romCpuRead((u32*)buffer, length);
 }
 
 static u32 cardExt_RomReadData4Byte(u64 command, u32 flags) {
@@ -27,12 +18,6 @@ static u32 cardExt_RomReadData4Byte(u64 command, u32 flags) {
     card_romStartXfer(flags | MCCNT1_LEN_4, false);
     card_romWaitDataReady();
     return card_romGetData();
-}
-
-static void cardExt_RomSendCommand(u64 command, u32 flags) {
-    card_romSetCmd(command);
-    card_romStartXfer(flags | MCCNT1_LEN_0, false);
-    card_romWaitBusy();
 }
 
 // EZ5 defines
@@ -145,43 +130,43 @@ static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size) 
     return true;
 }
 
-bool DatelLoaderPlatform::InitializeSdCard() {
+bool Ez5hLoaderPlatform::InitializeSdCard() {
     u8 response[17] = {};
-    register bool isSD20 = false;
+    bool isSD20 = false;
 
     // Does this flush something?
     // iSmart does this loop
     for (int i = 0; i < 128; i++)
         cardExt_RomReadData(EZ5H_CMD_SDMC_READ_DATA, EZ5H_CTRL_READ_512B, NULL, 0);
-    EZ5H_SDSendSDIOCommand(SDIO_CMD0_GO_IDLE_STATE, 0, NULL, 0);
+    EZ5H_SDSendSDIOCommand(SD_CMD0_GO_IDLE_STATE, 0, NULL, 0);
     // it does it twice
     for (int i = 0; i < 128; i++)
         cardExt_RomReadData(EZ5H_CMD_SDMC_READ_DATA, EZ5H_CTRL_READ_512B, NULL, 0);
 
     // CMD8 SDHC init
-    if (EZ5H_SDSendSDIOCommand(SDIO_CMD8_SEND_IF_COND, 0x1AA, response, 6))
+    if (EZ5H_SDSendSDIOCommand(SD_CMD8_SEND_IF_COND, 0x1AA, response, 6))
         if (response[3] == 1 && response[4] == 0xAA) isSD20 = true;
 
     do {
-        EZ5H_SDSendSDIOCommand(SDIO_CMD55_APP_CMD, 0, NULL, 6);
+        EZ5H_SDSendSDIOCommand(SD_CMD55_APP_CMD, 0, NULL, 6);
         u32 parameter = 0x00800000;
         if (isSD20) parameter |= BIT(30);
-        EZ5H_SDSendSDIOCommand(SDIO_ACMD41_SD_SEND_OP_COND, parameter, response, 6);
+        EZ5H_SDSendSDIOCommand(SD_ACMD41_SD_SEND_OP_COND, parameter, response, 6);
     } while (!(response[1] & 0x80));
-    isSDHC = response[1] & 0x40 ? 1 : 0;
+    bool isSDHC = response[1] & 0x40 ? 1 : 0;
 
-    EZ5H_SDSendSDIOCommand(SDIO_CMD2_ALL_SEND_CID, 0, NULL, 17);
+    EZ5H_SDSendSDIOCommand(SD_CMD2_ALL_SEND_CID, 0, NULL, 17);
     do {
-        EZ5H_SDSendSDIOCommand(SDIO_CMD3_SEND_RELATIVE_ADDR, 0, response, 6);
+        EZ5H_SDSendSDIOCommand(SD_CMD3_SEND_RELATIVE_ADDR, 0, response, 6);
     } while ((response[3] & 0x1E) != 6);  // is standby
 
     u32 sdio_rca = (response[1] << 8) + response[2];
 
-    EZ5H_SDSendSDIOCommand(SDIO_CMD9_SEND_CSD, (sdio_rca << 16), NULL, 17);
-    EZ5H_SDSendSDIOCommand(SDIO_CMD7_SELECT_CARD, (sdio_rca << 16), NULL, 6);
-    EZ5H_SDSendSDIOCommand(SDIO_CMD55_APP_CMD, (sdio_rca << 16), NULL, 6);
-    EZ5H_SDSendSDIOCommand(SDIO_ACMD6_SET_BUS_WIDTH, 2, NULL, 6);
-    EZ5H_SDSendSDIOCommand(SDIO_CMD16_SET_BLOCK_LEN, 512, NULL, 6);
+    EZ5H_SDSendSDIOCommand(SD_CMD9_SEND_CSD, (sdio_rca << 16), NULL, 17);
+    EZ5H_SDSendSDIOCommand(SD_CMD7_SELECT_CARD, (sdio_rca << 16), NULL, 6);
+    EZ5H_SDSendSDIOCommand(SD_CMD55_APP_CMD, (sdio_rca << 16), NULL, 6);
+    EZ5H_SDSendSDIOCommand(SD_ACMD6_SET_BUS_WIDTH, 2, NULL, 6);
+    EZ5H_SDSendSDIOCommand(SD_CMD16_SET_BLOCKLEN, 512, NULL, 6);
 	const uint16_t non_sdhc_opcode = 0x0241; //lsls r1,r0,#9
 	const uint16_t sdhc_opcode = 0x0001; //movs r1,r0
 	if(isSDHC) {

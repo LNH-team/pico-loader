@@ -1,8 +1,18 @@
+#define SEND_SDIO_COMMAND_REG r9
+#define SEND_COMMAND_REG r10
+#define SEND_WRITE_DATA_ROM_REG r11
+#define SDIO_CRC_REG r12
+
 .macro BEGIN_ASM_FUNC name
     .global \name
     .type \name, %function
     .align 1
 \name:
+.endm
+
+.macro CALL_NO_INTERWORK fncreg
+	mov lr,pc
+	mov pc,\fncreg
 .endm
 
 .equ REG_MCCNT0 , 0x040001A0
