@@ -33,7 +33,7 @@ BEGIN_ASM_FUNC ez5h_sendCommand
 
 	@ REG_MCCNT0 + 4 = REG_MCCNT1
 	@ write EZ5H_CTRL_READ_4B to mccnt1
-	str r4, [r3, #4]	
+	str r4, [r3, #4]
 
 1:
 	CHECK_DATA_READY r1,r3,#4,1b
@@ -84,6 +84,6 @@ end:
 
 .balign 4
 ez5h_sendCommand_data:
-	.word   REG_MCCMD0
-	.word   EZ5H_CTRL_READ_4B
-	.word   REG_MCD1
+	.word REG_MCCMD0
+	.word EZ5H_CTRL_READ_4B
+	.word REG_MCD1

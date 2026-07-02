@@ -105,10 +105,39 @@ byteSwap32:
 	pop {r4-r5,pc}
 
 
-.section "ez5h_write_data_rom_command", "ax"
+.section "ez5h_write_multiple_sector", "ax"
 
+.global ez5h_writeMultipleSector_writeSector_addr
+.global ez5h_writeMultipleSector_doSDOperation
+.global ez5h_writeMultipleSector_sendCommand
+.global ez5h_writeMultipleSector_sdio4BitCrc16
+.arm
+@ez5h_writeMultipleSector(u32 sector, u8 * buffer, u32 num_sectors)
+BEGIN_ASM_FUNC ez5h_writeMultipleSector
+	push {r4-r7,r8-r12,lr}
+	adr SEND_WRITE_DATA_ROM_REG, sdio_functions
+	ldmia SEND_WRITE_DATA_ROM_REG!, {r3,r7,SEND_COMMAND_REG,SDIO_CRC_REG}
+	@ doSDOperation will pop r4-r7 off the stack
+	@ leaving to us to pop the remaining hiregs
+	bl trampoline
+	pop {r8-r12,lr}
+	bx lr
+trampoline:
+	bx r7
+
+sdio_functions:
+ez5h_writeMultipleSector_writeSector_addr:
+	.word 0
+ez5h_writeMultipleSector_doSDOperation:
+	.word 0
+ez5h_writeMultipleSector_sendCommand:
+	.word 0
+ez5h_writeMultipleSector_sdio4BitCrc16:
+	.word 0
+
+.thumb
 @ez5h_sendWriteDataRomCommand(const u8* datab)
-BEGIN_ASM_FUNC ez5h_sendWriteDataRomCommand
+ez5h_sendWriteDataRomCommand:
 	ldrh r1, [r0]
 	adds r0, #2
 	push {r0,r3}
@@ -161,7 +190,7 @@ send_writedata_data:
 
 @ bool ez5h_writeSector(u32 sector, void* buffer)
 BEGIN_ASM_FUNC ez5h_writeSector
-	push {r0-r1,r4-r7,lr}
+	push {r0-r1,r3,r4-r7,lr}
 
 ez5h_sdhc_write_label:
 	lsls r1, r0, #9
@@ -236,7 +265,7 @@ ez5h_sdhc_write_label:
 
 sdio_fail_write:
 	@ r0 either is 0 or is EZ5H_CMD_SDMC_SEND_CLK(1) (thus nonzero)
-	pop	{r1-r2,r4-r7,pc}
+	pop {r1-r2,r3,r4-r7,pc}
 .balign 4
 .pool
 write_tokens_label:

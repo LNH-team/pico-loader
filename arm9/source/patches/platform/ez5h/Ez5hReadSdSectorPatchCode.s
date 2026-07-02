@@ -3,13 +3,24 @@
 .syntax unified
 .thumb
 
-.section "ez5h_read_sector", "ax"
+.section "ez5h_read_multiple_sector", "ax"
 
 .global ez5h_sdhc_read_label
+.global ez5h_readMultipleSector_doSDOperation
 
+@ez5h_readMultipleSector(u32 sector, u8 * buffer, u32 num_sectors)
+BEGIN_ASM_FUNC ez5h_readMultipleSector
+	@ doSDOperation will take care of handling the return
+	push {r4-r7}
+	adr r3, ez5h_readSector
+	adds r3,#1
+	ldr r4, ez5h_readMultipleSector_doSDOperation
+	bx r4
+
+.balign 4
 @ bool ez5h_readSector(u32 sector, void* buffer)
-BEGIN_ASM_FUNC ez5h_readSector
-	push {r4-r7,lr}
+ez5h_readSector:
+	push {r3,r4-r7,lr}
 	movs r6,r1
 
 	adr r2,read_sector_data
@@ -40,7 +51,7 @@ ez5h_sdhc_read_label:
 
 	@ REG_MCCNT00 + 4 = REG_MCCNT1
 	@ write EZ5H_CTRL_READ_512 to mccnt1
-	str r4, [r3, #4]	
+	str r4, [r3, #4]
 
 	@ read data
 	movs r2, #0x80
@@ -63,10 +74,12 @@ check_busy:
 
 sdio_fail:
 	@ r0 is the og result of ez5h_sendSDIOCommand, pass it through
-	pop	 {r4-r7,pc}
+	pop {r3,r4-r7,pc}
 .balign 4
 read_sector_data:
 	.word EZ5H_CMD_SDMC_READ_DATA_LOWER_WORD
 	.word REG_MCCMD0
 	.word EZ5H_CTRL_READ_512
 	.word REG_MCD1
+ez5h_readMultipleSector_doSDOperation:
+	.word 0
