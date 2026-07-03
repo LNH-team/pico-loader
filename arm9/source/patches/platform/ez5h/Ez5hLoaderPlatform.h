@@ -20,7 +20,7 @@ public:
         {
             return new Ez5hDoSdOperationPatchCode(patchHeap, sendCommand);
         });
-		return patchCodeCollection.GetOrAddSharedPatchCode([&]
+        return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
             return new Ez5hReadMultipleSdSectorPatchCode(patchHeap, doSdOperation);
         });
@@ -45,7 +45,7 @@ public:
         {
             return new Ez5hSdioCrcPatchCode(patchHeap);
         });
-		return patchCodeCollection.GetOrAddSharedPatchCode([&]
+        return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
             return new Ez5hWriteMultipleSectorPatchCode(patchHeap, writeSdSector, doSdOperation, sendCommand, sdioCrc);
         });

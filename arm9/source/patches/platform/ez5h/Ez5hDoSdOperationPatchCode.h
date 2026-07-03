@@ -13,11 +13,11 @@ class Ez5hDoSdOperationPatchCode : public PatchCode
 {
 public:
     Ez5hDoSdOperationPatchCode(PatchHeap& patchHeap,
-		const Ez5hSendCommandPatchCode* ez5hSendCommandPatchCode)
+        const Ez5hSendCommandPatchCode* ez5hSendCommandPatchCode)
         : PatchCode(SECTION_START(ez5h_do_sd_operation), SECTION_SIZE(ez5h_do_sd_operation), patchHeap)
-	{
-		ez5h_doSDOperation_sendSDIOCommand = (u32)ez5hSendCommandPatchCode->GetSendSDIOCommandFunction();
-	}
+    {
+        ez5h_doSDOperation_sendSDIOCommand = (u32)ez5hSendCommandPatchCode->GetSendSDIOCommandFunction();
+    }
 
     const void* GetDoSDOperationFunction() const
     {

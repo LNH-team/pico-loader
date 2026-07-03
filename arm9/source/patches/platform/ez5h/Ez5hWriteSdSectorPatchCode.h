@@ -29,8 +29,8 @@ class Ez5hSdioCrcPatchCode : public PatchCode
 public:
     Ez5hSdioCrcPatchCode(PatchHeap& patchHeap)
         : PatchCode(SECTION_START(ez5h_crc), SECTION_SIZE(ez5h_crc), patchHeap)
-	{
-	}
+    {
+    }
 
     const void* GetSdioCrcFunction() const
     {
@@ -43,8 +43,8 @@ class Ez5hWriteSdSectorPatchCode : public PatchCode
 public:
     Ez5hWriteSdSectorPatchCode(PatchHeap& patchHeap)
         : PatchCode(SECTION_START(ez5h_write_sector), SECTION_SIZE(ez5h_write_sector), patchHeap)
-	{
-	}
+    {
+    }
 
     const void* GetWriteSectorFunction() const
     {
@@ -56,21 +56,21 @@ class Ez5hWriteMultipleSectorPatchCode : public PatchCode, public IWriteSectorsP
 {
 public:
     Ez5hWriteMultipleSectorPatchCode(PatchHeap& patchHeap,
-		const Ez5hWriteSdSectorPatchCode* ez5hWriteSdSectorPatchCode,
-		const Ez5hDoSdOperationPatchCode* ez5hDoSdOperationPatchCode,
-		const Ez5hSendCommandPatchCode* ez5hSendCommandPatchCode,
-		const Ez5hSdioCrcPatchCode* ez5hSdioCrcPatchCode)
+        const Ez5hWriteSdSectorPatchCode* ez5hWriteSdSectorPatchCode,
+        const Ez5hDoSdOperationPatchCode* ez5hDoSdOperationPatchCode,
+        const Ez5hSendCommandPatchCode* ez5hSendCommandPatchCode,
+        const Ez5hSdioCrcPatchCode* ez5hSdioCrcPatchCode)
         : PatchCode(SECTION_START(ez5h_write_multiple_sector), SECTION_SIZE(ez5h_write_multiple_sector), patchHeap)
-	{
-		// we don't want the thumb bit set in the function address, since the address will be fixed accordingly in the code
-		ez5h_writeMultipleSector_writeSector_addr = ((u32)ez5hWriteSdSectorPatchCode->GetWriteSectorFunction()) & ((u32)~1);
+    {
+        // we don't want the thumb bit set in the function address, since the address will be fixed accordingly in the code
+        ez5h_writeMultipleSector_writeSector_addr = ((u32)ez5hWriteSdSectorPatchCode->GetWriteSectorFunction()) & ((u32)~1);
 
-		ez5h_writeMultipleSector_doSDOperation = (u32)ez5hDoSdOperationPatchCode->GetDoSDOperationFunction();
+        ez5h_writeMultipleSector_doSDOperation = (u32)ez5hDoSdOperationPatchCode->GetDoSDOperationFunction();
 
-		ez5h_writeMultipleSector_sendCommand = (u32)ez5hSendCommandPatchCode->GetSendCommandFunction();
+        ez5h_writeMultipleSector_sendCommand = (u32)ez5hSendCommandPatchCode->GetSendCommandFunction();
 
-		ez5h_writeMultipleSector_sdio4BitCrc16 = (u32)ez5hSdioCrcPatchCode->GetSdioCrcFunction();
-	}
+        ez5h_writeMultipleSector_sdio4BitCrc16 = (u32)ez5hSdioCrcPatchCode->GetSdioCrcFunction();
+    }
 
     const WriteSectorsFunc GetWriteSectorFunction() const override
     {

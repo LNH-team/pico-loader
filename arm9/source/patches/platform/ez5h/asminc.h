@@ -11,8 +11,8 @@
 .endm
 
 .macro CALL_NO_INTERWORK fncreg
-	mov lr,pc
-	mov pc,\fncreg
+    mov lr,pc
+    mov pc,\fncreg
 .endm
 
 .equ REG_MCCNT0 , 0x040001A0
@@ -31,9 +31,9 @@
 .equ EZ5H_CTRL_READ_4B, 0xA7586000
 
 .macro CHECK_DATA_READY dstreg,srcreg,off,label
-	@ read mccnt1 status flag
-	ldr \dstreg, [\srcreg, \off]
-	@ check that (r2 & (1 << 23)) (data ready), by shifting right 24 bits, if the bit was set, the carry gets updated
-	lsrs \dstreg, #24
-	bcc \label
+    @ read mccnt1 status flag
+    ldr \dstreg, [\srcreg, \off]
+    @ check that (r2 & (1 << 23)) (data ready), by shifting right 24 bits, if the bit was set, the carry gets updated
+    lsrs \dstreg, #24
+    bcc \label
 .endm

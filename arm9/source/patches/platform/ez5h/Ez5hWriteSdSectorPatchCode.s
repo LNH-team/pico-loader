@@ -27,13 +27,13 @@
 @ {
 @ 	uint32_t num_words = 512 / sizeof(uint32_t);
 @ 	uint64_t crc = 0;
-@     auto* data = static_cast<uint32_t*>(dataBuf);
-@     auto* end = data + num_words;
-@     while (data < end)
-@     {
-@         uint32_t data_in = __builtin_bswap32(*data++);
-@         crc = calSingleCRC16(crc, data_in);
-@     }
+@ 	auto* data = static_cast<uint32_t*>(dataBuf);
+@ 	auto* end = data + num_words;
+@ 	while (data < end)
+@ 	{
+@ 	    uint32_t data_in = __builtin_bswap32(*data++);
+@       crc = calSingleCRC16(crc, data_in);
+@ 	}
 @
 @ 	*out = __builtin_bswap64(crc);
 @ }

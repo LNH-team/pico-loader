@@ -15,11 +15,11 @@ class Ez5hReadMultipleSdSectorPatchCode : public PatchCode, public IReadSectorsP
 {
 public:
     Ez5hReadMultipleSdSectorPatchCode(PatchHeap& patchHeap,
-		const Ez5hDoSdOperationPatchCode* ez5hDoSdOperationPatchCode)
+        const Ez5hDoSdOperationPatchCode* ez5hDoSdOperationPatchCode)
         : PatchCode(SECTION_START(ez5h_read_multiple_sector), SECTION_SIZE(ez5h_read_multiple_sector), patchHeap)
-        {
-			ez5h_readMultipleSector_doSDOperation = (u32)ez5hDoSdOperationPatchCode->GetDoSDOperationFunction();
-        }
+    {
+        ez5h_readMultipleSector_doSDOperation = (u32)ez5hDoSdOperationPatchCode->GetDoSDOperationFunction();
+    }
 
     const ReadSectorsFunc GetReadSectorsFunction() const override
     {
