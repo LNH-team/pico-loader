@@ -1,7 +1,7 @@
 #include "asminc.h"
 
 .syntax unified
-.arm
+.thumb
 
 .section "ez5h_do_sd_operation", "ax"
 
