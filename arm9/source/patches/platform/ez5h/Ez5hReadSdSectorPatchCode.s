@@ -23,13 +23,6 @@ ez5h_readSector:
 	push {r3,r4-r7,lr}
 	movs r6,r1
 
-	adr r2,read_sector_data
-	@ r2 holds the lower word of EZ5H_CMD_SDMC_READ_DATA
-	@ r3 holds REG_MCCMD0
-	@ r4 holds EZ5H_CTRL_READ_512
-	@ r5 holds REG_MCD1
-	ldmia r2, {r2,r3,r4,r5}
-
 ez5h_sdhc_read_label:
 	lsls r1,r0,#9
 
@@ -37,6 +30,13 @@ ez5h_sdhc_read_label:
 	CALL_NO_INTERWORK SEND_SDIO_COMMAND_REG
 	@ zero flag is set accordingly
 	beq sdio_fail
+
+	adr r2,read_sector_data
+	@ r2 holds the lower word of EZ5H_CMD_SDMC_READ_DATA
+	@ r3 holds REG_MCCMD0
+	@ r4 holds EZ5H_CTRL_READ_512
+	@ r5 holds REG_MCD1
+	ldmia r2, {r2,r3,r4,r5}
 
 	@ lower word of EZ5H_CMD_SDMC_READ_DATA
 	movs r7, #0
