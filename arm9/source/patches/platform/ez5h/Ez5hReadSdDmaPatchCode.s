@@ -14,17 +14,18 @@ BEGIN_ASM_FUNC ez5h_readDma
 	push {r2-r3,r4-r7,lr}
 	adr r2, read_dma_data
 	@ r2 holds the lower word of EZ5H_CMD_SDMC_READ_DATA
-	@ r4 holds sendSDIOCommand
+	@ r4 holds miiCardDmaCopy32Ptr
 	@ r5 holds REG_MCCMD0
 	@ r6 holds EZ5H_CTRL_READ_512
-	@ r7 holds miiCardDmaCopy32Ptr
+	@ r7 holds sendSDIOCommand
 	ldmia r2, {r2,r4,r5,r6,r7}
 
 ez5h_sdhc_readDma_label:
 	lsls r1,r0,#9
 
 	movs r0,#0x51
-	blx r4
+	@ call sendSDIOCommand
+	blx r7
 
 	@ zero flag is set accordingly
 	beq sdio_fail
@@ -36,7 +37,6 @@ ez5h_sdhc_readDma_label:
 	@ REG_MCCMD0 is incremented by 8 in the stmia, REG_MCCMD0-8 = REG_MCCNT0
 	subs r5, #16
 
-readDataWithDma:
     @ r0 // DMA channel
     @ r2 // Destination
 	pop {r0,r2}
@@ -45,7 +45,7 @@ readDataWithDma:
     movs r3, #1
     lsls r3, r3, #9
 
-    blx r7
+    blx r4
 
 	@ select rom mode, with irq
     movs r7, #0xC0 
@@ -64,11 +64,11 @@ BEGIN_ASM_FUNC ez5h_endDma
 .pool
 read_dma_data:
 	.word EZ5H_CMD_SDMC_READ_DATA_LOWER_WORD
-ez5h_readDma_sendSDIOCommand:
+ez5h_readDma_miiCardDmaCopy32Ptr:
 	.word 0
 	.word REG_MCCMD0
 	.word EZ5H_CTRL_READ_512
-ez5h_readDma_miiCardDmaCopy32Ptr:
+ez5h_readDma_sendSDIOCommand:
     .word 0
 
 
