@@ -226,6 +226,9 @@ ez5h_sdhc_write_label:
 	subs r3, #1
 	bge 1b
 
+	@ store the incremented buffer for the caller
+	str r0, [sp,#32]
+
 	@ write the crc
 	@ r0 gets automatically incremented in ez5h_sendWriteDataRomCommand
 	mov r0, sp

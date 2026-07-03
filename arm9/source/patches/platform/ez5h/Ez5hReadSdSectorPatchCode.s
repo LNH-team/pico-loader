@@ -22,7 +22,6 @@ BEGIN_ASM_FUNC ez5h_readMultipleSector
 @ bool ez5h_readSector(u32 sector, void* buffer)
 ez5h_readSector:
 	push {r3,r4-r7,lr}
-	movs r6,r1
 
 ez5h_sdhc_read_label:
 	lsls r1,r0,#9
@@ -55,16 +54,17 @@ ez5h_sdhc_read_label:
 	str r4, [r3, #4]
 
 	@ read data
-	movs r2, #0x80
-	lsls r2, r2, #2
-	adds r1, r6, r2
+	movs r1, #0x80
+
+	@ read the outbuffer address from the stack
+	ldr r6, [sp,#24]
 
 is_busy:
 	CHECK_DATA_READY r2,r3,#4,check_busy
 	@ read mcd1 status flag
 	ldr r2, [r5]
-	cmp r1, r6
-	bls check_busy
+	subs r1, #1
+	blt check_busy
 	stmia r6!, {r2}
 check_busy:
 	@ read mccnt1 status flag
@@ -72,6 +72,9 @@ check_busy:
 	@ check if bit 31 is set (busy flag)
 	cmp r2, #0
 	blt is_busy
+
+	@ store the incremented buffer for the caller
+	str r6, [sp,#24]
 
 sdio_fail:
 	@ r0 is the og result of ez5h_sendSDIOCommand, pass it through
