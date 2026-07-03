@@ -45,6 +45,7 @@ ez5h_sdhc_readDma_label:
     movs r3, #1
     lsls r3, r3, #9
 
+	@ call miiCardDmaCopy32Ptr
     blx r4
 
 	@ select rom mode, with irq
