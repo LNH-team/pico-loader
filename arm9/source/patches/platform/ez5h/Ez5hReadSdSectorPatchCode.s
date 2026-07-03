@@ -12,8 +12,9 @@
 BEGIN_ASM_FUNC ez5h_readMultipleSector
 	@ doSDOperation will take care of handling the return
 	push {r4-r7}
+	@ r3 will hold the value of readSector WITHOUT the thumb bit set
+	@ doSDOperation will take care of setting it
 	adr r3, ez5h_readSector
-	adds r3,#1
 	ldr r4, ez5h_readMultipleSector_doSDOperation
 	bx r4
 

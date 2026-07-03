@@ -62,7 +62,8 @@ public:
 		const Ez5hSdioCrcPatchCode* ez5hSdioCrcPatchCode)
         : PatchCode(SECTION_START(ez5h_write_multiple_sector), SECTION_SIZE(ez5h_write_multiple_sector), patchHeap)
 	{
-		ez5h_writeMultipleSector_writeSector_addr = (u32)ez5hWriteSdSectorPatchCode->GetWriteSectorFunction();
+		// we don't want the thumb bit set in the function address, since the address will be fixed accordingly in the code
+		ez5h_writeMultipleSector_writeSector_addr = ((u32)ez5hWriteSdSectorPatchCode->GetWriteSectorFunction()) & ((u32)~1);
 
 		ez5h_writeMultipleSector_doSDOperation = (u32)ez5hDoSdOperationPatchCode->GetDoSDOperationFunction();
 

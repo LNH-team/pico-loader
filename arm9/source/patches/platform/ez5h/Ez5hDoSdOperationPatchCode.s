@@ -18,6 +18,10 @@ BEGIN_ASM_FUNC ez5h_doSDOperation
 	@ get final sector
 	adds r4, r6
 
+	@ mark the sdio callback function as thumb, this requires that this register is
+	@ never passed with the thumb bit set, since we can't have a free `orr`
+	adds r3,#1
+
 check_next_sector:
 	movs r1, r5
 	@ get current sector being read
