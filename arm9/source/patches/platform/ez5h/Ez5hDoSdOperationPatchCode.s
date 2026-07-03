@@ -10,7 +10,6 @@
 @ bool ez5h_doSDOperation(uint32_t sector, void* buffer, uint32_t num_sectors, bool(*operation)(u32 sector, void* buffer))
 BEGIN_ASM_FUNC ez5h_doSDOperation
 	@ push r1 so that the sdio functions can take the argument from the satck and update it accordingly
-	@ once popped, it will leave on the stack r4,lr,r4-r7
 	push {r1,lr}
 	ldr SEND_SDIO_COMMAND_REG, ez5h_doSDOperation_sendSDIOCommand
 	movs r6, r2
