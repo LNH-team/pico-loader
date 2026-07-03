@@ -171,9 +171,11 @@ bool Ez5hLoaderPlatform::InitializeSdCard() {
 	const uint16_t sdhc_opcode = 0x0001; //movs r1,r0
 	if(isSDHC) {
 		ez5h_sdhc_read_label = sdhc_opcode;
+		ez5h_sdhc_readDma_label = sdhc_opcode;
 		ez5h_sdhc_write_label = sdhc_opcode;
 	} else {
 		ez5h_sdhc_read_label = non_sdhc_opcode;
+		ez5h_sdhc_readDma_label = non_sdhc_opcode;
 		ez5h_sdhc_write_label = non_sdhc_opcode;
 	}
     return true;

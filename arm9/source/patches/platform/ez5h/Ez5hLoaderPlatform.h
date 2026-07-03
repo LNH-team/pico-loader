@@ -1,6 +1,7 @@
 #pragma once
 #include "../LoaderPlatform.h"
 #include "Ez5hReadSdSectorPatchCode.h"
+#include "Ez5hReadSdDmaPatchCode.h"
 #include "Ez5hDoSdOperationPatchCode.h"
 #include "Ez5hSendCommandPatchCode.h"
 #include "Ez5hWriteSdSectorPatchCode.h"
@@ -24,6 +25,17 @@ public:
         {
             return new Ez5hReadMultipleSdSectorPatchCode(patchHeap, doSdOperation);
         });
+    }
+
+    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
+        PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
+    {
+        auto sendCommand = patchCodeCollection.GetOrAddSharedPatchCode([&]
+        {
+            return new Ez5hSendCommandPatchCode(patchHeap);
+        });
+        return patchCodeCollection.AddUniquePatchCode<Ez5hReadSdDmaPatchCode>(
+            patchHeap, sendCommand, miiCardDmaCopy32Ptr);
     }
 
     const IWriteSectorsPatchCode* CreateSdWritePatchCode(
@@ -54,5 +66,6 @@ public:
     LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
 
     bool InitializeSdCard() override;
-private:
+
+    bool HasDmaSdReads() const override { return true; }
 };
