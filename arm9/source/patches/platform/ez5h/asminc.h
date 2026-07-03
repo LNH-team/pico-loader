@@ -1,7 +1,7 @@
 #define SEND_SDIO_COMMAND_REG r7
 #define SEND_COMMAND_REG r10
-#define SEND_WRITE_DATA_ROM_REG r11
-#define SDIO_CRC_REG r12
+#define SDIO_CRC_REG r11
+#define SEND_WRITE_DATA_ROM_REG r12
 
 .macro BEGIN_ASM_FUNC name
     .global \name
@@ -32,8 +32,8 @@
 
 .macro CHECK_DATA_READY dstreg,srcreg,off,label
 	@ read mccnt1 status flag
-	ldr	 \dstreg, [\srcreg, \off]
+	ldr \dstreg, [\srcreg, \off]
 	@ check that (r2 & (1 << 23)) (data ready), by shifting right 24 bits, if the bit was set, the carry gets updated
 	lsrs \dstreg, #24
-    bcc \label
+	bcc \label
 .endm
