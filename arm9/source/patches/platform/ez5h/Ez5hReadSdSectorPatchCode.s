@@ -28,8 +28,8 @@ ez5h_sdhc_read_label:
 
 	movs r0,#0x51
 	CALL_NO_INTERWORK SEND_SDIO_COMMAND_REG
-	@ zero flag is set accordingly
-	beq sdio_fail
+	@ negative on failure
+	bmi sdio_fail
 
 	adr r2,read_sector_data
 	@ r2 holds the lower word of EZ5H_CMD_SDMC_READ_DATA

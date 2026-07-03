@@ -44,7 +44,8 @@ BEGIN_ASM_FUNC ez5h_sendCommand
 	mov pc, lr
 
 @ ez5h_sendSDIOCommand(u8 command, u32 parameter)
-@ returns either 0 or EZ5H_CMD_SDMC_SEND_CLK(1) (r0-r1), thrashes r7
+@ sets negative flag on failure
+@ returns EZ5H_CMD_SDMC_SEND_CLK(1) (r0-r1), thrashes r7
 BEGIN_ASM_FUNC ez5h_sendSDIOCommand
 	push {r2-r6,lr}
 	lsls r2, r0, #24
@@ -74,11 +75,10 @@ wait_for_start_marker:
 	b end
 start_marker_not_received:
 	subs r4, #1
-	bne wait_for_start_marker
+	@ when failing, negative flag is set
+	bge wait_for_start_marker
 
 end:
-	@ if r4 is 0, timeout expired thus function failed
-	movs r0, r4
 	pop {r2-r7}
 	mov pc, r7
 

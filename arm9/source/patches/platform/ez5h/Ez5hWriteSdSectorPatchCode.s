@@ -197,8 +197,8 @@ ez5h_sdhc_write_label:
 
 	movs r0, #0x58
 	CALL_NO_INTERWORK SEND_SDIO_COMMAND_REG
-	@ zero flag is set accordingly
-	beq sdio_fail_write
+	@ negative on failure
+	bmi sdio_fail_write
 
 	@ ez5h_sendSDIOCommand returned us EZ5H_CMD_SDMC_SEND_CLK(1) in r0-r1
 	@ save low word of command

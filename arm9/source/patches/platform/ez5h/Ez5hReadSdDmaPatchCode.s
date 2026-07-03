@@ -27,8 +27,8 @@ ez5h_sdhc_readDma_label:
 	@ call sendSDIOCommand
 	blx r7
 
-	@ zero flag is set accordingly
-	beq sdio_fail
+	@ negative on failure
+	bmi sdio_fail
 
 	@ lower word of EZ5H_CMD_SDMC_READ_DATA
 	movs r3, #0
