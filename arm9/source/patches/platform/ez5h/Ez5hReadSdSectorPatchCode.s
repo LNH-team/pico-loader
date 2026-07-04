@@ -45,16 +45,14 @@ ez5h_sdhc_read_label:
 	@ REG_MCCMD0 is incremented by 8 in the stmia, REG_MCCMD0-8 = REG_MCCNT0
 	subs r3, #16
 
-	@ REG_MCCMD0 is 0x040001A0, << 10 = 0xXXXX8000
-	lsls r1, r3, #10
-	strh r1, [r3]
+	@ use this both as counter for the loop below
+	@ and as setup value for REG_MCCNT0
+	movs r1, #0x80
+	strb r1, [r3,#1]
 
 	@ REG_MCCNT00 + 4 = REG_MCCNT1
 	@ write EZ5H_CTRL_READ_512 to mccnt1
 	str r4, [r3, #4]
-
-	@ read data
-	movs r1, #0x80
 
 	@ read the outbuffer address from the stack
 	ldr r6, [sp,#24]
@@ -63,7 +61,9 @@ is_busy:
 	CHECK_DATA_READY r2,r3,#4,check_busy
 	@ read mcd1 status flag
 	ldr r2, [r5]
+	@ we're looping 0x80 times (4 bytes read at the time)
 	subs r1, #1
+	@ if we reached the 0x80th iteration, don't write any more data
 	blt check_busy
 	stmia r6!, {r2}
 check_busy:

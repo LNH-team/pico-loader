@@ -43,7 +43,7 @@ ez5h_sdhc_readDma_label:
 	ldr r1, =REG_MCD1
 	@ (1 << 9) = 512 = count
     movs r3, #1
-    lsls r3, r3, #9
+    lsls r3, #9
 
 	@ call miiCardDmaCopy32Ptr
     blx r4
