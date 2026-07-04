@@ -27,8 +27,9 @@ ez5h_sdhc_readDma_label:
 	@ call sendSDIOCommand
 	blx r7
 
-	@ r0 // DMA channel
-	@ r2 // Destination
+	@ r0 DMA channel
+	@ r2 Destination
+	@ needed for the below card to miiCardDmaCopy32
 	pop {r0,r2}
 
 	@ negative on failure
@@ -46,7 +47,7 @@ ez5h_sdhc_readDma_label:
 	movs r3, #1
 	lsls r3, #9
 
-	@ call miiCardDmaCopy32Ptr
+	@ call miiCardDmaCopy32
 	blx r4
 
 	@ select rom mode, with irq
