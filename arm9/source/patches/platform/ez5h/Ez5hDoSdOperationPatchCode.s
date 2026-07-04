@@ -26,8 +26,8 @@ check_next_sector:
 	@ get current sector being read
 	subs r0, r4, r6
 	bl call_sdio_function_in_r3
-	cmp r0, #0x0
-	beq sderror
+	@ the sdio functions set the negative flag on error
+	bmi sderror
 
 	subs r6, #1
 	bne check_next_sector

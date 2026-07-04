@@ -188,6 +188,7 @@ send_writedata_data:
 
 .global ez5h_sdhc_write_label
 
+@ negative flag set on error
 @ bool ez5h_writeSector(u32 sector, void* buffer)
 BEGIN_ASM_FUNC ez5h_writeSector
 	push {r0-r1,r3,r4-r7,lr}
