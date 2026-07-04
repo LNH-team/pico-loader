@@ -15,17 +15,17 @@
 #define EZ5H_CMD_SDMC (0xB800000000000000ull)
 #define EZ5H_CMD_SDMC_READ_DATA (EZ5H_CMD_SDMC | 0x00F7000000000000ull)
 
-static inline u64 EZ5H_CMD_SDMC_PARAM_CARD(u8 idx, u8 cmd, u32 parameter) {
+static constexpr inline u64 EZ5H_CMD_SDMC_PARAM_CARD(u8 idx, u8 cmd, u32 parameter) {
     return (EZ5H_CMD_SDMC | 0x00FA000000000000ull | ((u64)idx << 40) | ((u64)cmd << 32) |
             (u64)parameter);
 }
 
-static inline u64 EZ5H_CMD_SDMC_SDIO(u8 cmd, u32 parameter) {
+static constexpr inline u64 EZ5H_CMD_SDMC_SDIO(u8 cmd, u32 parameter) {
     return EZ5H_CMD_SDMC_PARAM_CARD(0, cmd | 0x40, parameter);
 }
 
 // Sends a clock, reads data from response index if available
-static inline u64 EZ5H_CMD_SDMC_SEND_CLK(u8 idx) {
+static constexpr inline u64 EZ5H_CMD_SDMC_SEND_CLK(u8 idx) {
     return EZ5H_CMD_SDMC_PARAM_CARD(idx, 0, 0);
 }
 
