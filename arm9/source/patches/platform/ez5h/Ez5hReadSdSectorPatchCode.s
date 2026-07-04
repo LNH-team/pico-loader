@@ -70,8 +70,8 @@ check_busy:
 	@ read mccnt1 status flag
 	ldr r2, [r3,#4]
 	@ check if bit 31 is set (busy flag)
-	cmp r2, #0
-	blt is_busy
+	lsrs r2, #31
+	bne is_busy
 
 	@ store the incremented buffer for the caller
 	str r6, [sp,#24]
