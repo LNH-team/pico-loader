@@ -1,3 +1,5 @@
+#pragma once
+
 #define SEND_SDIO_COMMAND_REG r7
 #define SEND_COMMAND_REG r10
 #define SDIO_CRC_REG r11
