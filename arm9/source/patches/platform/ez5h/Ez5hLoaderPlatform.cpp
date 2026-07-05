@@ -37,12 +37,12 @@ static void romDrainData()
     card_romSetCmd(EZ5H_CMD_SDMC_READ_DATA);
     card_romStartXfer(EZ5H_CTRL_READ_512B, false);
     while (card_romIsBusy())
-	{
-		if (card_romIsDataReady())
-		{
-			(void)card_romGetData();
-		}
-	}
+    {
+        if (card_romIsDataReady())
+        {
+            (void)card_romGetData();
+        }
+    }
 }
 
 static u32 EZ5H_SendCommand(const u64 command)
@@ -71,7 +71,7 @@ static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size)
     // Sends response in byte-swapped u32, with the starting marker
     // Search for starting marker, with a timeout
     do
-	{
+    {
         data = EZ5H_SendCommand(EZ5H_CMD_SDMC_SEND_CLK(1));
         timeout--;
         if (!timeout) return false;
@@ -79,7 +79,7 @@ static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size)
 
     // Starting marker found. Start reading response
     if (buffer != nullptr)
-	{
+    {
         buffer[0] = u8_data[1];
         buffer[1] = u8_data[2];
         buffer[2] = u8_data[3];
@@ -88,7 +88,7 @@ static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size)
     // Read remaining data
     data = EZ5H_SendCommand(EZ5H_CMD_SDMC_SEND_CLK(2));
     if (buffer != nullptr)
-	{
+    {
         buffer[3] = u8_data[0];
         buffer[4] = u8_data[1];
         buffer[5] = u8_data[2];
@@ -97,12 +97,12 @@ static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size)
         if (size != 6) return true;
         buffer[6] = u8_data[3];
     }
-	else if (size == 6)
+    else if (size == 6)
         return true;
 
     data = EZ5H_SendCommand(EZ5H_CMD_SDMC_SEND_CLK(3));
     if (buffer != nullptr)
-	{
+    {
         buffer[7] = u8_data[0];
         buffer[8] = u8_data[1];
         buffer[9] = u8_data[2];
@@ -110,7 +110,7 @@ static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size)
     }
     data = EZ5H_SendCommand(EZ5H_CMD_SDMC_SEND_CLK(4));
     if (buffer != nullptr)
-	{
+    {
         buffer[11] = u8_data[0];
         buffer[12] = u8_data[1];
         buffer[13] = u8_data[2];
@@ -118,7 +118,7 @@ static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size)
     }
     data = EZ5H_SendCommand(EZ5H_CMD_SDMC_SEND_CLK(5));
     if (buffer != nullptr)
-	{
+    {
         buffer[15] = u8_data[0];
         buffer[16] = u8_data[1];
     }
@@ -144,7 +144,7 @@ bool Ez5hLoaderPlatform::InitializeSdCard() {
         if (response[3] == 1 && response[4] == 0xAA) isSD20 = true;
 
     do
-	{
+    {
         EZ5H_SDSendSDIOCommand(SD_CMD55_APP_CMD, 0, nullptr, 6);
         u32 parameter = 0x00800000;
         if (isSD20) parameter |= BIT(30);
@@ -155,7 +155,7 @@ bool Ez5hLoaderPlatform::InitializeSdCard() {
 
     EZ5H_SDSendSDIOCommand(SD_CMD2_ALL_SEND_CID, 0, nullptr, 17);
     do
-	{
+    {
         EZ5H_SDSendSDIOCommand(SD_CMD3_SEND_RELATIVE_ADDR, 0, response, 6);
     } while ((response[3] & 0x1E) != 6);  // is standby
 
@@ -170,8 +170,8 @@ bool Ez5hLoaderPlatform::InitializeSdCard() {
     const u16 nonSdhcOpcode = THUMB_LSLS_IMM(THUMB_R1, THUMB_R0, 9);
     const u16 sdhcOpcode = THUMB_MOVS_REG(THUMB_R1, THUMB_R0);
     const u16 opcode = isSdhc ? sdhcOpcode : nonSdhcOpcode;
-	ez5h_sdhc_read_label = opcode;
-	ez5h_sdhc_readDma_label = opcode;
-	ez5h_sdhc_write_label = opcode;
+    ez5h_sdhc_read_label = opcode;
+    ez5h_sdhc_readDma_label = opcode;
+    ez5h_sdhc_write_label = opcode;
     return true;
 }
