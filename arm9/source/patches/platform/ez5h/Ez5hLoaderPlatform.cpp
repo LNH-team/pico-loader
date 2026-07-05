@@ -15,21 +15,25 @@
 #define EZ5H_CMD_SDMC (0xB800000000000000ull)
 #define EZ5H_CMD_SDMC_READ_DATA (EZ5H_CMD_SDMC | 0x00F7000000000000ull)
 
-static constexpr inline u64 EZ5H_CMD_SDMC_PARAM_CARD(u8 idx, u8 cmd, u32 parameter) {
+static inline constexpr u64 EZ5H_CMD_SDMC_PARAM_CARD(u8 idx, u8 cmd, u32 parameter)
+{
     return (EZ5H_CMD_SDMC | 0x00FA000000000000ull | ((u64)idx << 40) | ((u64)cmd << 32) |
             (u64)parameter);
 }
 
-static constexpr inline u64 EZ5H_CMD_SDMC_SDIO(u8 cmd, u32 parameter) {
+static inline constexpr u64 EZ5H_CMD_SDMC_SDIO(u8 cmd, u32 parameter)
+{
     return EZ5H_CMD_SDMC_PARAM_CARD(0, cmd | 0x40, parameter);
 }
 
 // Sends a clock, reads data from response index if available
-static constexpr inline u64 EZ5H_CMD_SDMC_SEND_CLK(u8 idx) {
+static inline constexpr u64 EZ5H_CMD_SDMC_SEND_CLK(u8 idx)
+{
     return EZ5H_CMD_SDMC_PARAM_CARD(idx, 0, 0);
 }
 
-static void romDrainData() {
+static void romDrainData()
+{
     card_romSetCmd(EZ5H_CMD_SDMC_READ_DATA);
     card_romStartXfer(EZ5H_CTRL_READ_512B, false);
     while (card_romIsBusy())
@@ -41,14 +45,16 @@ static void romDrainData() {
 	}
 }
 
-static u32 EZ5H_SendCommand(const u64 command) {
+static u32 EZ5H_SendCommand(const u64 command)
+{
     card_romSetCmd(command);
     card_romStartXfer(EZ5H_CTRL_READ_4B | MCCNT1_LEN_4, false);
     card_romWaitDataReady();
     return card_romGetData();
 }
 
-static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size) {
+static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size)
+{
     u32 data;
     u8* u8_data = (u8*)&data;
     int timeout = 99;
@@ -64,14 +70,16 @@ static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size) 
 
     // Sends response in byte-swapped u32, with the starting marker
     // Search for starting marker, with a timeout
-    do {
+    do
+	{
         data = EZ5H_SendCommand(EZ5H_CMD_SDMC_SEND_CLK(1));
         timeout--;
         if (!timeout) return false;
     } while (data & 0xFF);
 
     // Starting marker found. Start reading response
-    if (buffer != nullptr) {
+    if (buffer != nullptr)
+	{
         buffer[0] = u8_data[1];
         buffer[1] = u8_data[2];
         buffer[2] = u8_data[3];
@@ -79,7 +87,8 @@ static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size) 
 
     // Read remaining data
     data = EZ5H_SendCommand(EZ5H_CMD_SDMC_SEND_CLK(2));
-    if (buffer != nullptr) {
+    if (buffer != nullptr)
+	{
         buffer[3] = u8_data[0];
         buffer[4] = u8_data[1];
         buffer[5] = u8_data[2];
@@ -87,25 +96,29 @@ static bool EZ5H_SDSendSDIOCommand(u8 cmd, u32 parameter, u8* buffer, int size) 
         // otherwise keep going
         if (size != 6) return true;
         buffer[6] = u8_data[3];
-    } else if (size == 6)
+    }
+	else if (size == 6)
         return true;
 
     data = EZ5H_SendCommand(EZ5H_CMD_SDMC_SEND_CLK(3));
-    if (buffer != nullptr) {
+    if (buffer != nullptr)
+	{
         buffer[7] = u8_data[0];
         buffer[8] = u8_data[1];
         buffer[9] = u8_data[2];
         buffer[10] = u8_data[3];
     }
     data = EZ5H_SendCommand(EZ5H_CMD_SDMC_SEND_CLK(4));
-    if (buffer != nullptr) {
+    if (buffer != nullptr)
+	{
         buffer[11] = u8_data[0];
         buffer[12] = u8_data[1];
         buffer[13] = u8_data[2];
         buffer[14] = u8_data[3];
     }
     data = EZ5H_SendCommand(EZ5H_CMD_SDMC_SEND_CLK(5));
-    if (buffer != nullptr) {
+    if (buffer != nullptr)
+	{
         buffer[15] = u8_data[0];
         buffer[16] = u8_data[1];
     }
@@ -130,7 +143,8 @@ bool Ez5hLoaderPlatform::InitializeSdCard() {
     if (EZ5H_SDSendSDIOCommand(SD_CMD8_SEND_IF_COND, 0x1AA, response, 6))
         if (response[3] == 1 && response[4] == 0xAA) isSD20 = true;
 
-    do {
+    do
+	{
         EZ5H_SDSendSDIOCommand(SD_CMD55_APP_CMD, 0, nullptr, 6);
         u32 parameter = 0x00800000;
         if (isSD20) parameter |= BIT(30);
@@ -140,7 +154,8 @@ bool Ez5hLoaderPlatform::InitializeSdCard() {
     bool isSdhc = response[1] & 0x40;
 
     EZ5H_SDSendSDIOCommand(SD_CMD2_ALL_SEND_CID, 0, nullptr, 17);
-    do {
+    do
+	{
         EZ5H_SDSendSDIOCommand(SD_CMD3_SEND_RELATIVE_ADDR, 0, response, 6);
     } while ((response[3] & 0x1E) != 6);  // is standby
 
