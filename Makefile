@@ -8,7 +8,7 @@ PICO_LOADER_CONVERTER_DEPS	:=	\
 
 .PHONY: loader9 loader7 clean
 
-all: checklibtwl loader9 loader7 apList saveList patchList
+all: checklibtwl loader9 loader7 data/aplist.bin data/savelist.bin data/patchlist.bin
 
 checklibtwl:
 	$(MAKE) -C libs/libtwl
@@ -22,14 +22,14 @@ loader7: checklibtwl
 $(PICO_LOADER_CONVERTER): $(PICO_LOADER_CONVERTER_DEPS) 
 	dotnet build tools/PicoLoaderConverter/PicoLoaderConverter.sln
 
-apList: $(PICO_LOADER_CONVERTER) data/aplist.csv
-	dotnet $(PICO_LOADER_CONVERTER) aplist -i data/aplist.csv -o data/aplist.bin
+data/aplist.bin: $(PICO_LOADER_CONVERTER) data/aplist.csv
+	dotnet $(PICO_LOADER_CONVERTER) aplist -i data/aplist.csv -o $@
 
-saveList: $(PICO_LOADER_CONVERTER) data/savelist.csv
-	dotnet $(PICO_LOADER_CONVERTER) savelist -i data/savelist.csv -o data/savelist.bin
+data/savelist.bin: $(PICO_LOADER_CONVERTER) data/savelist.csv
+	dotnet $(PICO_LOADER_CONVERTER) savelist -i data/savelist.csv -o $@
 
-patchList: $(PICO_LOADER_CONVERTER) data/patchlist.json
-	dotnet $(PICO_LOADER_CONVERTER) patchlist -i data/patchlist.json -o data/patchlist.bin
+data/patchlist.bin: $(PICO_LOADER_CONVERTER) data/patchlist.json
+	dotnet $(PICO_LOADER_CONVERTER) patchlist -i data/patchlist.json -o $@
 
 clean:
 	$(MAKE) -f Makefile.arm7 clean
