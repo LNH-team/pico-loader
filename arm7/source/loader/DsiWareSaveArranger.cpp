@@ -4,6 +4,8 @@
 #include <memory>
 #include "DsiWareSaveArranger.h"
 
+#define BANNER_SAVE_SIZE    0x4000
+
 bool DsiWareSaveArranger::SetupDsiWareSave(const TCHAR* romPath, const nds_header_twl_t& romHeader, DsiWareSaveResult& result) const
 {
     char path[256];
@@ -43,6 +45,24 @@ bool DsiWareSaveArranger::SetupDsiWareSave(const TCHAR* romPath, const nds_heade
         extension[4] = 0;
         if (!SetupDsiWareSaveFile(path, romHeader.twlPublicSavSize) ||
             !CreateDeviceListPath(path, result.publicSavePath))
+        {
+            return false;
+        }
+    }
+
+    if (romHeader.twlFlags2 & NDS_HEADER_TWL_FLAGS_2_HAS_BANNER_SAVE)
+    {
+        strcpy(path, romPath);
+        char* extension = strrchr(path, '.');
+        if (!extension)
+            extension = &path[strlen(path)];
+        extension[0] = '.';
+        extension[1] = 'b';
+        extension[2] = 'n';
+        extension[3] = 'r';
+        extension[4] = 0;
+        if (!CreateBannerSave(path) ||
+            !CreateDeviceListPath(path, result.bannerSaveFilePath))
         {
             return false;
         }
@@ -239,5 +259,40 @@ bool DsiWareSaveArranger::CreateDeviceListPath(TCHAR* savePath, char* deviceList
     } while (currentPathSegment);
     LOG_DEBUG("%s\n", deviceListPath);
 
+    return true;
+}
+
+bool DsiWareSaveArranger::CreateBannerSave(TCHAR* bannerSavePath) const
+{
+    auto file = std::make_unique<FIL>();
+    if (f_open(file.get(), bannerSavePath, FA_OPEN_ALWAYS | FA_READ | FA_WRITE) != FR_OK)
+    {
+        LOG_FATAL("Failed to open or create banner save file\n");
+        return false;
+    }
+
+    u32 initialSize = f_size(file.get());
+    if (initialSize < BANNER_SAVE_SIZE)
+    {
+        if (f_lseek(file.get(), BANNER_SAVE_SIZE) != FR_OK ||
+            f_lseek(file.get(), 0) != FR_OK)
+        {
+            LOG_FATAL("Failed to create banner save file\n");
+            return false;
+        }
+
+        auto clearBuffer = std::make_unique<u8[]>(BANNER_SAVE_SIZE);
+        memset(clearBuffer.get(), 0, BANNER_SAVE_SIZE);
+
+        UINT bytesWritten = 0;
+        if (f_write(file.get(), clearBuffer.get(), BANNER_SAVE_SIZE, &bytesWritten) != FR_OK ||
+            bytesWritten != BANNER_SAVE_SIZE)
+        {
+            LOG_FATAL("Failed to create banner save file\n");
+            return false;
+        }
+    }
+
+    f_close(file.get());
     return true;
 }

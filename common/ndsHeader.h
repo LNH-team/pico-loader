@@ -71,6 +71,15 @@ static_assert(sizeof(nds_header_ntr_t) == 0x170, "Invalid size for nds_header_nt
 #define NDS_HEADER_TWL_ACCESS_CONTROL_SHARED2_ACCESS (1 << 6)
 #define NDS_HEADER_TWL_ACCESS_CONTROL_SSLCERT_ACCESS (1 << 9)
 
+#define NDS_HEADER_TWL_FLAGS_2_USE_TWL_CODEC                    (1 << 0)
+#define NDS_HEADER_TWL_FLAGS_2_REQUIRE_EULA                     (1 << 1)
+#define NDS_HEADER_TWL_FLAGS_2_HAS_BANNER_SAVE                  (1 << 2)
+#define NDS_HEADER_TWL_FLAGS_2_LAUNCHER_WIFI_CONNECTION_ICON    (1 << 3)
+#define NDS_HEADER_TWL_FLAGS_2_LAUNCHER_DS_WIRELESS_ICON        (1 << 4)
+#define NDS_HEADER_TWL_FLAGS_2_NTR_WITH_BANNER_HASH             (1 << 5)
+#define NDS_HEADER_TWL_FLAGS_2_NTR_WITH_SIGNATURE               (1 << 6)
+#define NDS_HEADER_TWL_FLAGS_2_IS_DEV_APP                       (1 << 7)
+
 struct nds_header_twl_t : public nds_header_ntr_t
 {
     u8 gap170[0x10];

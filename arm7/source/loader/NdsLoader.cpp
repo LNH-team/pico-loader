@@ -348,7 +348,7 @@ void NdsLoader::Load(BootMode bootMode)
     {
         if (_runInDSiMode)
         {
-            if (!(_romHeader.twlFlags2 & 1))
+            if (!(_romHeader.twlFlags2 & NDS_HEADER_TWL_FLAGS_2_USE_TWL_CODEC))
             {
                 DSMode().SwitchToDSTouchAndSoundMode(_romHeader.gameCode);
             }
@@ -569,9 +569,14 @@ void NdsLoader::ApplyArm7Patches()
     PreprocessCheats();
     void* patchSpaceStart = (void*)receiveFromArm9();
     void* cheatsPtr = (void*)receiveFromArm9();
+    char* bannerSavePathPtr = (char*)receiveFromArm9();
     if (cheatsPtr != nullptr && _cheats != nullptr)
     {
         memcpy(cheatsPtr, _cheats, _cheats->length);
+    }
+    if (bannerSavePathPtr != nullptr)
+    {
+        memcpy(bannerSavePathPtr, _dsiwareSaveResult.bannerSaveFilePath, 64);
     }
     if (patchSpaceStart)
     {

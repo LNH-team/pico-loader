@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Support for banner save files
+
 ## [v1.7.1] - 28 Jun 2026
 
 ### Fixed

@@ -162,13 +162,15 @@ static void handleApplyArm9PatchesCommand()
 static void handleApplyArm7PatchesCommand(u32 cheatsLength)
 {
     void* cheats = nullptr;
-    void* patchSpaceStart = Arm7Patcher().ApplyPatches(sLoaderPlatform, cheatsLength, cheats, sRunInDSiMode);
+    char* bannerSavePath = nullptr;
+    void* patchSpaceStart = Arm7Patcher().ApplyPatches(sLoaderPlatform, cheatsLength, cheats, bannerSavePath, sRunInDSiMode);
     if (sSoftResetCheatsPointer != nullptr)
     {
         *sSoftResetCheatsPointer = cheats;
     }
     ipc_sendWordDirect((u32)patchSpaceStart);
     ipc_sendWordDirect((u32)cheats);
+    ipc_sendWordDirect((u32)bannerSavePath);
 }
 
 static void handleSetAPInfoCommand()

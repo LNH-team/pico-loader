@@ -14,6 +14,9 @@ struct DsiWareSaveResult
 
     /// @brief The short filename path of rom file.
     char romFilePath[64];
+
+    /// @brief The short filename path of banner save file.
+    char bannerSaveFilePath[64];
 };
 
 /// @brief Class for setting up the save files for DSiWare roms.
@@ -62,4 +65,5 @@ private:
     bool SetupDsiWareSaveFile(const TCHAR* savePath, u32 saveSize) const;
     std::unique_ptr<fat_header_t> CreateFatHeader(u32 saveSize) const;
     bool CreateDeviceListPath(TCHAR* savePath, char* deviceListPath) const;
+    bool CreateBannerSave(TCHAR* bannerSavePath) const;
 };

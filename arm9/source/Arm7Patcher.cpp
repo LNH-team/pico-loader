@@ -10,6 +10,7 @@
 #include "patches/PatchContext.h"
 #include "patches/platform/LoaderPlatform.h"
 #include "patches/arm7/sdk2to4/CardiTaskThreadPatch.h"
+#include "patches/arm7/sdk5/BannerSavePatch.h"
 #include "patches/arm7/sdk5/CardiDoTaskFromArm9Patch.h"
 #include "patches/arm7/OsGetInitArenaLoPatch.h"
 #include "patches/arm7/DisableArm7WramClearPatch.h"
@@ -30,7 +31,8 @@ static u32 correctAddress(u32 address, const nds_header_ntr_t* romHeader)
     }
 }
 
-void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheatsLength, void*& cheatsPtr, bool runInDSiMode) const
+void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheatsLength,
+    void*& cheatsPtr, char*& bannerSavePathPtr, bool runInDSiMode) const
 {
     cheatsPtr = nullptr;
     auto romHeader = (const nds_header_ntr_t*)TWL_SHARED_MEMORY->ntrSharedMem.romHeader;
@@ -118,7 +120,18 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
                 patchCollection.AddPatch(new Sdk5DsiSdCardRedirectPatch());
             }
 
-            if (!twlRomHeader->IsDsiWare())
+            if (twlRomHeader->IsDsiWare())
+            {
+                if (twlRomHeader->twlFlags2 & NDS_HEADER_TWL_FLAGS_2_HAS_BANNER_SAVE)
+                {
+                    char* bannerSavePath = (char*)correctAddress(mainMemoryArenaLo, romHeader);
+                    LOG_DEBUG("Banner save path placed at 0x%p\n", bannerSavePath);
+                    bannerSavePathPtr = bannerSavePath;
+                    patchCollection.AddPatch(new BannerSavePatch(bannerSavePath));
+                    mainMemoryArenaLo += 64;
+                }
+            }
+            else
             {
                 void* saveTmpBuffer = (void*)correctAddress(mainMemoryArenaLo, romHeader);
                 mainMemoryArenaLo += 512;

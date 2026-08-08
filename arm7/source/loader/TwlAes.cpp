@@ -104,7 +104,7 @@ void TwlAes::DecryptModuleAes(void* data, u32 length, const aes_u128_t* iv) cons
 
 void TwlAes::SetupModuleKeyXY(const nds_header_twl_t* romHeader) const
 {
-    if ((romHeader->twlFlags & (1 << 2)) || (romHeader->twlFlags2 & (1 << 7)))
+    if ((romHeader->twlFlags & (1 << 2)) || (romHeader->twlFlags2 & NDS_HEADER_TWL_FLAGS_2_IS_DEV_APP))
     {
         // debug
         aes_setKey(KEY_SLOT_MODULE, (const aes_u128_t*)romHeader);
