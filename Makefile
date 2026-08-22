@@ -1,8 +1,14 @@
+PICO_PLATFORM ?= DSPICO
+
+PICO_LOADER_CONVERTER	:=	tools/PicoLoaderConverter/bin/PicoLoaderConverter.dll
+PICO_LOADER_CONVERTER_DEPS	:=	\
+	$(shell find -L tools/PicoLoaderConverter/PicoLoaderConverter -type f) \
+	tools/PicoLoaderConverter/Directory.Build.props \
+	tools/PicoLoaderConverter/PicoLoaderConverter.sln
+
 .PHONY: loader9 loader7 clean
 
-all: checklibtwl loader9 loader7 apList saveList patchList
-
-PICO_PLATFORM ?= DSPICO
+all: checklibtwl loader9 loader7 data/aplist.bin data/savelist.bin data/patchlist.bin
 
 checklibtwl:
 	$(MAKE) -C libs/libtwl
@@ -13,19 +19,19 @@ loader9: checklibtwl
 loader7: checklibtwl
 	$(MAKE) -f Makefile.arm7
 
-picoLoaderConverter:
+$(PICO_LOADER_CONVERTER): $(PICO_LOADER_CONVERTER_DEPS) 
 	dotnet build tools/PicoLoaderConverter/PicoLoaderConverter.sln
 
-apList: picoLoaderConverter data/aplist.csv
-	dotnet tools/PicoLoaderConverter/PicoLoaderConverter/bin/Debug/net9.0/PicoLoaderConverter.dll aplist -i data/aplist.csv -o data/aplist.bin
+data/aplist.bin: $(PICO_LOADER_CONVERTER) data/aplist.csv
+	dotnet $(PICO_LOADER_CONVERTER) aplist -i data/aplist.csv -o $@
 
-saveList: picoLoaderConverter data/savelist.csv
-	dotnet tools/PicoLoaderConverter/PicoLoaderConverter/bin/Debug/net9.0/PicoLoaderConverter.dll savelist -i data/savelist.csv -o data/savelist.bin
+data/savelist.bin: $(PICO_LOADER_CONVERTER) data/savelist.csv
+	dotnet $(PICO_LOADER_CONVERTER) savelist -i data/savelist.csv -o $@
 
-patchList: picoLoaderConverter data/patchlist.json
-	dotnet tools/PicoLoaderConverter/PicoLoaderConverter/bin/Debug/net9.0/PicoLoaderConverter.dll patchlist -i data/patchlist.json -o data/patchlist.bin
+data/patchlist.bin: $(PICO_LOADER_CONVERTER) data/patchlist.json
+	dotnet $(PICO_LOADER_CONVERTER) patchlist -i data/patchlist.json -o $@
 
 clean:
 	$(MAKE) -f Makefile.arm7 clean
 	$(MAKE) -f Makefile.arm9 clean
-	rm -rf build
+	rm -rf build tools/PicoLoaderConverter/bin tools/PicoLoaderConverter/artifacts
