@@ -25,11 +25,8 @@ iorpg_readSd_sdsc_shift:
     ldr r3, iorpg_readSd_sendSdioCommand_address
     bl blx_r3
 
-    // Wait for SD state
-    movs r0, #7
-    ldr r3, iorpg_readSd_sdWaitForState_address
+    ldr r3, iorpg_readSd_cardWaitReady_address
     bl blx_r3
-
     pop {r0-r1}
 
     // Read sectors. Parameters identical to readSd
@@ -58,8 +55,8 @@ iorpg_readSd_sendSdioCommand_address:
 iorpg_readSd_sdReadLoop_address:
     .word 0
 
-.global iorpg_readSd_sdWaitForState_address
-iorpg_readSd_sdWaitForState_address:
+.global iorpg_readSd_cardWaitReady_address
+iorpg_readSd_cardWaitReady_address:
     .word 0
 
 .global iorpg_readSd_cmd18_command
