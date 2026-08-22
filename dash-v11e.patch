@@ -1,0 +1,120 @@
+diff --git a/arm9/source/patches/arm9/sdk2to4/CardiReadCardPatch.cpp b/arm9/source/patches/arm9/sdk2to4/CardiReadCardPatch.cpp
+index d48e7b5..b5020fe 100644
+--- a/arm9/source/patches/arm9/sdk2to4/CardiReadCardPatch.cpp
++++ b/arm9/source/patches/arm9/sdk2to4/CardiReadCardPatch.cpp
+@@ -9,6 +9,7 @@
+ #include "gameCode.h"
+ #include "CardiReadCardPatchAsm.h"
+ #include "CardiReadCardPatch.h"
++#include "DashCmdPatchCode.h"
+ 
+ static const u32 sCARDiReadCardPatternUnknown[] = { 0xE92D4FF0u, 0xE24DD004u, 0xE1A0A000u, 0xE59F90D8u };
+ static const u32 sCARDiReadCardPatternSdk20029A7[] = { 0xE92D4FF0u, 0xE24DD004u, 0xE1A0A000u, 0xE59F90E0u };
+@@ -293,4 +294,30 @@ void CardiReadCardPatch::ApplyPatch(PatchContext& patchContext)
+ 
+     memcpy(patch1Address, SECTION_START(patch_cardireadcard), patch1Size);
+     memcpy(patch4Address, SECTION_START(fixcp15), patch4Size);
++
++    // Pokemon Dash (APD*) : le jeu lit son systeme de fichiers via un moteur
++    // DMA carte qui lui est propre, hors des fonctions CARDi_* redirigees vers
++    // la SD. On intercepte l'assemblage de la commande carte 0xB7 a 0x0206D3A4
++    // pour y substituer une lecture SD, dans le contexte d'execution de Dash.
++    if ((patchContext.GetGameCode() & 0x00FFFFFF) == GAMECODE_NO_REGION("APD"))
++    {
++        u32 dashSize = SECTION_SIZE(dash_cmd_fix);
++        void* dashAddr = patchContext.GetPatchHeap().Alloc(dashSize);
++        dbr_fixcp15    = __patch_cardireadcard_fix_cp15_asm_address;
++        dbr_remap      = __patch_cardireadcard_rom_offset_to_sd_sector_asm_address;
++        dbr_sdread     = __patch_cardireadcard_sdread_asm_address;
++        dbr_global_ptr = *(u32*)0x0206D470u;   // = 0x020D6144, contexte du moteur
++        memcpy(dashAddr, SECTION_START(dash_cmd_fix), dashSize);
++
++        u32 trampolineEntry = (u32)&dash_cmd_patch_entry
++                              - (u32)SECTION_START(dash_cmd_fix) + (u32)dashAddr;
++
++        volatile u32* ii = (volatile u32*)0x0206D3A4u;
++        // ii[0] : lsr r1, r5, #8  -> inchange (r5 = offset ROM du secteur)
++        ii[1] = 0xE1A00005u;   // mov r0, r5   : passe l'offset au trampoline
++        u32 blOffset = ((trampolineEntry - ((u32)&ii[2] + 8u)) >> 2) & 0x00FFFFFFu;
++        ii[2] = 0xEB000000u | blOffset;
++        ii[3] = 0xE28FF058u;   // add pc, pc, #0x58 -> ii+27
++        ii[28] = 0xE1A00000u;  // nop : supprime le dernier octet de commande
++    }
+ }
+diff --git a/arm9/source/patches/arm9/sdk2to4/DashCmdPatchCode.h b/arm9/source/patches/arm9/sdk2to4/DashCmdPatchCode.h
+new file mode 100644
+index 0000000..f445043
+--- /dev/null
++++ b/arm9/source/patches/arm9/sdk2to4/DashCmdPatchCode.h
+@@ -0,0 +1,11 @@
++#pragma once
++#include "common.h"
++#include "sections.h"
++
++DEFINE_SECTION_SYMBOLS(dash_cmd_fix);
++
++extern "C" void dash_cmd_patch_entry();
++extern "C" u32 dbr_fixcp15;
++extern "C" u32 dbr_remap;
++extern "C" u32 dbr_sdread;
++extern "C" u32 dbr_global_ptr;
+diff --git a/arm9/source/patches/arm9/sdk2to4/DashCmdPatchCode.s b/arm9/source/patches/arm9/sdk2to4/DashCmdPatchCode.s
+new file mode 100644
+index 0000000..45f990b
+--- /dev/null
++++ b/arm9/source/patches/arm9/sdk2to4/DashCmdPatchCode.s
+@@ -0,0 +1,54 @@
++.cpu arm946e-s
++.section "dash_cmd_fix", "ax"
++.syntax unified
++.arm
++
++// Pokemon Dash (APDP) - lecture carte redirigee vers la SD.
++//
++// Point d'accroche : 0x0206D3A4, la ou le moteur propre a Dash assemble la
++// commande carte 0xB7. On y substitue une lecture SD, dans le contexte
++// d'execution de Dash lui-meme.
++//
++//   ctx   = [dbr_global_ptr]        (0x020D6144 = valeur du pool 0x0206D470)
++//   dst   = [ctx+0x30] - 0x200      (destination du secteur courant)
++//   count = [ctx+0x34] + 1          (secteurs restants + le courant)
++//
++// Zero pile : la pile IRQ de Dash est trop petite pour un push, lr est
++// sauvegarde dans la section elle-meme. Offsets de pool calcules par
++// l'assembleur via des etiquettes symboliques.
++
++.global dash_cmd_patch_entry
++.type dash_cmd_patch_entry, %function
++dash_cmd_patch_entry:
++    str  lr,  saved_lr
++    mov  r12, r0                 // r12 = offset ROM
++    ldr  r3,  dbr_fixcp15
++    blx  r3
++    mov  r0,  r12
++    ldr  r3,  dbr_remap
++    blx  r3                      // r0 = secteur SD
++    mov  r12, r0
++    ldr  r0,  dbr_global_ptr
++    ldr  r0,  [r0]               // r0 = ctx
++    ldr  r1,  [r0, #0x30]        // r1 = destination avancee
++    ldr  r2,  [r0, #0x34]        // r2 = secteurs restants
++    sub  r1,  r1, #0x200         // r1 = destination courante
++    add  r2,  r2, #1             // r2 = total a lire
++    mov  r0,  r12                // r0 = secteur SD
++    ldr  r3,  dbr_sdread
++    blx  r3
++    ldr  pc,  saved_lr
++
++.balign 4
++saved_lr:         .word 0
++.global dbr_fixcp15
++dbr_fixcp15:      .word 0
++.global dbr_remap
++dbr_remap:        .word 0
++.global dbr_global_ptr
++dbr_global_ptr:   .word 0
++.global dbr_sdread
++dbr_sdread:       .word 0
++
++.pool
++.end
