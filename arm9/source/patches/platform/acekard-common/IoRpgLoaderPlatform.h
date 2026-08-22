@@ -1,6 +1,7 @@
 #pragma once
 #include "../LoaderPlatform.h"
 #include "IoRpgDefinitions.h"
+#include "IoRpgCardWaitReadyPatchCode.h"
 #include "IoRpgSdHelperPatchCode.h"
 #include "IoRpgSdReadLoopPatchCode.h"
 #include "IoRpgReadSdPatchCode.h"
@@ -26,6 +27,7 @@ public:
         return patchCodeCollection.GetOrAddSharedPatchCode([&]
         {
             return new IoRpgReadSdPatchCode(patchHeap,
+                CreateCardWaitReadyPatchCode(patchCodeCollection, patchHeap),
                 CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
                 patchCodeCollection.GetOrAddSharedPatchCode([&]
                 {
@@ -44,6 +46,7 @@ public:
     {
         return patchCodeCollection.AddUniquePatchCode<IoRpgReadSdDmaPatchCode>(
             patchHeap,
+            CreateCardWaitReadyPatchCode(patchCodeCollection, patchHeap),
             CreateSdHelperPatchCode(patchCodeCollection, patchHeap),
             patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
@@ -81,6 +84,15 @@ protected:
             return patchCodeCollection.GetOrAddSharedPatchCode([&]
             {
                 return new IoRpgSdHelperPatchCode(patchHeap, GetPlatformSpecifics());
+            });
+        }
+
+    const IoRpgCardWaitReadyPatchCode* CreateCardWaitReadyPatchCode(
+        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const
+        {
+            return patchCodeCollection.GetOrAddSharedPatchCode([&]
+            {
+                return new IoRpgCardWaitReadyPatchCode(patchHeap);
             });
         }
 
