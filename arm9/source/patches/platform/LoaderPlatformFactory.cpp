@@ -19,6 +19,7 @@
 #include "patches/platform/mpcf/MPCFLoaderPlatform.h"
 #include "patches/platform/m3cf/M3CFLoaderPlatform.h"
 #include "patches/platform/mmcf/MMCFLoaderPlatform.h"
+#include "patches/platform/ez5h/Ez5hLoaderPlatform.h"
 #include "LoaderPlatformFactory.h"
 
 LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
@@ -61,6 +62,8 @@ LoaderPlatform* LoaderPlatformFactory::CreateLoaderPlatform() const
     return new M3CFLoaderPlatform();
 #elif defined(PICO_LOADER_TARGET_MMCF)
     return new MMCFLoaderPlatform();
+#elif defined(PICO_LOADER_TARGET_EZ5H)
+    return new Ez5hLoaderPlatform();
 #else
 #error "No loader platform defined"
     return nullptr;
