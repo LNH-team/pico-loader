@@ -1,6 +1,7 @@
 #pragma once
 #include "../LoaderPlatform.h"
 #include "EzpReadSectorsPatchCode.h"
+#include "EzpReadSectorsDmaPatchCode.h"
 #include "EzpReadSdDataPatchCode.h"
 #include "EzpWriteSectorsPatchCode.h"
 
@@ -21,6 +22,13 @@ public:
         });
     }
 
+    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(PatchCodeCollection& patchCodeCollection,
+        PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr) const override
+    {
+        return patchCodeCollection.AddUniquePatchCode<EzpReadSectorsDmaPatchCode>(
+            patchHeap, miiCardDmaCopy32Ptr);
+    }
+
     const IWriteSectorsPatchCode* CreateSdWritePatchCode(
         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
     {
@@ -29,6 +37,8 @@ public:
             return new EzpWriteSectorsPatchCode(patchHeap);
         });
     }
+
+    bool HasDmaSdReads() const override { return true; }
 
     LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
 };
