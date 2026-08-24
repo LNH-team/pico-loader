@@ -5,8 +5,6 @@
 class Scfg7ClearPatch : public Patch
 {
 public:
-    explicit Scfg7ClearPatch() { }
-
     bool FindPatchTarget(PatchContext& patchContext) override;
     void ApplyPatch(PatchContext& patchContext) override;
 
