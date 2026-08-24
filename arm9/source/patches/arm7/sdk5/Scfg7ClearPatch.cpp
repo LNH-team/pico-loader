@@ -14,7 +14,7 @@ bool Scfg7ClearPatch::FindPatchTarget(PatchContext& patchContext)
         LOG_DEBUG("Scfg7 Clear patch: %p\n", _patchLocation);
     }
 
-    return _patchLocation != nullptr;
+    return true;
 }
 
 void Scfg7ClearPatch::ApplyPatch(PatchContext& patchContext)
