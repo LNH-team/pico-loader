@@ -1,5 +1,5 @@
 #pragma once
-#include "loader/dldiHeader.h"
+#include "dldiHeader.h"
 
 bool dldi_init();
 bool dldi_patchTo(dldi_header_t* stub);
