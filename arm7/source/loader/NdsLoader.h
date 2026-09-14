@@ -2,6 +2,7 @@
 #include "common.h"
 #include "../../include/picoLoader7.h"
 #include "ndsHeader.h"
+#include "dldiHeader.h"
 #include "DsiWareSaveArranger.h"
 #include "BootMode.h"
 #include "ConsoleRegion.h"
@@ -84,6 +85,8 @@ private:
     bool TryDecryptArm7i();
     bool TryLoadArm7();
     bool TryLoadArm7i();
+    dldi_header_t* FindDldiStub(u32 loadAddress, u32 size) const;
+    bool RequiresMissingDldiDriver();
     void HandleDldiPatching();
     void StartRom(BootMode bootMode);
     void SetupTwlConfig();
