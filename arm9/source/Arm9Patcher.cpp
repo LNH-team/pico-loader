@@ -10,6 +10,7 @@
 #include "patches/arm9/sdk5/CardiIsRomDmaAvailablePatch.h"
 #include "patches/arm9/sdk5/CardiReadCardWithHashInternalAsyncPatch.h"
 #include "patches/arm9/sdk5/CardiReadRomWithCpuPatch.h"
+#include "patches/arm9/sdk5/CardiReadRomWithDmaPatch.h"
 #include "patches/arm9/CardiReadRomIdCorePatch.h"
 #include "patches/arm9/OSResetSystemPatch.h"
 #include "patches/arm9/PokemonDownloaderArm9Patch.h"
@@ -202,8 +203,7 @@ Arm9Patcher::PatchResult Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderP
         {
             if (!twlRomHeader->IsDsiWare())
             {
-                patchCollection.AddPatch(new CardiIsRomDmaAvailablePatch());
-                patchCollection.AddPatch(new CardiReadRomWithCpuPatch());
+                AddSdk5CardReadPatches(patchCollection, romHeader->gameCode);
 
                 if (runInDSiMode)
                 {
@@ -274,6 +274,40 @@ const u32* Arm9Patcher::FindMIiUncompressBackward(u32 arm9LoadAddress, SdkVersio
     }
 
     return miiUncompressBackward;
+}
+
+void Arm9Patcher::AddSdk5CardReadPatches(PatchCollection& patchCollection, u32 gameCode) const
+{
+    // SDK 5 games read the rom in one of two ways: CARDi_ReadRomWithCPU copies the
+    // data with the cpu, and CARDi_ReadRomWithDma copies it with DMA. Pico Loader
+    // redirects the cpu read, and normally turns DMA reads off so that every read
+    // takes the cpu path.
+    //
+    // A few games hang when DMA reads are turned off. For those games DMA reads are
+    // left on, and CARDi_ReadRomWithDma is patched so that it performs the read with
+    // the redirected cpu read, while still completing the way a DMA read does.
+
+    // Redirect cpu reads to the sd card.
+    auto cpuReadPatch = new CardiReadRomWithCpuPatch();
+
+    // Replace DMA reads, only for the games that need them.
+    CardiReadRomWithDmaPatch* dmaReadPatch = nullptr;
+    if (CardiReadRomWithDmaPatch::IsNeededForGame(gameCode))
+    {
+        dmaReadPatch = new CardiReadRomWithDmaPatch(cpuReadPatch);
+    }
+
+    // Turn DMA reads off, unless the DMA read patch replaces them. If that patch
+    // cannot be applied to the game, DMA reads are turned off as usual.
+    patchCollection.AddPatch(new CardiIsRomDmaAvailablePatch(dmaReadPatch));
+
+    // The DMA read patch must be added after the cpu read patch, because it uses the
+    // location of CARDi_ReadRomWithCPU that the cpu read patch finds.
+    patchCollection.AddPatch(cpuReadPatch);
+    if (dmaReadPatch)
+    {
+        patchCollection.AddPatch(dmaReadPatch);
+    }
 }
 
 void Arm9Patcher::AddGamePatches(PatchCollection& patchCollection, u32 gameCode, const ApListEntry* apListEntry) const

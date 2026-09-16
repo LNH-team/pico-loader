@@ -1,6 +1,7 @@
 #include "common.h"
 #include "patches/PatchContext.h"
 #include "thumbInstructions.h"
+#include "CardiReadRomWithDmaPatch.h"
 #include "CardiIsRomDmaAvailablePatch.h"
 
 static const u32 sCARDiIsRomDmaAvailablePattern[] = { 0xE92D43F8u, 0xE3A04000u, 0xE1A09001u, 0xE1A08002u };
@@ -40,6 +41,8 @@ bool CardiIsRomDmaAvailablePatch::FindPatchTarget(PatchContext& patchContext)
 void CardiIsRomDmaAvailablePatch::ApplyPatch(PatchContext& patchContext)
 {
     if (!_cardiIsRomDmaAvailable)
+        return;
+    if (_cardiReadRomWithDmaPatch && _cardiReadRomWithDmaPatch->WillApply())
         return;
     if (_thumb)
     {
