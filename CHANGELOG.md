@@ -5,6 +5,9 @@
 ### Added
 - Support for banner save files
 
+## Fixed
+- BG2/BG3 reference point registers now cleared before starting ROMs
+
 ## [v1.7.1] - 28 Jun 2026
 
 ### Fixed
