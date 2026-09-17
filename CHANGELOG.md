@@ -6,7 +6,8 @@
 - Support for banner save files
 
 ### Fixed
-- Boot hang in Digging for Dinosaurs, The Magic School Bus: Oceans, I Spy Game Pack, I Spy Universe, 2 Game Pack: My Amusement Park + Digging for Dinosaurs and Animal Planet: Vet Collection - by @danyocom
+- BG2/BG3 reference point registers now cleared before starting ROMs
+- Fixed boot hang in Digging for Dinosaurs, The Magic School Bus: Oceans, I Spy Game Pack, I Spy Universe, 2 Game Pack: My Amusement Park + Digging for Dinosaurs and Animal Planet: Vet Collection
 
 ## [v1.7.1] - 28 Jun 2026
 
