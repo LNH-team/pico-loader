@@ -1230,5 +1230,86 @@
                 ]
             }
         ]
+    },
+
+    // V2GE - Mario vs. Donkey Kong - Mini-Land Mayhem! (USA) (Rev 1)
+    // V2GE - Mario vs. Donkey Kong - Mini-Land Mayhem! (USA) (Rev 2)
+    // V2GV - Mario vs. Donkey Kong - Mini-Land Mayhem! (Europe)
+    // V2GJ - Mario vs. Donkey Kong - Totsugeki! Mini-Land (Japan)
+    // V9AE - Mario vs. Donkey Kong - Mini-Land Mayhem! (USA) (Demo) (Kiosk)
+    // V9AV - Mario vs. Donkey Kong - Mini-Land Mayhem! (Europe) (Demo) (Kiosk)
+    //
+    // These DSi enhanced games read part of their data with a DMA card reader of their own,
+    // which programs the Slot-1 card and DMA directly instead of calling the SDK card functions.
+    // They only use it when OS_IsRunOnTwl reports DS mode; in DSi mode they call CARDi_ReadRom.
+    // Pico Loader redirects the SDK card functions but not this reader, so in DS mode those reads
+    // return data from the physical cartridge and sprites are missing or corrupt.
+    // The OS_IsRunOnTwl call whose result selects the reader is replaced with mov r0, #1, so the
+    // SDK read is used in both modes. Only that selection depends on the result.
+    {
+        "gameCode": "V2GE", // Mario vs. Donkey Kong - Mini-Land Mayhem! (USA) (Rev 1)
+        "gameVersion": 1,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "0200520C",
+                "data": "01 00 A0 E3"
+            }
+        ]
+    },
+    {
+        "gameCode": "V2GE", // Mario vs. Donkey Kong - Mini-Land Mayhem! (USA) (Rev 2)
+        "gameVersion": 2,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "0200520C",
+                "data": "01 00 A0 E3"
+            }
+        ]
+    },
+    {
+        "gameCode": "V2GV", // Mario vs. Donkey Kong - Mini-Land Mayhem! (Europe)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "0200520C",
+                "data": "01 00 A0 E3"
+            }
+        ]
+    },
+    {
+        "gameCode": "V2GJ", // Mario vs. Donkey Kong - Totsugeki! Mini-Land (Japan)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "0200520C",
+                "data": "01 00 A0 E3"
+            }
+        ]
+    },
+    {
+        "gameCode": "V9AE", // Mario vs. Donkey Kong - Mini-Land Mayhem! (USA) (Demo) (Kiosk)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "02005140",
+                "data": "01 00 A0 E3"
+            }
+        ]
+    },
+    {
+        "gameCode": "V9AV", // Mario vs. Donkey Kong - Mini-Land Mayhem! (Europe) (Demo) (Kiosk)
+        "gameVersion": 0,
+        "patches": [
+            {
+                "type": "replace",
+                "address": "0200516C",
+                "data": "01 00 A0 E3"
+            }
+        ]
     }
 ]
