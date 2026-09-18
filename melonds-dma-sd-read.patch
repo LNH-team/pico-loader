@@ -1,0 +1,156 @@
+diff --git a/arm9/source/patches/platform/melonds/MelonDSLoaderPlatform.h b/arm9/source/patches/platform/melonds/MelonDSLoaderPlatform.h
+index 42059cc..5b82e58 100644
+--- a/arm9/source/patches/platform/melonds/MelonDSLoaderPlatform.h
++++ b/arm9/source/patches/platform/melonds/MelonDSLoaderPlatform.h
+@@ -1,6 +1,7 @@
+ #pragma once
+ #include "../LoaderPlatform.h"
+ #include "MelonDSReadSdPatchCode.h"
++#include "MelonDSReadSdDmaPatchCode.h"
+ #include "MelonDSWriteSdPatchCode.h"
+ 
+ /// @brief Implementation of LoaderPlatform for MelonDS
+@@ -16,6 +17,16 @@ public:
+         });
+     }
+ 
++    const IReadSectorsDmaPatchCode* CreateSdReadDmaPatchCode(
++        PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap,
++        const void* miiCardDmaCopy32Ptr) const override
++    {
++        return patchCodeCollection.GetOrAddSharedPatchCode([&]
++        {
++            return new MelonDSReadSdDmaPatchCode(patchHeap, miiCardDmaCopy32Ptr);
++        });
++    }
++
+     const IWriteSectorsPatchCode* CreateSdWritePatchCode(
+         PatchCodeCollection& patchCodeCollection, PatchHeap& patchHeap) const override
+     {
+@@ -25,5 +36,7 @@ public:
+         });
+     }
+ 
++    bool HasDmaSdReads() const override { return true; }
++
+     LoaderPlatformType GetPlatformType() const override { return LoaderPlatformType::Slot1; }
+ };
+diff --git a/arm9/source/patches/platform/melonds/MelonDSReadSdDmaPatchCode.h b/arm9/source/patches/platform/melonds/MelonDSReadSdDmaPatchCode.h
+new file mode 100644
+index 0000000..54a3934
+--- /dev/null
++++ b/arm9/source/patches/platform/melonds/MelonDSReadSdDmaPatchCode.h
+@@ -0,0 +1,30 @@
++#pragma once
++#include "sections.h"
++#include "patches/PatchCode.h"
++#include "../IReadSectorsDmaPatchCode.h"
++
++DEFINE_SECTION_SYMBOLS(melonds_readsddma);
++
++extern "C" void melonds_readSdDma(u32 srcSector, u32 previousSrcSector, u32 dmaChannel, void* dst);
++extern "C" void melonds_readSdDmaFinish(void);
++extern "C" u32 melonds_readsddma_miiCardDmaCopy32Ptr;
++
++class MelonDSReadSdDmaPatchCode : public PatchCode, public IReadSectorsDmaPatchCode
++{
++public:
++    MelonDSReadSdDmaPatchCode(PatchHeap& patchHeap, const void* miiCardDmaCopy32Ptr)
++        : PatchCode(SECTION_START(melonds_readsddma), SECTION_SIZE(melonds_readsddma), patchHeap)
++    {
++        melonds_readsddma_miiCardDmaCopy32Ptr = (u32)miiCardDmaCopy32Ptr;
++    }
++
++    const ReadSectorsDmaFunc GetReadSectorsDmaFunction() const override
++    {
++        return (const ReadSectorsDmaFunc)GetAddressAtTarget((void*)melonds_readSdDma);
++    }
++
++    const ReadSectorsDmaFinishFunc GetReadSectorsDmaFinishFunction() const override
++    {
++        return (const ReadSectorsDmaFinishFunc)GetAddressAtTarget((void*)melonds_readSdDmaFinish);
++    }
++};
+diff --git a/arm9/source/patches/platform/melonds/MelonDSReadSdDmaPatchCode.s b/arm9/source/patches/platform/melonds/MelonDSReadSdDmaPatchCode.s
+new file mode 100644
+index 0000000..2c92f51
+--- /dev/null
++++ b/arm9/source/patches/platform/melonds/MelonDSReadSdDmaPatchCode.s
+@@ -0,0 +1,77 @@
++.cpu arm946e-s
++.section "melonds_readsddma", "ax"
++.syntax unified
++.thumb
++
++// Lecture SD par DMA pour la plateforme MelonDS.
++//
++// Variante de melonds_readSd : au lieu de sonder DRQ et de recopier les mots
++// avec le processeur, on programme un canal DMA en mode de demarrage carte et
++// on arme l'interruption de fin de transfert. C'est ce qui permet aux jeux
++// pilotant eux-memes la cartouche (moteur DMA propre, hors CARDi_*) de
++// continuer a tourner : leur boucle est cadencee par cette interruption.
++//
++// L'emulation melonDS s'y prete : CartHomebrew::ROMCommandStart traite la
++// commande C0 sans examiner AUXSPICNT, NDSCartSlot::Interface::RaiseDRQ appelle
++// CheckDMA() sur donnee prete, et ROMEndTransfer leve l'IRQ si le bit 14
++// d'AUXSPICNT est arme.
++//
++// r0 = secteur source
++// r1 = secteur precedent (inutilise : pas de lecture sequentielle ici)
++// r2 = canal DMA
++// r3 = destination
++.global melonds_readSdDma
++.type melonds_readSdDma, %function
++melonds_readSdDma:
++    push {r4-r7,lr}
++    movs r5, r3                 // r5 = destination (r3 sert de registre de travail)
++    movs r6, r2                 // r6 = canal DMA
++
++    ldr r4, =0x040001A0
++    movs r3, #0xC0
++    strb r3, [r4,#1]            // AUXSPICNT : slot actif + IRQ de fin de transfert
++
++    // commande de lecture SD du secteur 0xaabbccdd : C0 aa bb cc dd 00 00 00
++    movs r3, #0xC0
++    strb r3, [r4,#0x8]
++    lsrs r3, r0, #24
++    strb r3, [r4,#0x9]
++    lsrs r3, r0, #16
++    strb r3, [r4,#0xA]
++    lsrs r3, r0, #8
++    strb r3, [r4,#0xB]
++    lsls r7, r0, #24
++    lsrs r7, r7, #24            // r7 = dd
++    str r7, [r4,#0xC]           // en petit-boutiste, l'octet bas vient en premier
++
++    // programme le DMA avant de lancer le transfert :
++    // MIi_CardDmaCopy32(canal, 0x04100010, destination, 512)
++    movs r0, r6
++    ldr r1, =0x04100010
++    movs r2, r5
++    movs r3, #1
++    lsls r3, r3, #9             // 512 octets
++    ldr r7, melonds_readsddma_miiCardDmaCopy32Ptr
++    blx r7
++
++    // lance le transfert : le DMA se declenche sur DRQ, l'IRQ arrive a la fin
++    ldr r3, =0xA1586000
++    str r3, [r4,#4]
++
++    pop {r4-r7,pc}
++
++// Fin de lot : la plateforme MelonDS ne gere pas de lecture sequentielle,
++// il n'y a donc rien a clore. Presente pour satisfaire l'interface.
++.global melonds_readSdDmaFinish
++.type melonds_readSdDmaFinish, %function
++melonds_readSdDmaFinish:
++    bx lr
++
++.balign 4
++.global melonds_readsddma_miiCardDmaCopy32Ptr
++melonds_readsddma_miiCardDmaCopy32Ptr:
++    .word 0
++
++.pool
++
++.end

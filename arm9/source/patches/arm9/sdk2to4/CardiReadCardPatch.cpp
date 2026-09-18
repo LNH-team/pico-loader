@@ -9,6 +9,7 @@
 #include "gameCode.h"
 #include "CardiReadCardPatchAsm.h"
 #include "CardiReadCardPatch.h"
+#include "DashCmdPatchCode.h"
 
 static const u32 sCARDiReadCardPatternUnknown[] = { 0xE92D4FF0u, 0xE24DD004u, 0xE1A0A000u, 0xE59F90D8u };
 static const u32 sCARDiReadCardPatternSdk20029A7[] = { 0xE92D4FF0u, 0xE24DD004u, 0xE1A0A000u, 0xE59F90E0u };
@@ -146,6 +147,18 @@ void CardiReadCardPatch::ApplyPatch(PatchContext& patchContext)
         });
         __patch_cardireadcard_rom_offset_to_sd_sector_asm_address = (u32)romOffsetToSdSectorPatchCode->GetRemapFunction();
         __patch_cardireadcard_sdread_asm_address = (u32)sdReadPatchCode->GetReadSectorsFunction();
+    }
+    // v19 (Pokemon Dash) : la lecture SD par DMA vit dans sa propre section ;
+    // on l'alloue ici, tot, la ou le tas est peu fragmente (comme les autres
+    // patch codes), et non au site d'accroche Dash ou le plus grand bloc libre
+    // est reduit. dashReadDmaFn = adresse relogee de dash_readSdDma.
+    u32 dashReadDmaFn = 0;
+    if ((patchContext.GetGameCode() & 0x00FFFFFF) == GAMECODE_NO_REGION("APD"))
+    {
+        u32 dmaSize = SECTION_SIZE(dash_readsddma);
+        void* dmaAddr = patchContext.GetPatchHeap().Alloc(dmaSize);
+        memcpy(dmaAddr, SECTION_START(dash_readsddma), dmaSize);
+        dashReadDmaFn = (u32)&dash_readSdDma - (u32)SECTION_START(dash_readsddma) + (u32)dmaAddr;
     }
     u32 patch4Size = SECTION_SIZE(fixcp15);
     void* patch4Address = patchContext.GetPatchHeap().Alloc(patch4Size);
@@ -293,4 +306,35 @@ void CardiReadCardPatch::ApplyPatch(PatchContext& patchContext)
 
     memcpy(patch1Address, SECTION_START(patch_cardireadcard), patch1Size);
     memcpy(patch4Address, SECTION_START(fixcp15), patch4Size);
+
+    // Pokemon Dash (APD*) : le jeu lit son systeme de fichiers via un moteur
+    // DMA carte qui lui est propre, hors des fonctions CARDi_* redirigees vers
+    // la SD. On intercepte l'assemblage de la commande carte 0xB7 a 0x0206D3A4
+    // pour y substituer une lecture SD, dans le contexte d'execution de Dash.
+    // v19 : la lecture est par DMA (dashReadDmaFn) et non plus une copie
+    // processeur, afin de regenerer l'IRQ carte attendue par le moteur.
+    // dashReadDmaFn == 0 => l'alloc precoce a echoue : on n'accroche pas, Dash
+    // demarre comme non-patche (temoin d'echec lisible, pas de blx 0).
+    if (dashReadDmaFn != 0u
+        && (patchContext.GetGameCode() & 0x00FFFFFF) == GAMECODE_NO_REGION("APD"))
+    {
+        u32 dashSize = SECTION_SIZE(dash_cmd_fix);
+        void* dashAddr = patchContext.GetPatchHeap().Alloc(dashSize);
+        dbr_fixcp15    = __patch_cardireadcard_fix_cp15_asm_address;
+        dbr_remap      = __patch_cardireadcard_rom_offset_to_sd_sector_asm_address;
+        dbr_sdread     = dashReadDmaFn;
+        dbr_global_ptr = *(u32*)0x0206D470u;   // = 0x020D6144, contexte du moteur
+        memcpy(dashAddr, SECTION_START(dash_cmd_fix), dashSize);
+
+        u32 trampolineEntry = (u32)&dash_cmd_patch_entry
+                              - (u32)SECTION_START(dash_cmd_fix) + (u32)dashAddr;
+
+        volatile u32* ii = (volatile u32*)0x0206D3A4u;
+        // ii[0] : lsr r1, r5, #8  -> inchange (r5 = offset ROM du secteur)
+        ii[1] = 0xE1A00005u;   // mov r0, r5   : passe l'offset au trampoline
+        u32 blOffset = ((trampolineEntry - ((u32)&ii[2] + 8u)) >> 2) & 0x00FFFFFFu;
+        ii[2] = 0xEB000000u | blOffset;
+        ii[3] = 0xE28FF058u;   // add pc, pc, #0x58 -> ii+27
+        ii[28] = 0xE1A00000u;  // nop : supprime le dernier octet de commande
+    }
 }
