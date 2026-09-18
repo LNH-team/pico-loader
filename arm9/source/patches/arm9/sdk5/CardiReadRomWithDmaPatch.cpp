@@ -38,9 +38,13 @@ static constexpr u32 sReadRomWithDmaCallCount = 5;
 
 bool CardiReadRomWithDmaPatch::IsNeededForGame(u32 gameCode)
 {
-    // These games start an asynchronous ROM read and then wait for its completion
-    // callback without letting the card thread run, so a read that is queued for
-    // the card thread instead of performed with DMA never completes.
+    // These games depend on the ROM read completion being delivered from interrupt
+    // context. The SDK reaches that state only through the card transfer completion
+    // interrupt, so with DMA reads disabled the completion arrives on the card
+    // thread in thread mode instead, and the game stops making progress. The
+    // observed shapes differ: some stall with a read still queued for the card
+    // thread, others receive their data, stop issuing further reads and spin on a
+    // status byte.
     // Other games keep DMA reads disabled: the replacement performs the whole read
     // before returning, which would stall a caller that expects to keep running
     // while an asynchronous read is in progress.
