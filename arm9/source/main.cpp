@@ -23,6 +23,8 @@
 #include "Arm7Patcher.h"
 #include "patches/platform/LoaderPlatform.h"
 #include "patches/platform/LoaderPlatformFactory.h"
+#include "patches/dldi/DldiAbiAdapters.h"
+#include "dldiHeader.h"
 #include "arm9Clock.h"
 #include "errorDisplay/ErrorDisplay.h"
 #include "LoaderInfo.h"
@@ -108,6 +110,9 @@ static void bootArm9()
         REG_SCFG_EXT &= ~((1 << 13) | (1 << 31));
     }
 
+    // Nothing outside ITCM may be called past this point: VRAM A, which holds
+    // pico-loader's own ARM9 code, has just been erased and unmapped above.
+    // That is why this function carries [[gnu::section(".itcm")]].
     while (gfx_getVCount() != 191);
     while (gfx_getVCount() == 191);
     REG_IF = ~0u; // final clear of REG_IF bits
@@ -202,16 +207,78 @@ static void handleInitializeLoaderInfoCommand()
 static void handleGetSdFunctionsCommand()
 {
     mem_setNtrWramMapping(MEM_NTR_WRAM_ARM9, MEM_NTR_WRAM_ARM9);
+
+    // Build a complete, valid DLDI header, then place it - together with
+    // self-contained SD read/write code - at 0x037F8000, so pico-loader can
+    // hand booted homebrew a real, patchable driver even when no chainloader
+    // supplied one through gLoaderHeader.dldiDriver (the "no valid driver"
+    // branch of dldi_init(), see arm7/source/fat/dldi.cpp).
+    //
+    // IMPORTANT: 0x037F8000 is NTR WRAM in this mapping and does NOT support
+    // byte/halfword writes - only aligned 32-bit stores. The original
+    // version of this function only ever wrote it via *(vu32*) word stores
+    // and the patch-code copier (which copies word-wise). We therefore build
+    // the header in a normal stack buffer (byte writes fine there) and copy
+    // it in as 32-bit words - never memset()/byte-write 0x037F8000 directly,
+    // which hangs the bus.
+    //
+    // driverStartAddress is set to 0x037F8000 (this driver's own location).
+    // DldiDriver::PatchTo() relocates function pointers by
+    // (targetStub->driverStartAddress - thisDriverStartAddress); homebrew
+    // DLDI stubs on this platform declare driverStartAddress = 0x037F8000
+    // too, so that delta is zero and every address below survives patching
+    // unchanged.
+    dldi_header_t headerBuf;
+    memset(&headerBuf, 0, sizeof(headerBuf));
+    headerBuf.dldiMagic = DLDI_MAGIC;
+    memcpy(headerBuf.dldiString, " Chishm", 8);
+    headerBuf.dldiVersion = 1;
+    headerBuf.driverSize = 14; // log2(16 KiB)
+    headerBuf.fixFlags = DLDI_FIX_GLUE;
+    headerBuf.stubSize = 14;
+    strncpy((char*)headerBuf.driverName, "DSPico fallback SD driver",
+        sizeof(headerBuf.driverName) - 1);
+    headerBuf.driverStartAddress = 0x037F8000;
+    headerBuf.driverEndAddress   = 0x037FC000;
+    headerBuf.glueStartAddress   = 0x037F8080; // code region only, excludes the header
+    headerBuf.glueEndAddress     = 0x037FC000;
+    headerBuf.driverMagic  = 0x4F434950; // "PICO" - not DLDI_DRIVER_MAGIC_NONE
+    headerBuf.featureFlags = DLDI_FEATURE_CANREAD | DLDI_FEATURE_CANWRITE | DLDI_FEATURE_SLOT_NDS;
+
     PatchHeap patchHeap;
     PatchCodeCollection patchCodeCollection;
-    patchHeap.AddFreeSpace((void*)0x037F8020, 16 * 1024);
+    // Code starts after the 0x80-byte header.
+    patchHeap.AddFreeSpace((void*)0x037F8080, 16 * 1024 - 0x80);
     {
-        auto sdReadPatchCode = sLoaderPlatform->CreateSdReadPatchCode(patchCodeCollection, patchHeap);
+        auto sdReadPatchCode  = sLoaderPlatform->CreateSdReadPatchCode(patchCodeCollection, patchHeap);
         auto sdWritePatchCode = sLoaderPlatform->CreateSdWritePatchCode(patchCodeCollection, patchHeap);
-        *(vu32*)0x037F8000 = (u32)sdReadPatchCode->GetReadSectorsFunction();
-        *(vu32*)0x037F8004 = (u32)sdWritePatchCode->GetWriteSectorFunction();
+
+        // Registered via the collection so CopyAllToTarget() actually emits
+        // them (a bare `new` would leave GetAddressAtTarget() pointing at
+        // memory that never got the code, i.e. a crash on first SD call).
+        auto readAdapter  = patchCodeCollection.AddUniquePatchCode<DldiAbiReadAdapterPatchCode>(patchHeap, sdReadPatchCode);
+        auto writeAdapter = patchCodeCollection.AddUniquePatchCode<DldiAbiWriteAdapterPatchCode>(patchHeap, sdWritePatchCode);
+        auto trivialStub  = patchCodeCollection.AddUniquePatchCode<DldiAbiTrivialStubPatchCode>(patchHeap);
+
         patchCodeCollection.CopyAllToTarget();
+
+        headerBuf.readSectorsFuncAddress  = readAdapter->GetDldiReadSectorsFuncAddress();
+        headerBuf.writeSectorsFuncAddress = writeAdapter->GetDldiWriteSectorsFuncAddress();
+        headerBuf.startupFuncAddress      = trivialStub->GetDldiTrivialFuncAddress();
+        headerBuf.isInsertedFuncAddress   = trivialStub->GetDldiTrivialFuncAddress();
+        headerBuf.clearStatusFuncAddress  = trivialStub->GetDldiTrivialFuncAddress();
+        headerBuf.shutdownFuncAddress     = trivialStub->GetDldiTrivialFuncAddress();
     }
+
+    // Copy the fully-built header to 0x037F8000 as 32-bit words only.
+    // sizeof(dldi_header_t) is a multiple of 4 (0x80); assert-friendly.
+    {
+        const u32* src = (const u32*)&headerBuf;
+        volatile u32* dst = (volatile u32*)0x037F8000;
+        for (u32 i = 0; i < sizeof(dldi_header_t) / 4; i++)
+            dst[i] = src[i];
+    }
+
     dc_flushAll();
     dc_drainWriteBuffer();
     mem_setNtrWramMapping(MEM_NTR_WRAM_ARM7, MEM_NTR_WRAM_ARM7);
@@ -257,6 +324,7 @@ static void handleBootCommand()
         REG_SCFG_CLK = 0x87;
         REG_SCFG_RST = 1;
     }
+
     bootArm9();
 }
 
@@ -402,7 +470,9 @@ extern "C" void loaderMain()
     while (true)
     {
         if (ipc_isRecvFifoEmpty())
+        {
             continue;
+        }
 
         u32 word = ipc_recvWordDirect();
         handleArm7Command(word);

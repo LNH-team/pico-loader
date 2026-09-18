@@ -7,22 +7,6 @@
 static u8 sDldiBuffer[16 * 1024] alignas(32);
 static DldiDriver sDldiDriver = DldiDriver((dldi_header_t*)sDldiBuffer);
 
-[[gnu::target("thumb")]]
-static bool readSectorsWithPatchCode(u32 sector, u32 count, void* buffer)
-{
-    typedef void (*patch_code_read_sd_sectors_t)(u32 srcSector, void* dst, u32 sectorCount);
-    (*(patch_code_read_sd_sectors_t*)0x037F8000)(sector, buffer, count);
-    return true;
-}
-
-[[gnu::target("thumb")]]
-static bool writeSectorsWithPatchCode(u32 sector, u32 count, const void* buffer)
-{
-    typedef void (*patch_code_write_sd_sectors_t)(u32 dstSector, const void* src, u32 sectorCount);
-    (*(patch_code_write_sd_sectors_t*)0x037F8004)(sector, buffer, count);
-    return true;
-}
-
 bool dldi_init()
 {
     auto driver = (const dldi_header_t*)gLoaderHeader.dldiDriver;
@@ -38,7 +22,16 @@ bool dldi_init()
             return false;
         }
 
-        // Try to get the patch code
+        // Ask the ARM9 to build a complete, valid DLDI driver at 0x037F8000
+        // (see handleGetSdFunctionsCommand() in arm9/source/main.cpp).
+        //
+        // It must be a real driver, not just entry points: this buffer serves
+        // two purposes. We call through it ourselves, exactly as the
+        // handed-down-driver branch above does, and we later patch it into
+        // booted homebrew with DldiDriver::PatchTo(). PatchTo() validates
+        // dldiMagic and refuses anything without it, so a pair of bare
+        // function pointers would leave booted homebrew running its own
+        // unpatched placeholder stub, whose reads always fail.
         sendToArm9(IPC_COMMAND_ARM9_GET_SD_FUNCTIONS);
         if (!receiveFromArm9())
         {
@@ -46,9 +39,23 @@ bool dldi_init()
             return false;
         }
 
-        LOG_DEBUG("Using patch code sd read/write\n");
-        ((dldi_header_t*)sDldiBuffer)->readSectorsFuncAddress = (u32)readSectorsWithPatchCode;
-        ((dldi_header_t*)sDldiBuffer)->writeSectorsFuncAddress = (u32)writeSectorsWithPatchCode;
+        LOG_DEBUG("Using patch code sd driver\n");
+        memcpy(sDldiBuffer, (const void*)0x037F8000, sizeof(sDldiBuffer));
+
+        // The driver's function-pointer fields, and the adapters' internal
+        // jump-target words, were written for the 0x037F8000 staging address.
+        // It lives in sDldiBuffer now, so without relocating, every call
+        // through it would jump back into 0x037F8000 - correct only for as
+        // long as that shared staging address happens to still hold these
+        // bytes. Same sequence as the handed-down-driver branch below.
+        sDldiDriver.Relocate();
+        sDldiDriver.PrepareForUse();
+
+        if (!sDldiDriver.Startup())
+        {
+            LOG_ERROR("DLDI startup failed\n");
+            return false;
+        }
     }
     else
     {
