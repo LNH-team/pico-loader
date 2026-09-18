@@ -294,6 +294,20 @@ void NdsLoader::Load(BootMode bootMode)
             ErrorDisplay().PrintError("Failed to load arm7i.");
             return;
         }
+
+        if (isHomebrew && RequiresMissingDldiDriver())
+        {
+            // A power cycle is the only recovery that works on every console. The
+            // next boot hands a driver down again, which also saves it to the card.
+            //
+            // Supported consoles could instead restart or power off when a button is
+            // pressed: a DSi or a 3DS in DSi mode can be reset through the MCU, while a
+            // DS or DS Lite cannot restart from software and can only be powered off
+            // through the power management device.
+            ErrorDisplay().PrintError(
+                "Pico Loader: DLDI driver not found.\n\nThis homebrew application cannot\naccess the SD card without it.\n\nPlease turn the console off and\non again.");
+            return;
+        }
     }
 
     if (!isHomebrew)
@@ -973,6 +987,27 @@ bool NdsLoader::TryLoadArm7i()
     return TryDecryptArm7i();
 }
 
+dldi_header_t* NdsLoader::FindDldiStub(u32 loadAddress, u32 size) const
+{
+    int offset = sDldiStubMatcher.FindFirstOccurance((const u32*)loadAddress, size >> 2);
+    if (offset < 0)
+    {
+        return nullptr;
+    }
+    return (dldi_header_t*)(loadAddress + (offset << 2));
+}
+
+bool NdsLoader::RequiresMissingDldiDriver()
+{
+    // Only the DLDI boot drive hands drivers to booted programs. Without a driver the
+    // program would start with its placeholder stub, whose reads always fail.
+    return gLoaderHeader.bootDrive == PLOAD_BOOT_DRIVE_DLDI &&
+        !dldi_hasDriver() &&
+        ShouldAttemptDldiPatch() &&
+        (FindDldiStub(_romHeader.arm9LoadAddress, _romHeader.arm9Size) ||
+         FindDldiStub(_romHeader.arm7LoadAddress, _romHeader.arm7Size));
+}
+
 void NdsLoader::HandleDldiPatching()
 {
     if (!ShouldAttemptDldiPatch())
@@ -980,20 +1015,16 @@ void NdsLoader::HandleDldiPatching()
         return;
     }
 
-    int arm9DldiAddr = sDldiStubMatcher.FindFirstOccurance(
-        (const u32*)_romHeader.arm9LoadAddress, _romHeader.arm9Size >> 2) << 2;
-    if (arm9DldiAddr >= 0)
+    dldi_header_t* arm9Dldi = FindDldiStub(_romHeader.arm9LoadAddress, _romHeader.arm9Size);
+    if (arm9Dldi)
     {
-        dldi_header_t* arm9Dldi = (dldi_header_t*)(_romHeader.arm9LoadAddress + arm9DldiAddr);
         LOG_DEBUG("Dldi found in arm9 at address %p\n", arm9Dldi);
         dldi_patchTo(arm9Dldi);
     }
 
-    int arm7DldiAddr = sDldiStubMatcher.FindFirstOccurance(
-        (const u32*)_romHeader.arm7LoadAddress, _romHeader.arm7Size >> 2) << 2;
-    if (arm7DldiAddr >= 0)
+    dldi_header_t* arm7Dldi = FindDldiStub(_romHeader.arm7LoadAddress, _romHeader.arm7Size);
+    if (arm7Dldi)
     {
-        dldi_header_t* arm7Dldi = (dldi_header_t*)(_romHeader.arm7LoadAddress + arm7DldiAddr);
         LOG_DEBUG("Dldi found in arm7 at address %p\n", arm7Dldi);
         dldi_patchTo(arm7Dldi);
     }
