@@ -31,6 +31,7 @@ public:
 
 private:
     const u32* FindMIiUncompressBackward(u32 arm9LoadAddress, SdkVersion sdkVersion) const;
+    void AddSdk5CardReadPatches(PatchCollection& patchCollection, u32 gameCode) const;
     void AddGamePatches(PatchCollection& patchCollection, u32 gameCode, const ApListEntry* apListEntry) const;
     void AddDSProtectPatches(PatchCollection& patchCollection,
         OverlayHookPatch* overlayHookPatch, const ApListEntry* apListEntry) const;
