@@ -432,7 +432,7 @@ void NdsLoader::InsertArgv()
 
     // Find the address to write argv
     u32 argDst = ((_romHeader.arm9LoadAddress + _romHeader.arm9Size + 3) & ~3) + 4;
-    if (_romHeader.SupportsDsiMode())
+    if (_runInDSiMode)
     {
         u32 argDstTwl = ((_romHeader.arm9iLoadAddress + _romHeader.arm9iSize + 3) & ~3) + 4;
         if (argDstTwl > argDst)
