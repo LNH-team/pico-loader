@@ -63,9 +63,6 @@ iorpg_sdWaitForState_read_wait_data_ready:
     bcc iorpg_sdWaitForState_read_wait_data_ready // if not, loop
 
     ldr r7, [r5]
-    ldr r6, =0xFC2 // card ID
-    cmp r7, r6
-    beq iorpg_sdWaitForState_read_loop
 
 .global iorpg_sdWaitForState_shift
 iorpg_sdWaitForState_shift:

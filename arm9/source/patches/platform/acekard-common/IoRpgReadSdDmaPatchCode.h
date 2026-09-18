@@ -13,6 +13,7 @@ extern "C" void iorpg_finishReadSdDma(void);
 extern "C" void iorpg_dmaStartTransfer(u32 srcSector, u32 previousSrcSector, u32 dmaChannel, void* dst);
 
 extern u32 iorpg_readSdDma_sendSdioCommand_address;
+extern u32 iorpg_readSdDma_cardWaitReady_address;
 extern u32 iorpg_readSdDma_sdWaitForState_address;
 extern u32 iorpg_readSdDma_cmd12_command;
 extern u32 iorpg_readSdDma_cmd18_command;
@@ -40,12 +41,14 @@ class IoRpgReadSdDmaPatchCode : public PatchCode, public IReadSectorsDmaPatchCod
 {
 public:
     IoRpgReadSdDmaPatchCode(PatchHeap& patchHeap,
+        const IoRpgCardWaitReadyPatchCode* iorpgCardWaitReadyPatchCode,
         const IoRpgSdHelperPatchCode* iorpgSdHelperPatchCode,
         const IoRpgDmaStartTransferPatchCode* IoRpgDmaStartTransferPatchCode,
         const IoRpgPlatformSpecifics& platformSpecifics)
         : PatchCode(SECTION_START(iorpg_readsddma), SECTION_SIZE(iorpg_readsddma), patchHeap)
     {
         iorpg_readSdDma_sendSdioCommand_address = (u32)iorpgSdHelperPatchCode->GetSendSdioCommandFunction();
+        iorpg_readSdDma_cardWaitReady_address = (u32)iorpgCardWaitReadyPatchCode->GetCardWaitReadyFunction();
         iorpg_readSdDma_sdWaitForState_address = (u32)iorpgSdHelperPatchCode->GetSdWaitForStateFunction();
         iorpg_readSdDma_dmaStartTransfer_address = (u32)IoRpgDmaStartTransferPatchCode->GetDmaStartTransferFunction();
         iorpg_readSdDma_cmd12_command = platformSpecifics.cmd12Command;
