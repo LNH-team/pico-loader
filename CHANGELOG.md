@@ -6,7 +6,8 @@
 - Support for banner save files
 
 ## Fixed
-- BG2/BG3 reference point registers now cleared before starting ROMs
+- BG2/BG3 reference point registers now cleared before starting ROMs - by @danyocom
+- Inserting ARGV for DSi supporting homebrew when running in DS mode - by @mid-kid
 
 ## [v1.7.1] - 28 Jun 2026
 
