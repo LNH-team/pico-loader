@@ -1,5 +1,6 @@
 #include "common.h"
 #include <string.h>
+#include <libtwl/ipc/ipcSync.h>
 #include <libtwl/rtos/rtosIrq.h>
 #include <libtwl/sys/swi.h>
 #include <libtwl/mem/memTwlWram.h>
@@ -1002,10 +1003,12 @@ void NdsLoader::HandleDldiPatching()
 void NdsLoader::StartRom(BootMode bootMode)
 {
     LOG_DEBUG("Booting...\n");
-    while (gfx_getVCount() != 191);
-    while (gfx_getVCount() == 191);
+    ipc_setArm7SyncBits(1);
     sendToArm9(IPC_COMMAND_ARM9_BOOT);
     sendToArm9(bootMode == BootMode::SdkResetSystem ? 1 : 0);
+    while (ipc_getArm9SyncBits() != 0); // make sure arm9 side is cleared
+    while (gfx_getVCount() != 191);
+    while (gfx_getVCount() == 191);
 
     REG_IF = ~0u;
     if (Environment::IsDsiMode())
@@ -1013,6 +1016,7 @@ void NdsLoader::StartRom(BootMode bootMode)
         REG_IF2 = ~0u;
     }
 
+    ipc_setArm7SyncBits(0); // it's safe to unmap arm7
     ((entrypoint_t)_romHeader.arm7EntryAddress)();
 }
 

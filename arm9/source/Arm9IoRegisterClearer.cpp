@@ -27,6 +27,7 @@ void Arm9IoRegisterClearer::ClearNtrIoRegisters(bool isSdkResetSystem) const
     ipc_disableArm7Irq();
     ipc_clearSendFifo();
     ipc_disableFifo();
+    ipc_setArm9SyncBits(0);
     REG_KEYCNT = 0;
 }
 

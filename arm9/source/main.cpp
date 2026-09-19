@@ -95,6 +95,7 @@ static void bootArm9()
     mem_setVramAMapping(MEM_VRAM_AB_LCDC);
     fastClear((void*)0x06800000, 0x20000); // VRAM A
     mem_setVramAMapping(MEM_VRAM_AB_NONE);
+    while (ipc_getArm7SyncBits() != 0);
     // By now it should be safe to unmap the arm7 memory
     mem_setVramCMapping(MEM_VRAM_C_LCDC);
     mem_setVramDMapping(MEM_VRAM_D_LCDC);
