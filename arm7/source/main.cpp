@@ -183,7 +183,12 @@ extern "C" void loaderMain()
         {
             if (dldi_init())
             {
-                mountDldi();
+                // The driver cache depends only on whether a driver was handed down,
+                // not on where the rom is loaded from, so multiboot needs no special case.
+                if (mountDldi())
+                {
+                    dldi_updateDriverCache();
+                }
             }
             break;
         }
