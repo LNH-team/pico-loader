@@ -93,6 +93,7 @@ private:
     void InsertArgv();
     void HandleGameSpecificPatches();
     void HandleHomebrewPatching();
+    bool TrySetupSslCertKey();
     bool TrySetupDsiWareSave();
     bool TryDecryptSecureArea();
     void HandleIQueRegionFreePatching();
