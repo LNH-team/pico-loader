@@ -49,6 +49,7 @@ static u16 sIsCloneBootRom;
 static u16 sRunInDSiMode;
 static loader_info_t sLoaderInfo;
 static void** sSoftResetCheatsPointer = nullptr;
+static u16* sSoftResetGameLanguagePointer = nullptr;
 
 u16 gIsDsiMode;
 
@@ -156,17 +157,23 @@ static void handleApplyArm9PatchesCommand()
         sRunInDSiMode,
         &sLoaderInfo);
     sSoftResetCheatsPointer = result.softResetCheatsPointer;
+    sSoftResetGameLanguagePointer = result.softResetGameLanguagePointer;
     ipc_sendWordDirect(1);
 }
 
-static void handleApplyArm7PatchesCommand(u32 cheatsLength)
+static void handleApplyArm7PatchesCommand(u32 cheatsLength, u32 languageOverride)
 {
     void* cheats = nullptr;
     char* bannerSavePath = nullptr;
-    void* patchSpaceStart = Arm7Patcher().ApplyPatches(sLoaderPlatform, cheatsLength, cheats, bannerSavePath, sRunInDSiMode);
+    void* patchSpaceStart = Arm7Patcher().ApplyPatches(
+        sLoaderPlatform, cheatsLength, languageOverride, cheats, bannerSavePath, sRunInDSiMode);
     if (sSoftResetCheatsPointer != nullptr)
     {
         *sSoftResetCheatsPointer = cheats;
+    }
+    if (sSoftResetGameLanguagePointer != nullptr)
+    {
+        *sSoftResetGameLanguagePointer = languageOverride;
     }
     ipc_sendWordDirect((u32)patchSpaceStart);
     ipc_sendWordDirect((u32)cheats);
@@ -317,7 +324,8 @@ static void handleArm7Command(u32 command)
         case IPC_COMMAND_ARM9_APPLY_ARM7_PATCHES:
         {
             u32 cheatsLength = receiveFromArm7();
-            handleApplyArm7PatchesCommand(cheatsLength);
+            u32 languageOverride = receiveFromArm7();
+            handleApplyArm7PatchesCommand(cheatsLength, languageOverride);
             break;
         }
         case IPC_COMMAND_ARM9_SET_AP_INFO:

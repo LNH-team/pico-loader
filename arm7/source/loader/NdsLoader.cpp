@@ -171,6 +171,7 @@ void NdsLoader::Load(BootMode bootMode)
     bool isHomebrew = (_romHeader.makerCode[0] == 0 && _romHeader.makerCode[1] == 0)
         || (_romHeader.arm9AutoLoadDoneHookAddress == 0 && _romHeader.arm7AutoLoadDoneHookAddress == 0)
         || _romHeader.arm7LoadAddress >= 0x03000000;
+    _isHomebrew = isHomebrew;
 
     _runInDSiMode = _runInDSiMode && Environment::IsDsiMode() && _romHeader.SupportsDsiMode();
     bool isCloneBootRom = false;
@@ -566,6 +567,7 @@ void NdsLoader::ApplyArm7Patches()
 {
     sendToArm9(IPC_COMMAND_ARM9_APPLY_ARM7_PATCHES);
     sendToArm9(_cheats ? _cheats->length : 0);
+    sendToArm9(_overrideFirmwareLanguage ? static_cast<u32>(_gameLanguage) : IPC_LANGUAGE_OVERRIDE_NONE);
     PreprocessCheats();
     void* patchSpaceStart = (void*)receiveFromArm9();
     void* cheatsPtr = (void*)receiveFromArm9();
@@ -647,6 +649,31 @@ void NdsLoader::SetupSharedMemory(u32 cardId, u32 agbMem, u32 resetParam, u32 ro
     TWL_SHARED_MEMORY->ntrSharedMem.multibootInfo.bootType = bootType;
 
     LoadFirmwareUserSettings();
+
+    auto consoleLanguage = static_cast<UserLanguage>(TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x64] & 7);
+    ConsoleRegion romRegion = GetRomRegion(_romHeader.gameCode);
+    bool isForcedLanguage = TryGetForcedGameLanguage(romRegion, _gameLanguage);
+    if (!isForcedLanguage)
+    {
+        if (_isHomebrew || IsRegionFreeRom(_romHeader.gameCode))
+        {
+            // Region-free roms and homebrew have no rom region to match, so they keep the console language
+            _gameLanguage = consoleLanguage;
+        }
+        else
+        {
+            _gameLanguage = GetLanguageByRomRegion(romRegion);
+        }
+    }
+
+    // In DS mode the console language is kept, like on retail hardware, unless a language was forced
+    _overrideFirmwareLanguage = (_runInDSiMode || isForcedLanguage) && _gameLanguage != consoleLanguage;
+    LOG_DEBUG("Game language: %d (forced: %d, override: %d)\n",
+        static_cast<u32>(_gameLanguage), isForcedLanguage, _overrideFirmwareLanguage);
+    if (_overrideFirmwareLanguage)
+    {
+        SetFirmwareUserLanguage(_gameLanguage);
+    }
 
     if (!_runInDSiMode)
     {
@@ -1019,8 +1046,6 @@ void NdsLoader::StartRom(BootMode bootMode)
 void NdsLoader::SetupTwlConfig()
 {
     ConsoleRegion romRegion = GetRomRegion(_romHeader.gameCode);
-    // Set language based on rom region, TODO: allow user to override this via some config or so
-    UserLanguage userLang = GetLanguageByRomRegion(romRegion);
 
     twl_config_t* twlConfig = (twl_config_t*)0x02000400;
     *(twl_config_t**)0x02FFFDFC = twlConfig;
@@ -1029,7 +1054,7 @@ void NdsLoader::SetupTwlConfig()
     memset(twlConfig, 0, sizeof(twl_config_t));
     twlConfig->configFlags = 0x0100000F;
     twlConfig->country = 0x4E;
-    twlConfig->language = static_cast<u8>(userLang);
+    twlConfig->language = static_cast<u8>(_gameLanguage);
     twlConfig->rtcYear = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x66];
     twlConfig->rtcOffset = *(s64*)&TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x68];
     twlConfig->eulaAgreeVersion[0] = 1;
@@ -1223,13 +1248,18 @@ UserLanguage NdsLoader::GetLanguageByRomRegion(ConsoleRegion romRegion)
         return UserLanguage::Japanese;
     }
     else if (romRegion == ConsoleRegion::America &&
-            (userLang != UserLanguage::English ||
-             userLang != UserLanguage::French ||
-             userLang != UserLanguage::Spanish))
+            userLang != UserLanguage::English &&
+            userLang != UserLanguage::French &&
+            userLang != UserLanguage::Spanish)
     {
         return UserLanguage::English;
     }
-    else if (romRegion == ConsoleRegion::Europe && userLang < UserLanguage::English && userLang > UserLanguage::Spanish)
+    else if (romRegion == ConsoleRegion::Europe &&
+            (userLang < UserLanguage::English || userLang > UserLanguage::Spanish))
+    {
+        return UserLanguage::English;
+    }
+    else if (romRegion == ConsoleRegion::Australia)
     {
         return UserLanguage::English;
     }
@@ -1276,4 +1306,36 @@ u32 NdsLoader::GetSupportedLanguagesByRegion(ConsoleRegion region)
     }
 
     return 0x3E;
+}
+
+bool NdsLoader::IsRegionFreeRom(u32 gameCode)
+{
+    u8 gameRegionCode = (gameCode >> 24) & 0xFF;
+    return gameRegionCode == 'A' || gameRegionCode == 'O';
+}
+
+bool NdsLoader::TryGetForcedGameLanguage(ConsoleRegion romRegion, UserLanguage& language)
+{
+    u32 gameLanguage = gLoaderHeader.v4.gameLanguage;
+    if (gameLanguage > static_cast<u32>(UserLanguage::Korean))
+    {
+        return false;
+    }
+
+    if (!IsRegionFreeRom(_romHeader.gameCode) &&
+        (GetSupportedLanguagesByRegion(romRegion) & (1u << gameLanguage)) == 0)
+    {
+        LOG_DEBUG("Forced language %d not supported by rom region\n", gameLanguage);
+        return false;
+    }
+
+    language = static_cast<UserLanguage>(gameLanguage);
+    return true;
+}
+
+void NdsLoader::SetFirmwareUserLanguage(UserLanguage language)
+{
+    // Only bits 0-2 hold the language, the other bits are flags
+    u8& languageAndFlags = TWL_SHARED_MEMORY->ntrSharedMem.firmwareUserData[0x64];
+    languageAndFlags = (languageAndFlags & ~7) | (static_cast<u8>(language) & 7);
 }

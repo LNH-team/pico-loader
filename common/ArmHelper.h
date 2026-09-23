@@ -42,6 +42,15 @@ public:
         return ((targetAddress & 1) ? 0xFA000000 : 0xEB000000) | ((offset >> 2) & 0xFFFFFF);
     }
 
+    /// @brief Set the 8 bit immediate of an ARM data processing instruction, without rotation.
+    /// @param instruction The ARM instruction, for example "orr r3, r3, #0".
+    /// @param immediate The new immediate value.
+    /// @return The instruction with the new immediate.
+    static constexpr u32 SetArmImmediate8(u32 instruction, u8 immediate)
+    {
+        return (instruction & ~0xFFFu) | immediate;
+    }
+
     /// @brief Get the offset of a Thumb call (bl or blx).
     /// @param callInstruction1 The first Thumb call instruction.
     /// @param callInstruction2 The second Thumb call instruction.

@@ -17,6 +17,10 @@ public:
         /// @brief Pointer to the cheats pointer used for soft reset.
         ///        This pointer must be set to keep cheats over soft resets.
         void** softResetCheatsPointer;
+
+        /// @brief Pointer to the game language used for soft reset.
+        ///        This value must be set to keep the game language over soft resets.
+        u16* softResetGameLanguagePointer;
     };
 
     /// @brief Applies arm9 patches using the given \p loaderPlatform.

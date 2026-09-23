@@ -110,15 +110,16 @@ patch_osresetsystem_bootPicoLoader:
     strh r0, [r5, #8] // pload_header7_t::bootDrive
 
     adr r0, regVramCntA
-    ldmia r0, {r0, r4, r6, r7}
+    ldmia r0, {r0, r1, r4, r6}
     // r0 = regVramCntA
+    // r1 = patch_osresetsystem_cheats_address
     // r4 = patch_osresetsystem_arm7Entry_address
-    // r6 = vramCDSettings
-    // r7 = patch_osresetsystem_cheats_address
+    // r6 = vramCDSettings | (patch_osresetsystem_gameLanguage << 16)
 
     movs r2, #0x41
     lsls r2, r2, #4 // 0x410
-    str r7, [r5, r2] // pload_header7_t::v3.cheats
+    adds r2, r5
+    stmia r2!, {r1, r6} // pload_header7_t::v3.cheats, pload_header7_t::v4 (gameLanguage in the upper half)
     ldr r1, [r5] // pload_header7_t::entryPoint
 
     // set NTR_SHARED_MEMORY->romHeader.arm7EntryAddress
@@ -136,8 +137,7 @@ patch_osresetsystem_bootPicoLoader:
     cmp r7, #0
     bne 1b // while ipc sync from arm7 is not 0
 
-    movs r1, #0
-    strb r1, [r0, #1]
+    strb r7, [r0, #1] // r7 is 0 here
 
     movs r0, #0x68
     lsls r0, r0, #20 // 0x06800000
@@ -175,16 +175,20 @@ do_sync:
 regVramCntA:
     .word 0x04000240
 
+.global patch_osresetsystem_cheats_address
+patch_osresetsystem_cheats_address:
+    .word 0
+
 .global patch_osresetsystem_arm7Entry_address
 patch_osresetsystem_arm7Entry_address:
     .word 0x027FFE34
 
 vramCDSettings:
-    .word 0x8A82
+    .short 0x8A82
 
-.global patch_osresetsystem_cheats_address
-patch_osresetsystem_cheats_address:
-    .word 0
+.global patch_osresetsystem_gameLanguage
+patch_osresetsystem_gameLanguage:
+    .short 0xFF
 
 .pool
 .end

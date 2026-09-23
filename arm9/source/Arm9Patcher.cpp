@@ -240,14 +240,17 @@ Arm9Patcher::PatchResult Arm9Patcher::ApplyPatches(const LoaderPlatform* loaderP
     ic_invalidateAll();
 
     void** softResetCheatsPointer = nullptr;
+    u16* softResetGameLanguagePointer = nullptr;
     if (osResetSystemPatch != nullptr)
     {
         softResetCheatsPointer = osResetSystemPatch->GetCheatsPointerAtTarget();
+        softResetGameLanguagePointer = osResetSystemPatch->GetGameLanguagePointerAtTarget();
     }
 
     return PatchResult
     {
-        .softResetCheatsPointer = softResetCheatsPointer
+        .softResetCheatsPointer = softResetCheatsPointer,
+        .softResetGameLanguagePointer = softResetGameLanguagePointer
     };
 }
 

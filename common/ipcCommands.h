@@ -13,3 +13,6 @@
 #define IPC_COMMAND_ARM9_SWITCH_TO_DS_MODE          0xD
 #define IPC_COMMAND_ARM9_BOOT                       0xF
 #define IPC_COMMAND_ARM9_SETUP_HOMEBREW_BOOTSTUB    0x10
+
+/// @brief Language override value sent with \see IPC_COMMAND_ARM9_APPLY_ARM7_PATCHES when there is no override.
+#define IPC_LANGUAGE_OVERRIDE_NONE                  0xFF

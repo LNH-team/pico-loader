@@ -16,6 +16,7 @@ extern u32 patch_osresetsystem_bootPicoLoader_address;
 extern u16 patch_osresetsystem_entry_jump_to_twl_arm7_sync;
 extern u32 patch_osresetsystem_arm7Entry_address;
 extern u32 patch_osresetsystem_cheats_address;
+extern u16 patch_osresetsystem_gameLanguage;
 
 class OSResetSystemPart2PatchCode : public PatchCode
 {
@@ -33,6 +34,11 @@ public:
     void** GetCheatsPointerAtTarget() const
     {
         return (void**)GetAddressAtTarget(&patch_osresetsystem_cheats_address);
+    }
+
+    u16* GetGameLanguagePointerAtTarget() const
+    {
+        return (u16*)GetAddressAtTarget(&patch_osresetsystem_gameLanguage);
     }
 };
 

@@ -128,5 +128,6 @@ void OSResetSystemPatch::ApplyPatch(PatchContext& patchContext)
     *(u32*)((u8*)_osResetSystem + offset + 4) = (u32)patchCode->GetOSResetSystemFunction();
 
     _cheatsPointer = patchCodePart2->GetCheatsPointerAtTarget();
+    _gameLanguagePointer = patchCodePart2->GetGameLanguagePointerAtTarget();
 }
 

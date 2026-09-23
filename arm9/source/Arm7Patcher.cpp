@@ -4,6 +4,7 @@
 #include "SdkVersion.h"
 #include "sharedMemory.h"
 #include "gameCode.h"
+#include "ipcCommands.h"
 #include "cache.h"
 #include "errorDisplay/ErrorDisplay.h"
 #include "patches/PatchCollection.h"
@@ -17,6 +18,7 @@
 #include "patches/arm7/sdk5/Sdk5DsiSdCardRedirectPatch.h"
 #include "patches/arm7/PokemonDownloaderArm7Patch.h"
 #include "patches/arm7/cheats/CheatEnginePatch.h"
+#include "patches/arm7/ReadUserInfoLanguagePatch.h"
 #include "Arm7Patcher.h"
 
 static u32 correctAddress(u32 address, const nds_header_ntr_t* romHeader)
@@ -31,7 +33,7 @@ static u32 correctAddress(u32 address, const nds_header_ntr_t* romHeader)
     }
 }
 
-void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheatsLength,
+void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheatsLength, u32 languageOverride,
     void*& cheatsPtr, char*& bannerSavePathPtr, bool runInDSiMode) const
 {
     cheatsPtr = nullptr;
@@ -106,6 +108,11 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
             cheatsPtr = cheats;
             patchCollection.AddPatch(new CheatEnginePatch(cheats));
             mainMemoryArenaLo += cheatsLength;
+        }
+
+        if (languageOverride != IPC_LANGUAGE_OVERRIDE_NONE)
+        {
+            patchCollection.AddPatch(new ReadUserInfoLanguagePatch(languageOverride));
         }
 
         if (romHeader->unitCode == 0) // seems only present on NITRO, not on HYBRID or LIMITED

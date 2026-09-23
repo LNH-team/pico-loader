@@ -4,6 +4,7 @@
 
 ### Added
 - Support for banner save files
+- Game language selection based on the rom region, with an API v4 option for launchers - by @tasken
 
 ## Fixed
 - BG2/BG3 reference point registers now cleared before starting ROMs - by @danyocom

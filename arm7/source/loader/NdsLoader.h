@@ -64,6 +64,9 @@ private:
     pload_cheats_t* _cheats = nullptr;
     nds_header_twl_t _romHeader;
     bool _runInDSiMode = true;
+    UserLanguage _gameLanguage = UserLanguage::English;
+    bool _overrideFirmwareLanguage = false;
+    bool _isHomebrew = false;
     DsiWareSaveResult _dsiwareSaveResult;
 
     bool IsCloneBootRom(u32 romOffset);
@@ -99,4 +102,7 @@ private:
     ConsoleRegion GetRomRegion(u32 gameCode);
     UserLanguage GetLanguageByRomRegion(ConsoleRegion romRegion);
     u32 GetSupportedLanguagesByRegion(ConsoleRegion region);
+    bool IsRegionFreeRom(u32 gameCode);
+    bool TryGetForcedGameLanguage(ConsoleRegion romRegion, UserLanguage& language);
+    void SetFirmwareUserLanguage(UserLanguage language);
 };

@@ -17,10 +17,16 @@ public:
         return _cheatsPointer;
     }
 
+    u16* GetGameLanguagePointerAtTarget() const
+    {
+        return _gameLanguagePointer;
+    }
+
 private:
     u32* _osResetSystem = nullptr;
     u16 _hybrid = false;
     u16 _runInDSiMode;
     const loader_info_t* _loaderInfo;
     void** _cheatsPointer = nullptr;
+    u16* _gameLanguagePointer = nullptr;
 };
