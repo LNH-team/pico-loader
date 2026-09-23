@@ -18,7 +18,7 @@ SECTIONS
 	.crt0	:
 	{
 		__text_start = . ;
-		KEEP (build/picoLoader7/arm7/source/header.cpp.o(.crt0))
+		KEEP (build/picoLoader7_*/arm7/source/header.cpp.o(.crt0))
 		KEEP (*(.crt0))
 		. = ALIGN(4);  /* REQUIRED. LD is flaky without it. */
 	} >vram = 0xff

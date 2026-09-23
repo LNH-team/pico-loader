@@ -20,7 +20,23 @@ BINDIRS		:=
 # Defines passed to all files
 # ---------------------------
 
-DEFINES		:= -DLIBTWL_ARM7 -DARM7
+PLATFORM	?= DSPICO
+
+# Version information for pload_version_info_t, from the nearest v* tag. A shallow
+# checkout of a branch has no tags; what git cannot tell stays empty.
+GIT_HASH	:= $(shell git rev-parse HEAD 2>/dev/null)
+GIT_TAG		:= $(shell git describe --tags --abbrev=0 --match 'v*' 2>/dev/null)
+GIT_AT_TAG	:= 0
+ifneq ($(strip $(shell git describe --tags --exact-match --match 'v*' HEAD 2>/dev/null)),)
+    GIT_AT_TAG	:= 1
+endif
+GIT_DIRTY	:= 0
+ifneq ($(strip $(shell git status --porcelain --untracked-files=no 2>/dev/null)),)
+    GIT_DIRTY	:= 1
+endif
+
+DEFINES		:= -DLIBTWL_ARM7 -DARM7 -DPICO_LOADER_PLATFORM=$(PLATFORM) -DPICO_LOADER_TARGET_$(PLATFORM) \
+		   -DGIT_HASH=$(GIT_HASH) -DGIT_TAG=$(GIT_TAG) -DGIT_AT_TAG=$(GIT_AT_TAG) -DGIT_DIRTY=$(GIT_DIRTY)
 
 # Libraries
 # ---------
@@ -32,7 +48,7 @@ LIBDIRS		:= $(BLOCKSDS)/libs/libnds \
 # Build artifacts
 # -----------------
 
-NAME		:= picoLoader7
+NAME		:= picoLoader7_$(PLATFORM)
 BUILDDIR	:= build/$(NAME)
 BIN     := $(NAME).bin
 ELF		:= build/$(NAME).elf
@@ -125,7 +141,7 @@ DEPS		:= $(OBJS:.o=.d)
 # Targets
 # -------
 
-.PHONY: all clean dump
+.PHONY: all clean dump FORCE
 
 all: $(BIN)
 
@@ -190,3 +206,9 @@ $(SOURCES_S) $(SOURCES_C) $(SOURCES_CPP): $(HEADERS_ASSETS)
 # --------------------------------------
 
 -include $(DEPS)
+
+# Always rebuild the header so its version information is current
+# ----------------------------------------------------------------
+
+$(BUILDDIR)/arm7/source/header.cpp.o: FORCE
+FORCE:

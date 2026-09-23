@@ -1,7 +1,7 @@
 #pragma once
 
 /// @brief The Pico Loader API version supported by this header file.
-#define PICO_LOADER_API_VERSION     3
+#define PICO_LOADER_API_VERSION     4
 
 /// @brief Enum to specify the drive to boot from.
 typedef enum
@@ -83,6 +83,44 @@ typedef struct
     const pload_cheats_t* cheats;
 } pload_header7_v3_t;
 
+/// @brief Version flag. When set, indicates that the commit corresponds to the tag.
+#define PICO_LOADER_VERSION_FLAGS_COMMIT_AT_TAG     (1 << 0)
+
+/// @brief Version flag. When set, indicates that the working directory had uncommitted changes.
+#define PICO_LOADER_VERSION_FLAGS_DIRTY             (1 << 1)
+
+/// @brief Struct containing Pico Loader version information. The version is that of the
+///        nearest release tag, or 0.0.0 when the build saw none (a shallow checkout of a
+///        branch, for example); the commit hash is zero when git was not available.
+typedef struct
+{
+    /// @brief Major version.
+    u8 versionMajor;
+
+    /// @brief Minor version.
+    u8 versionMinor;
+
+    /// @brief Patch version.
+    u8 versionPatch;
+
+    /// @brief Version flags.
+    u8 versionFlags;
+
+    /// @brief The commit hash.
+    u8 commitHash[20];
+
+    /// @brief The loader platform.
+    char platform[16];
+} pload_version_info_t;
+
+/// @brief Struct representing the API version 4 part of the header of picoLoader7.bin.
+typedef struct
+{
+    /// @brief Pointer to the version information (read-only). picoLoader7.bin is linked at 0x06000000,
+    ///        so in the file it is at offset versionInfo - 0x06000000.
+    const pload_version_info_t* const versionInfo;
+} pload_header7_v4_t;
+
 /// @brief Struct representing the header of picoLoader7.bin.
 typedef struct
 {
@@ -106,4 +144,7 @@ typedef struct
 
     /// @brief The API version 3 part of the header. Only access this when \see apiVersion >= 3.
     pload_header7_v3_t v3;
+
+    /// @brief The API version 4 part of the header. Only access this when \see apiVersion >= 4.
+    pload_header7_v4_t v4;
 } pload_header7_t;

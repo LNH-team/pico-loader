@@ -4,6 +4,9 @@
 
 ### Added
 - Support for banner save files
+- Version information in the picoLoader7 header - by @rasalopa
+    - The Pico Loader API was updated to v4 for this purpose.
+    - picoLoader7 is now built per platform, like picoLoader9.
 
 ## Fixed
 - BG2/BG3 reference point registers now cleared before starting ROMs - by @danyocom

@@ -49,13 +49,18 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 9.x
+      # actions/checkout only marks the repo safe in a temporary git config, so git
+      # refuses it in the build step and the version block would get no commit hash
+      - name: Let git read the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Run build script
         run: |
           make PICO_PLATFORM=${{ matrix.platform }}
       - name: Package artifact
         run: |
           mkdir Pico_Loader_${{ matrix.platform }}
-          mv picoLoader7.bin data/aplist.bin data/patchlist.bin data/savelist.bin Pico_Loader_${{ matrix.platform }}
+          mv data/aplist.bin data/patchlist.bin data/savelist.bin Pico_Loader_${{ matrix.platform }}
+          mv picoLoader7_${{ matrix.platform }}.bin Pico_Loader_${{ matrix.platform }}/picoLoader7.bin
           mv picoLoader9_${{ matrix.platform }}.bin Pico_Loader_${{ matrix.platform }}/picoLoader9.bin
       - name: Publish build to GH Actions
         uses: actions/upload-artifact@v7

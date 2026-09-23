@@ -70,7 +70,7 @@ git submodule update --init
 1. Run `make`
     - By default this compiles for the DSpico platform. To specify a different platform use `make PICO_PLATFORM=PLATFORM`, for example `make PICO_PLATFORM=R4`. See the table above for the supported platforms.
 2. To use Pico Loader, create a `_pico` folder in the root of your flashcard SD card and copy the following files to it:
-    - `picoLoader7.bin`
+    - `picoLoader7.bin` (the version for your platform)
     - `picoLoader9.bin` (the version for your platform)
     - `aplist.bin` (generated in the `data` folder of the repo)
     - `savelist.bin` (generated in the `data` folder of the repo)
