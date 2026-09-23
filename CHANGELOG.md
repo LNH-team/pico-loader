@@ -8,6 +8,7 @@
 ## Fixed
 - BG2/BG3 reference point registers now cleared before starting ROMs - by @danyocom
 - Inserting ARGV for DSi supporting homebrew when running in DS mode - by @mid-kid
+- DLDI FIX_ALL no longer able to r/w 0x80 bytes past driverEndAddress - by @danyocom
 
 ## [v1.7.1] - 28 Jun 2026
 

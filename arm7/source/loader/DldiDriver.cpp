@@ -13,9 +13,12 @@ void DldiDriver::Relocate(u32 targetAddress)
     if (_driver->fixFlags & DLDI_FIX_ALL)
     {
         LOG_WARNING("Dldi driver uses FIX_ALL flag");
+        // The header is part of the driver image, and its own address fields are fixed
+        // up separately below, so the sweep starts after the header and has to stop at
+        // driverEndAddress rather than run for the full length of the image.
         u32* ptr = (u32*)((u8*)_driver + sizeof(dldi_header_t));
-        u32 size = currentEndAddress - currentAddress;
-        for (u32 i = 0; i < size; i += 4)
+        for (u32 address = currentAddress + sizeof(dldi_header_t);
+            address < currentEndAddress; address += 4)
         {
             u32 word = *ptr;
             if (currentAddress <= word && word < currentEndAddress)
