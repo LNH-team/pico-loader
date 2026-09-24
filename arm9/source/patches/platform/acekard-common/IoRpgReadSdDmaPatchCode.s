@@ -37,6 +37,10 @@ iorpg_readSdDma_sdsc_shift:
     ldr r5, iorpg_readSdDma_sendSdioCommand_address
     blx r5
 
+    ldr r5, iorpg_readSdDma_cardWaitReady_address
+    blx r5
+    b readDataWithDma
+
 waitSdState:
     // Wait for SD state
     movs r0, #7
@@ -48,6 +52,10 @@ readDataWithDma:
     bx r5
 
 .balign 4
+
+.global iorpg_readSdDma_cardWaitReady_address
+iorpg_readSdDma_cardWaitReady_address:
+    .word 0
 
 .global iorpg_readSdDma_dmaStartTransfer_address
 iorpg_readSdDma_dmaStartTransfer_address:
