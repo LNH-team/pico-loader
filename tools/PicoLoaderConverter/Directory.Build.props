@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)bin\</OutDir>
+    <RootOutputPath>$(SolutionDir)artifacts\</RootOutputPath>
+    <OutputPath>$(RootOutputPath)$(MSBuildProjectName)\bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(RootOutputPath)$(MSBuildProjectName)\obj\$(Configuration)\</IntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>$(RootOutputPath)$(MSBuildProjectName)\obj\</MSBuildProjectExtensionsPath>
+  </PropertyGroup>
+</Project>
