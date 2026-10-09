@@ -570,6 +570,13 @@ void NdsLoader::ApplyArm7Patches()
     void* patchSpaceStart = (void*)receiveFromArm9();
     void* cheatsPtr = (void*)receiveFromArm9();
     char* bannerSavePathPtr = (char*)receiveFromArm9();
+    // Test 109: capture the working driver before game boot destroys loader RAM.
+    void* hotkeyDldiPtr = (void*)receiveFromArm9();
+    if (hotkeyDldiPtr != nullptr)
+    {
+        dldi_copyTo(hotkeyDldiPtr);
+    }
+
     if (cheatsPtr != nullptr && _cheats != nullptr)
     {
         memcpy(cheatsPtr, _cheats, _cheats->length);

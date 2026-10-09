@@ -24,9 +24,7 @@ bool OSResetSystemPatch::FindPatchTarget(PatchContext& patchContext)
     {
         _osResetSystem = patchContext.FindPattern32(sOSResetSystemPatternSdk5Old, sizeof(sOSResetSystemPatternSdk5Old));
         if (!_osResetSystem)
-        {
             _osResetSystem = patchContext.FindPattern32(sOSResetSystemPatternSdk5New, sizeof(sOSResetSystemPatternSdk5New));
-        }
         if (!_osResetSystem)
         {
             _osResetSystem = patchContext.FindPattern32(sOSResetSystemPatternSdk5HybridOld, sizeof(sOSResetSystemPatternSdk5HybridOld));
@@ -41,47 +39,43 @@ bool OSResetSystemPatch::FindPatchTarget(PatchContext& patchContext)
     else
     {
         if (patchContext.GetSdkVersion() >= 0x4017530)
-        {
             _osResetSystem = patchContext.FindPattern32(sOSResetSystemPatternSdk4, sizeof(sOSResetSystemPatternSdk4));
-        }
         if (!_osResetSystem && patchContext.GetSdkVersion() >= 0x3017530)
-        {
             _osResetSystem = patchContext.FindPattern32(sOSResetSystemPatternSdk3, sizeof(sOSResetSystemPatternSdk3));
-        }
         if (!_osResetSystem && patchContext.GetSdkVersion() >= 0x2017532)
-        {
             _osResetSystem = patchContext.FindPattern32(sOSResetSystemPatternSdk2New, sizeof(sOSResetSystemPatternSdk2New));
-        }
         if (!_osResetSystem && patchContext.GetSdkVersion() >= 0x2004F50)
-        {
             _osResetSystem = patchContext.FindPattern32(sOSResetSystemPatternSdk2, sizeof(sOSResetSystemPatternSdk2));
-        }
         if (!_osResetSystem && patchContext.GetSdkVersion() >= 0x2004EE9)
-        {
             _osResetSystem = patchContext.FindPattern32(sOSResetSystemPatternSdk2Old, sizeof(sOSResetSystemPatternSdk2Old));
-        }
         if (!_osResetSystem)
-        {
             _osResetSystem = patchContext.FindPattern32(sOSResetSystemPatternPokemonDownloader, sizeof(sOSResetSystemPatternPokemonDownloader));
-        }
     }
 
     if (_osResetSystem)
-    {
         LOG_DEBUG("Found end of OS_ResetSystem at %p\n", _osResetSystem);
-    }
     else
-    {
         LOG_DEBUG("OS_ResetSystem not found\n");
-    }
 
     return true;
 }
 
 void OSResetSystemPatch::ApplyPatch(PatchContext& patchContext)
 {
+    // Keep the proven boot-safe guard. The large reset path is only allocated
+    // for games where OS_ResetSystem was actually recognized.
     if (!_osResetSystem)
+        return;
+
+    // The hotkey return path is independent of this legacy reset redirect.
+    // Reserve its three blocks together; fragmentation must not prevent boot
+    // or leave a partially installed reset patch.
+    const u32 sizes[] = { sizeof(loader_info_t),
+        SECTION_SIZE(patch_osresetsystem_boot), SECTION_SIZE(patch_osresetsystem) };
+    void* targets[3];
+    if (!patchContext.GetPatchHeap().TryAllocPieces(sizes, targets, 3))
     {
+        LOG_DEBUG("Skipping optional OS_ResetSystem redirect: insufficient contiguous patch space\n");
         return;
     }
 
@@ -93,9 +87,7 @@ void OSResetSystemPatch::ApplyPatch(PatchContext& patchContext)
         {
             offset = 0x80;
             if (!_runInDSiMode)
-            {
                 patch_osresetsystem_entry_jump_to_twl_arm7_sync = THUMB_NOP;
-            }
         }
         else
         {
@@ -109,16 +101,16 @@ void OSResetSystemPatch::ApplyPatch(PatchContext& patchContext)
         patch_osresetsystem_entry_jump_to_twl_arm7_sync = THUMB_NOP;
     }
 
-    auto loaderInfoTarget = (loader_info_t*)patchContext.GetPatchHeap().Alloc(sizeof(loader_info_t));
+    auto loaderInfoTarget = (loader_info_t*)targets[0];
     memcpy(loaderInfoTarget, _loaderInfo, sizeof(loader_info_t));
 
     auto sdReadPatchCode = patchContext.GetLoaderPlatform()->CreateSdReadPatchCode(
         patchContext.GetPatchCodeCollection(), patchContext.GetPatchHeap());
     auto patchCodePart2 = patchContext.GetPatchCodeCollection().AddUniquePatchCode<OSResetSystemPart2PatchCode>(
-        patchContext.GetPatchHeap());
+        targets[1]);
     auto patchCode = patchContext.GetPatchCodeCollection().AddUniquePatchCode<OSResetSystemPatchCode>
     (
-        patchContext.GetPatchHeap(),
+        targets[2],
         loaderInfoTarget,
         sdReadPatchCode,
         patchCodePart2
@@ -129,4 +121,3 @@ void OSResetSystemPatch::ApplyPatch(PatchContext& patchContext)
 
     _cheatsPointer = patchCodePart2->GetCheatsPointerAtTarget();
 }
-

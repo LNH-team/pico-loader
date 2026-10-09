@@ -19,6 +19,14 @@ public:
     /// @return A pointer to the allocated block if successful, or nullptr otherwise.
     void* Alloc(u32 size);
 
+    /// @brief Optional allocation: returns nullptr without stopping on exhaustion.
+    void* TryAlloc(u32 size);
+    bool TryAllocPieces(const u32* sizes, void** outputs, u32 count);
+
+    /// @brief Read-only capacity diagnostics; allocations require a contiguous block.
+    u32 GetFreeBytes() const;
+    u32 GetLargestFreeBlock() const;
+
 private:
     struct PatchHeapBlock
     {

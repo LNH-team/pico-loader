@@ -14,6 +14,10 @@ public:
     PatchCode(const void* code, u32 size, PatchHeap& patchHeap)
         : _code(code), _size(size), _targetAddress(patchHeap.Alloc(size)) { }
 
+    // Use storage reserved atomically by an optional patch bundle.
+    PatchCode(const void* code, u32 size, void* target)
+        : _code(code), _size(size), _targetAddress(target) { }
+
     ~PatchCode()
     {
         LOG_FATAL("Patch code must not be deleted.\n");

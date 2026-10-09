@@ -1,9 +1,11 @@
 #include "common.h"
 #include <memory>
+#include <string.h>
 #include "PicoLoaderArranger.h"
 
 #define PICO_LOADER_9_PATH    "/_pico/picoLoader9.bin"
 #define PICO_LOADER_7_PATH    "/_pico/picoLoader7.bin"
+#define PICO_LAUNCHER_FALLBACK_PATH "/_picoboot.nds"
 
 bool PicoLoaderArranger::SetupPicoLoaderInfo(loader_info_t* info) const
 {
@@ -27,6 +29,12 @@ bool PicoLoaderArranger::SetupPicoLoaderInfo(loader_info_t* info) const
     info->clusterShift = __builtin_ctz(file->obj.fs->csize);
     info->picoLoaderBootDrive = gLoaderHeader.bootDrive;
     info->database = file->obj.fs->database;
+    memcpy(info->launcherPath, gLoaderHeader.v2.launcherPath, sizeof(info->launcherPath));
+    info->launcherPath[sizeof(info->launcherPath) - 1] = 0;
+    if (info->launcherPath[0] == 0)
+    {
+        strcpy(info->launcherPath, PICO_LAUNCHER_FALLBACK_PATH);
+    }
 
     if (f_close(file.get()) != FR_OK)
     {
@@ -43,10 +51,10 @@ bool PicoLoaderArranger::SetupPicoLoaderInfo(loader_info_t* info) const
     clusterTab = (DWORD*)info->clusterMap7;
     clusterTab[0] = sizeof(info->clusterMap7) / sizeof(u32);
     file->cltbl = clusterTab;
-    seekResult = f_lseek(file.get(), CREATE_LINKMAP);
-    if (seekResult != FR_OK)
+    FRESULT seekResult7 = f_lseek(file.get(), CREATE_LINKMAP);
+    if (seekResult7 != FR_OK)
     {
-        LOG_FATAL("Failed to make picoLoader7 cluster table. Result: %d\n", seekResult);
+        LOG_FATAL("Failed to make picoLoader7 cluster table. Result: %d\n", seekResult7);
         return false;
     }
 

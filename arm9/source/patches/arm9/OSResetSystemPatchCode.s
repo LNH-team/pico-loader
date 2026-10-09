@@ -6,6 +6,19 @@
 .global patch_osresetsystem_entry
 .type patch_osresetsystem_entry, %function
 patch_osresetsystem_entry:
+    movs r0, #0
+    b patch_osresetsystem_entry_common
+
+.global patch_osresetsystem_returnToLauncher
+.type patch_osresetsystem_returnToLauncher, %function
+patch_osresetsystem_returnToLauncher:
+    movs r0, #1
+
+patch_osresetsystem_entry_common:
+    // r8 survives the SD read calls and tells part 2 whether this is a
+    // normal SDK reset or an explicit return-to-launcher request.
+    mov r8, r0
+
     adr r0, regIpcSync
     // regIpcSync, arm7ResetCommand, vramAbcdLcdcSetting, readSdSectors_address, loader_info_address, vramCLcdcAddress, patch_osresetsystem_bootPicoLoader_address
     ldmia r0, {r0, r1, r3, r4, r5, r6, r7}
@@ -109,6 +122,55 @@ patch_osresetsystem_bootPicoLoader:
     ldrh r0, [r3, #2] // loader_info_t::picoLoaderBootDrive
     strh r0, [r5, #8] // pload_header7_t::bootDrive
 
+    // Preserve launcherPath in the freshly reloaded Pico Loader ARM7 image.
+    // loader_info_t::launcherPath is at 0x70 and pload_header7_t::v2.launcherPath is at 0x310.
+    movs r0, #0x70
+    adds r0, r3
+    movs r1, #0xC4
+    lsls r1, r1, #2 // 0x310
+    adds r2, r5, r1
+    movs r4, #64
+copyLauncherPath:
+    ldr r6, [r0]
+    str r6, [r2]
+    adds r0, #4
+    adds r2, #4
+    subs r4, #1
+    bne copyLauncherPath
+
+    // For the hotkey path, launch the preserved launcher as a normal ROM instead
+    // of setting the SDK-reset marker that would reload the current retail game.
+    mov r1, r8
+    cmp r1, #0
+    beq setupBootState
+
+    movs r0, #0x70
+    adds r0, r3
+    adds r2, r5, #0
+    adds r2, #0x0C // pload_header7_t::loadParams.romPath
+    movs r4, #64
+copyLauncherToRomPath:
+    ldr r6, [r0]
+    str r6, [r2]
+    adds r0, #4
+    adds r2, #4
+    subs r4, #1
+    bne copyLauncherToRomPath
+
+    // Clear save path and argv so the launcher starts as a clean normal launch.
+    movs r0, #0x43
+    lsls r0, r0, #2 // 0x10C = loadParams.savePath
+    adds r0, r5
+    movs r1, #0
+    strb r1, [r0]
+
+    movs r0, #0x83
+    lsls r0, r0, #2 // 0x20C = loadParams.argumentsLength
+    adds r0, r5
+    str r1, [r0]
+    strb r1, [r0, #4] // arguments[0]
+
+setupBootState:
     adr r0, regVramCntA
     ldmia r0, {r0, r4, r6, r7}
     // r0 = regVramCntA
@@ -118,11 +180,21 @@ patch_osresetsystem_bootPicoLoader:
 
     movs r2, #0x41
     lsls r2, r2, #4 // 0x410
+    mov r1, r8
+    cmp r1, #0
+    beq storeCheats
+    movs r7, #0 // Don't carry a retail game's cheats into the launcher.
+storeCheats:
     str r7, [r5, r2] // pload_header7_t::v3.cheats
-    ldr r1, [r5] // pload_header7_t::entryPoint
 
-    // set NTR_SHARED_MEMORY->romHeader.arm7EntryAddress
-    str r1, [r4]
+    // A normal SDK reset sets the marker consumed by arm7/main.cpp.
+    // A hotkey return deliberately leaves the retail ARM7 entry untouched.
+    mov r1, r8
+    cmp r1, #0
+    bne skipSdkResetMarker
+    ldr r1, [r5] // pload_header7_t::entryPoint
+    str r1, [r4] // NTR_SHARED_MEMORY->romHeader.arm7EntryAddress
+skipSdkResetMarker:
 
     // map vram CD to arm7
     strh r6, [r0, #2]
@@ -156,7 +228,6 @@ twl_arm7_sync:
     b do_sync
 
     mov pc, lr
-
 do_sync:
     ldrh r6, [r7, #2]
     ldrh r1, [r7]

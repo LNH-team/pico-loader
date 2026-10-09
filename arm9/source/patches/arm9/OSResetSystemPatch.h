@@ -19,6 +19,7 @@ public:
 
 private:
     u32* _osResetSystem = nullptr;
+    u32* _irqHandler = nullptr;
     u16 _hybrid = false;
     u16 _runInDSiMode;
     const loader_info_t* _loaderInfo;

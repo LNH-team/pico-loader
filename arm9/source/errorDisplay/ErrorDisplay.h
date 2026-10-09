@@ -19,6 +19,10 @@ public:
         Print(errorString, false);
     }
 
+    /// @brief Temporary test screen; draw directly with VRAM-safe halfword writes.
+    void PrintPatchSpaceDiagnostic(u32 beforeTotal, u32 beforeLargest,
+        u32 afterTotal, u32 afterLargest);
+
 private:
     void Print(const char* errorString, bool pressAToContinue);
 };
