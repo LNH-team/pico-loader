@@ -17,6 +17,7 @@
 #include "patches/arm7/sdk5/Sdk5DsiSdCardRedirectPatch.h"
 #include "patches/arm7/PokemonDownloaderArm7Patch.h"
 #include "patches/arm7/cheats/CheatEnginePatch.h"
+#include "patches/arm7/sdk5/Scfg7ClearPatch.h"
 #include "Arm7Patcher.h"
 
 static u32 correctAddress(u32 address, const nds_header_ntr_t* romHeader)
@@ -118,6 +119,11 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
             if (runInDSiMode && (twlRomHeader->HasNandAccess() || twlRomHeader->HasSdAccess()))
             {
                 patchCollection.AddPatch(new Sdk5DsiSdCardRedirectPatch());
+            }
+
+            if (runInDSiMode)
+            {
+                patchCollection.AddPatch(new Scfg7ClearPatch());
             }
 
             if (twlRomHeader->IsDsiWare())

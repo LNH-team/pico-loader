@@ -4,6 +4,7 @@
 
 ### Added
 - Support for banner save files
+- Keep scfg7 enabled both in ds and dsi mode
 
 ## Fixed
 - BG2/BG3 reference point registers now cleared before starting ROMs - by @danyocom
