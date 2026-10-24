@@ -35,6 +35,11 @@ patch_cardireadcard_adjust_cardicommon_offset:
 
     ldr r2, [r6, #0x24] // remaining length
     lsrs r2, r2, #9 // sectors left to read
+    beq do_read_fresh // FIX-CACHE-STALE (03/09) : plus rien en attente malgre
+                       // dst identique -> coincidence, pas une continuation
+                       // reelle ; forcer une vraie lecture au lieu d'un
+                       // "cache hit" fantome qui laisserait le tampon tel
+                       // quel (rempli par un flux precedent, jamais efface)
     cmp r2, lr
     ble 1f
     mov r2, lr // clip to cluster boundary
@@ -56,6 +61,21 @@ patch_cardireadcard_mov_r3_to_dst:
     subs r3, r3, r4
     str r3, [r6, #0x24]
 
+    // PATCH v25 (correctif coalescing) : le lot de r2 secteurs vient d'etre
+    // calcule et la comptabilite stream (position/dest/restant) mise a jour
+    // en consequence -- il faut appeler melonds_readSd avec ce VRAI compte de
+    // secteurs, pas avec le r2=1 pose plus bas pour l'autre cas
+    // (do_read_fresh, atteint par 'beq' quand restant==0 malgre une
+    // destination identique -- ce cas-la doit garder r2=1). Sans ce saut,
+    // l'execution tombe (fall-through) dans do_read_fresh et son
+    // 'movs r2,#1' ecrase le compte reel : un seul secteur est alors
+    // physiquement lu depuis la carte SD alors que la comptabilite
+    // stream/l'appelant croient le lot entier transfere.
+    b do_read
+
+do_read_fresh: // FIX-CACHE-STALE : remettre r2=1 (ecrase par lsrs ci-dessus) ;
+               // r1=dst est deja correct (inchange depuis mov_dst_to_r1)
+    movs r2, #1
 do_read:
     lsrs r3, r1, #24 // if dst address is invalid (close to zero), ignore the read
     beq ignore_read  // this is intended to fix reads to null pointers that would be ignored if done with DMA
