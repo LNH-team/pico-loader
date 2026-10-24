@@ -10,6 +10,7 @@
 #include "CardiReadCardPatchAsm.h"
 #include "CardiReadCardPatch.h"
 #include "DashCmdPatchCode.h"
+#include "ArmHelper.h"
 
 static const u32 sCARDiReadCardPatternUnknown[] = { 0xE92D4FF0u, 0xE24DD004u, 0xE1A0A000u, 0xE59F90D8u };
 static const u32 sCARDiReadCardPatternSdk20029A7[] = { 0xE92D4FF0u, 0xE24DD004u, 0xE1A0A000u, 0xE59F90E0u };
@@ -148,17 +149,27 @@ void CardiReadCardPatch::ApplyPatch(PatchContext& patchContext)
         __patch_cardireadcard_rom_offset_to_sd_sector_asm_address = (u32)romOffsetToSdSectorPatchCode->GetRemapFunction();
         __patch_cardireadcard_sdread_asm_address = (u32)sdReadPatchCode->GetReadSectorsFunction();
     }
-    // v19 (Pokemon Dash) : la lecture SD par DMA vit dans sa propre section ;
-    // on l'alloue ici, tot, la ou le tas est peu fragmente (comme les autres
-    // patch codes), et non au site d'accroche Dash ou le plus grand bloc libre
-    // est reduit. dashReadDmaFn = adresse relogee de dash_readSdDma.
-    u32 dashReadDmaFn = 0;
-    if ((patchContext.GetGameCode() & 0x00FFFFFF) == GAMECODE_NO_REGION("APD"))
+    // U (Pokemon Dash, contrat amont) : la lecture SD du moteur de Dash passe par
+    // l'interface ReadSectorsDma de la PLATEFORME compilee (HasDmaSdReads()), comme
+    // CARDi_SetCardDma pour les autres jeux. L'objet est cree ici, tot, la ou le
+    // tas est peu fragmente. Gardes : jeu APD*, plateforme avec lecture DMA SD,
+    // et les deux sites de la ROM de Dash (appel de MIi_CardDmaCopy32 dans
+    // CARDi_SetCardDma 0x020A4A9C ; appel d'OS_DisableIrqMask de fin de file
+    // 0x0206D2A4) conformes ; sinon on n'accroche pas, Dash demarre comme
+    // non patche (temoin d'echec lisible).
+    // La zone libre verifiee (0x02204000, 0x800 o ; v20c) est ajoutee AVANT : ni
+    // le code plateforme ni la section dash_cmd_fix ne tiennent dans le tas.
+    const IReadSectorsDmaPatchCode* dashDmaPatchCode = nullptr;
+    if ((patchContext.GetGameCode() & 0x00FFFFFF) == GAMECODE_NO_REGION("APD")
+        && loaderPlatform->HasDmaSdReads()
+        && ArmHelper::IsArmUnconditionalBl(*(u32*)0x020A4A9Cu)
+        && ArmHelper::IsArmUnconditionalBl(*(u32*)0x0206D2A4u)
+        && ArmHelper::GetArmCallAddress((const void*)0x0206D2A4u) == 0x0209BA18u)
     {
-        u32 dmaSize = SECTION_SIZE(dash_readsddma);
-        void* dmaAddr = patchContext.GetPatchHeap().Alloc(dmaSize);
-        memcpy(dmaAddr, SECTION_START(dash_readsddma), dmaSize);
-        dashReadDmaFn = (u32)&dash_readSdDma - (u32)SECTION_START(dash_readsddma) + (u32)dmaAddr;
+        patchContext.GetPatchHeap().AddFreeSpace((void*)0x02204000, 0x800);
+        dashDmaPatchCode = loaderPlatform->CreateSdReadDmaPatchCode(
+            patchContext.GetPatchCodeCollection(), patchContext.GetPatchHeap(),
+            (const void*)ArmHelper::GetArmCallAddress((const void*)0x020A4A9Cu));
     }
     u32 patch4Size = SECTION_SIZE(fixcp15);
     void* patch4Address = patchContext.GetPatchHeap().Alloc(patch4Size);
@@ -311,18 +322,18 @@ void CardiReadCardPatch::ApplyPatch(PatchContext& patchContext)
     // DMA carte qui lui est propre, hors des fonctions CARDi_* redirigees vers
     // la SD. On intercepte l'assemblage de la commande carte 0xB7 a 0x0206D3A4
     // pour y substituer une lecture SD, dans le contexte d'execution de Dash.
-    // v19 : la lecture est par DMA (dashReadDmaFn) et non plus une copie
-    // processeur, afin de regenerer l'IRQ carte attendue par le moteur.
-    // dashReadDmaFn == 0 => l'alloc precoce a echoue : on n'accroche pas, Dash
-    // demarre comme non-patche (temoin d'echec lisible, pas de blx 0).
-    if (dashReadDmaFn != 0u
+    // U : la lecture est deleguee a la plateforme (dashDmaPatchCode) ; le moteur
+    // n'emet plus ni commande, ni DMA, ni ecriture de ROMCTRL.
+    // dashDmaPatchCode == nullptr => gardes non satisfaites : pas d'accroche.
+    if (dashDmaPatchCode != nullptr
         && (patchContext.GetGameCode() & 0x00FFFFFF) == GAMECODE_NO_REGION("APD"))
     {
         u32 dashSize = SECTION_SIZE(dash_cmd_fix);
         void* dashAddr = patchContext.GetPatchHeap().Alloc(dashSize);
         dbr_fixcp15    = __patch_cardireadcard_fix_cp15_asm_address;
         dbr_remap      = __patch_cardireadcard_rom_offset_to_sd_sector_asm_address;
-        dbr_sdread     = dashReadDmaFn;
+        dbr_rsd        = (u32)dashDmaPatchCode->GetReadSectorsDmaFunction();
+        dbr_finish     = (u32)dashDmaPatchCode->GetReadSectorsDmaFinishFunction();
         dbr_global_ptr = *(u32*)0x0206D470u;   // = 0x020D6144, contexte du moteur
         memcpy(dashAddr, SECTION_START(dash_cmd_fix), dashSize);
 
@@ -334,7 +345,59 @@ void CardiReadCardPatch::ApplyPatch(PatchContext& patchContext)
         ii[1] = 0xE1A00005u;   // mov r0, r5   : passe l'offset au trampoline
         u32 blOffset = ((trampolineEntry - ((u32)&ii[2] + 8u)) >> 2) & 0x00FFFFFFu;
         ii[2] = 0xEB000000u | blOffset;
-        ii[3] = 0xE28FF058u;   // add pc, pc, #0x58 -> ii+27
-        ii[28] = 0xE1A00000u;  // nop : supprime le dernier octet de commande
+        // U : saute TOUTE la fin de la region (commande B7 par octets, armement
+        // du DMA, ecriture de ROMCTRL) jusqu'a `mov r0,#1` de 0x0206D460.
+        ii[3] = 0xEA000000u | (((0x0206D460u - ((u32)&ii[3] + 8u)) >> 2) & 0x00FFFFFFu);
+
+        // U : crochet de fin de file. L'instruction d'origine de 0x0206D2A4 est
+        // `bl OS_DisableIrqMask` (r0 = 0x80000) ; elle est reprise a l'identique
+        // par dash_finish_entry apres la cloture du lot de la plateforme.
+        u32 finishEntry = (u32)&dash_finish_entry
+                          - (u32)SECTION_START(dash_cmd_fix) + (u32)dashAddr;
+        *(volatile u32*)0x0206D2A4u = ArmHelper::MakeArmCall(0x0206D2A4u, finishEntry);
+
+        // v24 (04/09) : neutralise l'essai de cache OPPORTUNISTE du dispatcher
+        // SDK natif de Dash a 0x020A4794 (« mov r0,r4 ; bl 0x020A4C00 ; si
+        // pret : ldr r1,[r4] ; blx r1 »), etabli par desassemblage direct de
+        // la ROM (ndspy+capstone, 0119 - Pokemon Dash (E).nds -- adresses
+        // figees pour CETTE ROM, PAS un correctif SDK generique).
+        //
+        // CAUSE : ce dispatcher appelle 0x020A4C00 (fonction de recopie
+        // cache->destination) AVANT MEME d'appeler CARDi_ReadCard, en se
+        // fiant UNIQUEMENT a l'egalite entre desc->tag (0x020DAC88) et la
+        // position arrondie a 512 du flux courant (stream+0x18,
+        // 0x020DA680+0x18) -- sans aucune information d'IDENTITE du flux.
+        // `desc` (0x020DAC80) est GLOBAL et PARTAGE par TOUTES les lectures
+        // sequentielles (FNT, FAT, sound_data.sdat -- doc maitre §1/2.11).
+        // Si un flux A (ex: FNT) laisse desc->tag a une valeur qui, par
+        // simple coincidence arithmetique, correspond a la position arrondie
+        // de DEMARRAGE d'un flux B totalement different (ex: sound_data.sdat,
+        // souvent position 0), ce pre-controle recopie des octets PERIMES
+        // (restes du flux A) directement dans la destination du flux B, SANS
+        // JAMAIS appeler CARDi_ReadCard -- aucune lecture materielle n'a
+        // jamais lieu pour ce flux B. C'est un mecanisme cause-a-effet
+        // complet et coherent avec la pollution deja confirmee en direct
+        // (texte residuel FNT dans sound_data.sdat, doc maitre §2.5/2.13).
+        //
+        // A l'interieur de CARDi_ReadCard elle-meme, l'usage de 0x020A4C00
+        // est PROUVE SUR (synchrone : le tampon vient d'etre rempli par le
+        // materiel juste avant, meme etiquette) -- seul ce pre-controle
+        // EXTERNE, avant meme le premier appel a CARDi_ReadCard, est en cause.
+        //
+        // CORRECTIF : neutraliser les 3 instructions du pre-controle
+        // (bl 0x020A4C00 ; cmp r0,#0 ; beq +...) par des NOP, pour que le
+        // dispatcher appelle TOUJOURS CARDi_ReadCard directement. Sans danger
+        // : les champs du flux (position/destination/longueur) sont
+        // repeuples juste avant CHAQUE appel du dispatcher par une fonction
+        // dediee (0x020A465C, doc maitre §2.10) -- CARDi_ReadCard n'a besoin
+        // d'aucun etat "deja en cours" pour fonctionner correctement seule.
+        // Perte : l'optimisation qui evitait un appel complet quand un
+        // second dispatch consecutif du MEME flux retombait legitimement
+        // sur le meme bloc de 512 deja en cache -- cas rare, jamais une
+        // question de correction, seulement de performance.
+        volatile u32* disp = (volatile u32*)0x020A47A0u;
+        disp[0] = 0xE1A00000u; // nop (etait : bl 0x020A4C00)
+        disp[1] = 0xE1A00000u; // nop (etait : cmp r0,#0)
+        disp[2] = 0xE1A00000u; // nop (etait : beq 0x020A47B8)
     }
 }
