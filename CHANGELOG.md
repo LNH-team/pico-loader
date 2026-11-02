@@ -2,6 +2,12 @@
 
 ## Enhanced fork
 
+### [Unreleased]
+
+#### Fixed
+- DSi-enhanced romhacks whose arm9i or arm7i can't be loaded, like Complete Unova Pokédex for
+  Pokémon Black. They run in DS mode now, they used to stop at "Failed to load arm9i.".
+
 ### [enhanced-v1.0.0]
 
 #### Added

@@ -432,6 +432,13 @@ bool NdsLoader::IsValidDSiRom()
         return false;
     }
 
+    // Some rom hacks have an arm9i or arm7i that can't be loaded. Run those
+    // in DS mode, unless the rom has no DS mode to run.
+    if (!(_romHeader.unitCode & NDS_HEADER_UNIT_CODE_NOT_SUPPORTS_DS_MODE) && !CanLoadArm9iAndArm7i())
+    {
+        return false;
+    }
+
     // Check if the DSi area contains mirrors of sector 0x8000
     auto buffer = std::make_unique_for_overwrite<u8[]>(512 * 2);
     UINT bytesRead = 0;
@@ -453,6 +460,42 @@ bool NdsLoader::IsValidDSiRom()
     if (memcmp(buffer.get(), buffer.get() + 512, 512) == 0)
     {
         return false;
+    }
+
+    return true;
+}
+
+bool NdsLoader::CanLoadArm9iAndArm7i()
+{
+    // Checks what TryLoadArm9i, TryLoadArm7i and their decrypt functions need:
+    // each part inside the file, and starting where its modcrypt area starts.
+    u32 romSize = f_size(&_romFile);
+    bool isModcrypted = _romHeader.twlFlags & (1 << 1);
+    if (_romHeader.arm9iSize != 0)
+    {
+        if (_romHeader.arm9iSize > romSize || _romHeader.arm9iRomOffset > romSize - _romHeader.arm9iSize)
+        {
+            return false;
+        }
+
+        if (isModcrypted && _romHeader.modcryptArea1Offset != _romHeader.arm9iRomOffset)
+        {
+            return false;
+        }
+    }
+
+    if (_romHeader.arm7iSize != 0)
+    {
+        if (_romHeader.arm7iSize > romSize || _romHeader.arm7iRomOffset > romSize - _romHeader.arm7iSize)
+        {
+            return false;
+        }
+
+        if (isModcrypted && _romHeader.modcryptArea2Size != 0
+            && _romHeader.modcryptArea2Offset != _romHeader.arm7iRomOffset)
+        {
+            return false;
+        }
     }
 
     return true;
