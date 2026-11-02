@@ -22,9 +22,11 @@
 #include "patches/DsiBiosLz77SwiPatch.h"
 #include "Arm7Patcher.h"
 
-static u32 correctAddress(u32 address, const nds_header_ntr_t* romHeader)
+static u32 correctAddress(u32 address, bool runInDSiMode)
 {
-    if (gIsDsiMode && romHeader->unitCode == 0)
+    // A DSi rom that falls back to DS mode needs the 0x023... form as well,
+    // the game reads its arena in 4MB mode.
+    if (gIsDsiMode && !runInDSiMode)
     {
         return address & ~0xC00000; // 0x023...
     }
@@ -98,7 +100,7 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
         else
         {
             LOG_DEBUG("Arm 7 patches placed in main memory\n");
-            patchSpaceStart = (void*)correctAddress(mainMemoryArenaLo, romHeader);
+            patchSpaceStart = (void*)correctAddress(mainMemoryArenaLo, runInDSiMode);
             mainMemoryArenaLo += arm7PatchSpaceSize;
         }
 
@@ -106,7 +108,7 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
 
         if (cheatsLength > 0)
         {
-            void* cheats = (void*)correctAddress(mainMemoryArenaLo, romHeader);
+            void* cheats = (void*)correctAddress(mainMemoryArenaLo, runInDSiMode);
             LOG_DEBUG("Cheats placed at 0x%p\n", cheats);
             cheatsPtr = cheats;
             patchCollection.AddPatch(new CheatEnginePatch(cheats));
@@ -143,7 +145,7 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
             {
                 if (twlRomHeader->twlFlags2 & NDS_HEADER_TWL_FLAGS_2_HAS_BANNER_SAVE)
                 {
-                    char* bannerSavePath = (char*)correctAddress(mainMemoryArenaLo, romHeader);
+                    char* bannerSavePath = (char*)correctAddress(mainMemoryArenaLo, runInDSiMode);
                     LOG_DEBUG("Banner save path placed at 0x%p\n", bannerSavePath);
                     bannerSavePathPtr = bannerSavePath;
                     patchCollection.AddPatch(new BannerSavePatch(bannerSavePath));
@@ -152,14 +154,14 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
             }
             else
             {
-                void* saveTmpBuffer = (void*)correctAddress(mainMemoryArenaLo, romHeader);
+                void* saveTmpBuffer = (void*)correctAddress(mainMemoryArenaLo, runInDSiMode);
                 mainMemoryArenaLo += 512;
                 patchCollection.AddPatch(new CardiDoTaskFromArm9Patch(saveTmpBuffer));
             }
         }
         else
         {
-            void* saveTmpBuffer = (void*)correctAddress(mainMemoryArenaLo, romHeader);
+            void* saveTmpBuffer = (void*)correctAddress(mainMemoryArenaLo, runInDSiMode);
             mainMemoryArenaLo += 512;
             patchCollection.AddPatch(new CardiTaskThreadPatch(saveTmpBuffer));
         }
