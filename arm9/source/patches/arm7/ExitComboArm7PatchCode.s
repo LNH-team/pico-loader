@@ -120,7 +120,7 @@ dropRequest:
 noRequest:
     ldr r2, regKeyInput
     ldr r2, [r2] // masked below, so the keycnt half is discarded
-    ldr r3, comboMask
+    ldr r3, patch_exitcombo_arm7_combo_mask
     ands r2, r2, r3 // keys are active low, 0 = whole combo held
     bne notHeld
 
@@ -268,7 +268,10 @@ callR3:
 regKeyInput:
     .word 0x04000130
 
-comboMask:
+// Filled in by the arm9 side with the combo from the loader header, already
+// checked there; the word below is the built-in default in case it is not.
+.global patch_exitcombo_arm7_combo_mask
+patch_exitcombo_arm7_combo_mask:
     .word 0x0314 // L | R | Right | Select
 
 regIme:

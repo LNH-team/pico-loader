@@ -38,7 +38,7 @@ static u32 correctAddress(u32 address, bool runInDSiMode)
 
 void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheatsLength, void*& cheatsPtr,
     char*& bannerSavePathPtr, bool exitComboArm9Installed, bool& exitComboArm7Installed, bool runInDSiMode,
-    bool keepDsiBios) const
+    bool keepDsiBios, u16 exitCombo) const
 {
     cheatsPtr = nullptr;
     exitComboArm7Installed = false;
@@ -121,7 +121,7 @@ void* Arm7Patcher::ApplyPatches(const LoaderPlatform* loaderPlatform, u32 cheats
         ExitComboArm7Patch* exitComboArm7Patch = nullptr;
         if (exitComboArm9Installed)
         {
-            exitComboArm7Patch = new ExitComboArm7Patch();
+            exitComboArm7Patch = new ExitComboArm7Patch(exitCombo);
             exitComboArm7Patch->FindPatchTarget(patchContext);
             if (!exitComboArm7Patch->HasTarget())
             {

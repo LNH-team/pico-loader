@@ -641,6 +641,9 @@ void NdsLoader::ApplyArm7Patches()
 {
     sendToArm9(IPC_COMMAND_ARM9_APPLY_ARM7_PATCHES);
     sendToArm9(_cheats ? _cheats->length : 0);
+    // The exit combo comes from the launcher in the header; the arm9 side owns
+    // the patch, so it needs the mask to put in it.
+    sendToArm9(gLoaderHeader.v4.exitCombo);
     PreprocessCheats();
     void* patchSpaceStart = (void*)receiveFromArm9();
     void* cheatsPtr = (void*)receiveFromArm9();

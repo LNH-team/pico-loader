@@ -8,6 +8,30 @@
 #include "VerifySavePatchCode.h"
 #include "ExitComboArm7Patch.h"
 
+// The combo comes from the launcher through the loader header, so it is checked
+// here rather than trusted. The same rules the launcher applies: two to four of
+// the twelve real buttons, and SELECT among them, so a game's own chord cannot
+// become the exit. Anything else keeps the built-in combo.
+static u32 ValidateExitCombo(u16 exitCombo)
+{
+    constexpr u16 kValidKeys = 0x0FFF; // A B Select Start Right Left Up Down R L X Y
+    constexpr u16 kSelectKey = 0x0004;
+    constexpr u16 kDefaultCombo = 0x0314; // L | R | Right | Select
+
+    exitCombo &= kValidKeys;
+    u32 keyCount = 0;
+    for (u16 bit = 1; bit != 0x1000; bit <<= 1)
+    {
+        if (exitCombo & bit)
+            keyCount++;
+    }
+    if ((exitCombo & kSelectKey) == 0 || keyCount < 2 || keyCount > 4)
+    {
+        return kDefaultCombo;
+    }
+    return exitCombo;
+}
+
 // Tail of the SDK irq dispatcher, the same four word sequence used on the arm9
 // side: ldr r1, [pc, #8]; ldr r0, [r1, r0, lsl #2]; ldr lr, [pc, #4]; bx r0.
 // The irq table address and the irq return address literals follow it.
@@ -114,7 +138,8 @@ void ExitComboArm7Patch::ApplyPatch(PatchContext& patchContext)
         sdWrite,
         _dispatchTail[4], // irq table address literal
         _dispatchTail[5], // irq return address literal
-        _prioReturnOffset
+        _prioReturnOffset,
+        ValidateExitCombo(_exitCombo) // 0, an older launcher's header, keeps the default
     );
 
     _dispatchTail[0] = 0xE51FF004; // ldr pc,= address

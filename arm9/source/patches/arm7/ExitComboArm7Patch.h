@@ -11,6 +11,12 @@
 class ExitComboArm7Patch : public Patch
 {
 public:
+    /// @param exitCombo Keys held to exit, as the active-low KEY_* mask from the
+    ///        loader header. 0, or anything the loader would refuse, keeps the
+    ///        built-in L + R + Right + Select.
+    explicit ExitComboArm7Patch(u16 exitCombo)
+        : _exitCombo(exitCombo) { }
+
     /// @note Only searches once, so it can be asked before the patch is added to
     ///       a collection that searches again.
     bool FindPatchTarget(PatchContext& patchContext) override;
@@ -20,6 +26,7 @@ public:
     bool IsInstalled() const { return _installed != 0; }
 
 private:
+    u16 _exitCombo;
     // 32-bit fields only: patches live in vram, where byte writes are lost on DS and DS Lite.
     u32* _dispatchTail = nullptr;
     u32* _prioDispatch = nullptr;

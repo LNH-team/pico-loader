@@ -2,6 +2,8 @@
 
 > [!NOTE]
 > **This is an altered version of Pico Loader, not the original.** Pico Loader Enhanced is a fork of [LNH-team/pico-loader](https://github.com/LNH-team/pico-loader) that adds an in-game exit to the launcher on the DSpico. See the [changelog](CHANGELOG.md#enhanced-fork) for how it works and which games are left out. Download it from the [latest release](https://github.com/rasalopa/pico-loader/releases/latest): it works with Pico Launcher Enhanced and with LNH's official Pico Launcher. Problems with this build are mine, not the LNH team's, so please report them at [rasalopa/pico-launcher-enhanced](https://github.com/rasalopa/pico-launcher-enhanced/issues) rather than upstream.
+>
+> **This fork is a mockup.** It was developed with AI assistance, tested end to end on real hardware and verified working. The LNH team is advised to test it for themselves: read the code, change what they want to change, or take inspiration from any of the added features.
 
 Pico Loader is a homebrew and retail DS(i) rom loader supporting a variety of platforms (see below).
 
@@ -18,7 +20,7 @@ Pico Loader is a homebrew and retail DS(i) rom loader supporting a variety of pl
 
 Note that Pico Loader can currently not run retail roms from the DSi SD card. Homebrew is supported, however.
 
-In this fork, most DS retail games on the DSpico can return to the launcher: hold L+R+Right+Select for a moment. DSi-enhanced games, games running in DSi mode and other platforms can't yet.
+In this fork, most DS retail games on the DSpico can return to the launcher: hold L+R+Right+Select for a moment. With Pico Launcher Enhanced 1.11 or newer the combo is picked from the launcher's menu instead: any two to four buttons that include SELECT. DSi-enhanced games, games running in DSi mode and other platforms can't yet.
 
 ## Supported platforms
 

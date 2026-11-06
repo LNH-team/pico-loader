@@ -4,6 +4,11 @@
 
 ### [Unreleased]
 
+#### Added
+- The combo that returns to the launcher is a setting now: Pico Launcher Enhanced 1.11 and newer
+  pass it in the API v4 header, and the launcher picks it from its menu. It has to be two to four
+  buttons and include SELECT; anything else, or no choice at all, keeps L+R+Right+Select.
+
 #### Fixed
 - DSi-enhanced romhacks whose arm9i or arm7i can't be loaded, like Complete Unova Pokédex for
   Pokémon Black. They run in DS mode now, they used to stop at "Failed to load arm9i.".

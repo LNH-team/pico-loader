@@ -10,6 +10,9 @@ extern "C" void patch_exitcombo_arm7_sdread(void);
 extern "C" void patch_exitcombo_arm7_sdwrite(void);
 
 extern u32 patch_exitcombo_arm7_block_address;
+/// @brief Keys the stub waits for, as an active-low KEY_* mask, already checked
+///        by ExitComboArm7Patch. The stub's own word is the built-in default.
+extern u32 patch_exitcombo_arm7_combo_mask;
 extern u32 patch_exitcombo_arm7_table_address;
 extern u32 patch_exitcombo_arm7_return_address;
 extern u32 patch_exitcombo_arm7_prioreturn_offset;
@@ -20,10 +23,12 @@ class ExitComboArm7PatchCode : public PatchCode
 {
 public:
     ExitComboArm7PatchCode(PatchHeap& patchHeap, u32 blockAddress, u32 sdReadAddress,
-        u32 sdWriteAddress, u32 irqTableAddress, u32 irqReturnAddress, u32 prioReturnOffset)
+        u32 sdWriteAddress, u32 irqTableAddress, u32 irqReturnAddress, u32 prioReturnOffset,
+        u32 comboMask)
         : PatchCode(SECTION_START(patch_exitcombo_arm7), SECTION_SIZE(patch_exitcombo_arm7), patchHeap)
     {
         patch_exitcombo_arm7_block_address = blockAddress;
+        patch_exitcombo_arm7_combo_mask = comboMask;
         patch_exitcombo_arm7_sdread_address = sdReadAddress;
         patch_exitcombo_arm7_sdwrite_address = sdWriteAddress;
         patch_exitcombo_arm7_table_address = irqTableAddress;

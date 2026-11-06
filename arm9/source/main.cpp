@@ -168,14 +168,14 @@ static void handleApplyArm9PatchesCommand()
     ipc_sendWordDirect(1);
 }
 
-static void handleApplyArm7PatchesCommand(u32 cheatsLength)
+static void handleApplyArm7PatchesCommand(u32 cheatsLength, u16 exitCombo)
 {
     void* cheats = nullptr;
     char* bannerSavePath = nullptr;
     bool exitComboArm7Installed = false;
     void* patchSpaceStart = Arm7Patcher().ApplyPatches(
         sLoaderPlatform, cheatsLength, cheats, bannerSavePath, sExitComboPatch != nullptr, exitComboArm7Installed,
-        sRunInDSiMode, sKeepDsiBios);
+        sRunInDSiMode, sKeepDsiBios, exitCombo);
     if (sSoftResetCheatsPointer != nullptr)
     {
         *sSoftResetCheatsPointer = cheats;
@@ -389,7 +389,8 @@ static void handleArm7Command(u32 command)
         case IPC_COMMAND_ARM9_APPLY_ARM7_PATCHES:
         {
             u32 cheatsLength = receiveFromArm7();
-            handleApplyArm7PatchesCommand(cheatsLength);
+            u16 exitCombo = (u16)receiveFromArm7();
+            handleApplyArm7PatchesCommand(cheatsLength, exitCombo);
             break;
         }
         case IPC_COMMAND_ARM9_SET_AP_INFO:
