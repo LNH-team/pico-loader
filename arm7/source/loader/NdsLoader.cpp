@@ -423,6 +423,38 @@ bool NdsLoader::IsValidDSiRom()
         return false;
     }
 
+    // Some patched roms (for example rom hacks made from trimmed dumps) keep the DSi area in the header,
+    // but fill it with 0xFF or 0x00. Treat a blank arm7i or arm9i as missing.
+    auto isBlankSector = [] (const u8* sector)
+    {
+        for (u32 i = 1; i < 512; i++)
+        {
+            if (sector[i] != sector[0])
+            {
+                return false;
+            }
+        }
+        return sector[0] == 0xFF || sector[0] == 0x00;
+    };
+
+    if (isBlankSector(buffer.get() + 512))
+    {
+        return false;
+    }
+
+    bytesRead = 0;
+    if (f_lseek(&_romFile, _romHeader.arm9iRomOffset) != FR_OK ||
+        f_read(&_romFile, buffer.get(), 512, &bytesRead) != FR_OK ||
+        bytesRead != 512)
+    {
+        return false;
+    }
+
+    if (isBlankSector(buffer.get()))
+    {
+        return false;
+    }
+
     return true;
 }
 
